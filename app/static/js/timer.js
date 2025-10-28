@@ -10,14 +10,12 @@ class Ticker {
      * @param {Date | string} referenceDate - Дата, от которой (или до которой) считаем
      * @param {'countdown' | 'elapsed'} mode - Режим работы
      */
-    constructor(element, referenceDate, mode = 'elapsed') {
+constructor(element, referenceDate, mode = 'elapsed', completedMessage = "Done!") {
         this.element = element;
-        // Убеждаемся, что работаем с объектом Date
         this.referenceDate = new Date(referenceDate);
         this.mode = mode;
+        this.completedMessage = completedMessage; // <-- НОВОЕ
         this.intervalId = null;
-
-        // "Привязываем" 'this' для _update, чтобы setInterval не терял контекст
         this._update = this._update.bind(this);
     }
 
@@ -38,26 +36,25 @@ class Ticker {
         let diffMs;
 
         if (this.mode === 'countdown') {
-            diffMs = this.referenceDate - now; // Обратный отсчет
+            diffMs = this.referenceDate - now;
         } else {
-            diffMs = now - this.referenceDate; // Прошедшее время
+            diffMs = now - this.referenceDate;
         }
 
-        // Если обратный отсчет закончился
-        if (diffMs < 0) {
-            this.element.innerHTML = "Свершилось!"; // Или "00:00:00:00"
+        // --- ИСПРАВЛЕНИЕ (Твоя Критика 1) ---
+        if (this.mode === 'countdown' && diffMs < 0) {
+            this.element.innerHTML = this.completedMessage; // Используем
             this.stop();
             return;
         }
+        // ---
 
-        // 1. Конвертируем миллисекунды в Д:Ч:М:С
-        const totalSeconds = Math.floor(diffMs / 1000);
+        const totalSeconds = Math.floor(Math.abs(diffMs) / 1000);
         const days = Math.floor(totalSeconds / (3600 * 24));
         const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
 
-        // 2. Отображаем
         this.element.innerHTML =
             `${this._pad(days)}:${this._pad(hours)}:${this._pad(minutes)}:${this._pad(seconds)}`;
     }

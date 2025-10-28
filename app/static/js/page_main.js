@@ -5,78 +5,87 @@
  * @param {object} config - Загруженный APP_CONFIG
  */
 function initPageMain(config) {
+    // ... (код 'arrivalModule', 'relationshipModule', 'customTimersContainer') ...
     const arrivalModule = document.getElementById('timer-arrival-module');
     const relationshipModule = document.getElementById('timer-relationship-module');
     const customTimersContainer = document.getElementById('custom-timers-container');
 
-    // 1. Настройка Модуля "До Встречи"
+    // 1. Модуль "До Встречи"
     if (config.timers.arrival_timer_enabled) {
-        arrivalModule.style.display = 'flex'; // Показываем
-
+        arrivalModule.style.display = 'flex';
         const titleEl = arrivalModule.querySelector('.timer-module-title');
         const displayEl = arrivalModule.querySelector('.timer-display');
-
         titleEl.innerText = config.timers.arrival_timer_text;
 
-        const timer = new Ticker(displayEl, config.date_vova_arrival, 'countdown');
+        // --- ИСПРАВЛЕНИЕ (Твоя Критика 1) ---
+        const timer = new Ticker(
+            displayEl,
+            config.date_vova_arrival,
+            'countdown',
+            config.timers.timer_completed_message // <-- Берем из config
+        );
         timer.start();
     } else {
-        arrivalModule.style.display = 'none'; // Прячем
+        arrivalModule.style.display = 'none';
     }
 
-    // 2. Настройка Модуля "Мы Вместе"
+    // 2. Модуль "Мы Вместе"
     if (config.timers.relationship_timer_enabled) {
-        relationshipModule.style.display = 'flex'; // Показываем
-
+        relationshipModule.style.display = 'flex';
         const titleEl = relationshipModule.querySelector('.timer-module-title');
         const displayEl = relationshipModule.querySelector('.timer-display');
-
         titleEl.innerText = config.timers.relationship_timer_text;
 
-        const timer = new Ticker(displayEl, config.date_relationship_start, 'elapsed');
+        const timer = new Ticker(
+            displayEl,
+            config.date_relationship_start,
+            'elapsed',
+            config.timers.timer_completed_message // <-- Передаем
+        );
         timer.start();
 
-        // 3. Рендеринг "Дополнительных полей"
-        customTimersContainer.innerHTML = ''; // Очищаем (на случай перезагрузки)
-
+        customTimersContainer.innerHTML = '';
         for (const customTimer of config.timers.custom_timers) {
             if (customTimer.enabled) {
-                createCustomTimerElement(customTimersContainer, customTimer);
+                createCustomTimerElement(customTimersContainer, customTimer, config); // <-- Передаем config
             }
         }
-
     } else {
-        relationshipModule.style.display = 'none'; // Прячем
+        relationshipModule.style.display = 'none';
     }
 }
-
 /**
  * Создает HTML-элемент для одного "кастомного" таймера
  * @param {HTMLElement} container - Куда добавлять
  * @param {object} timerData - Объект таймера из config
  */
-function createCustomTimerElement(container, timerData) {
-    // 1. Создаем обертку
+function createCustomTimerElement(container, timerData, config) { // <-- Принимаем config
+    // ... (код создания entry, label, display) ...
     const entry = document.createElement('div');
     entry.className = 'custom-timer-entry';
-
-    // 2. Создаем заголовок
     const label = document.createElement('span');
     label.className = 'custom-timer-label';
     label.innerText = timerData.label;
-
-    // 3. Создаем дисплей таймера
     const display = document.createElement('span');
     display.className = 'custom-timer-display';
-    display.id = `timer-${timerData.id}`; // Уникальный ID
+    display.id = `timer-${timerData.id}`;
     display.innerText = '--:--:--:--';
-
-    // 4. Собираем и добавляем на страницу
     entry.appendChild(label);
     entry.appendChild(display);
     container.appendChild(entry);
 
-    // 5. Запускаем "Тикер" для этого нового элемента
-    const timer = new Ticker(display, timerData.date, 'elapsed');
+    const now = new Date();
+    const targetDate = new Date(timerData.date);
+    const mode = (targetDate > now) ? 'countdown' : 'elapsed';
+
+    console.log(`--- [DEBUG] createCustomTimer: ...`);
+
+    // --- ИСПРАВЛЕНИЕ (Твоя Критика 1) ---
+    const timer = new Ticker(
+        display,
+        targetDate,
+        mode,
+        config.timers.timer_completed_message // <-- Берем из config
+    );
     timer.start();
 }

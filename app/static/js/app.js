@@ -1,9 +1,9 @@
-// /mrhoustontimer/app/static/js/app.js (DEBUG EDITION v2.0)
+// /mrhoustontimer/app/static/js/app.js (v2.3)
 console.log("--- [DEBUG] app.js: Файл загружен и выполняется. ---");
 
-// Глобальные "хранилища"
 let APP_CONFIG = {};
 let APP_LOG = {};
+let LANG_STRINGS = {}; // <-- НОВОЕ: Хранилище строк языка
 
 // --- 1. Главная Точка Входа ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,53 +12,42 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Главная асинхронная функция загрузки приложения
+ * [v2.3] Главная функция загрузки
  */
 async function loadApp() {
     console.log("--- [DEBUG] loadApp: Старт. ---");
     try {
-        // --- ИЗМЕНЕНИЕ: Используем Promise.allSettled для лучшей отладки ---
-        console.log("--- [DEBUG] loadApp: Отправляем parallel fetch (allSettled) для /api/config и /api/calendar_log... ---");
+        console.log("--- [DEBUG] loadApp: Отправляем fetch для /api/config... ---");
+        // 1. Сначала грузим ТОЛЬКО конфиг. Язык нужен немедленно.
+        const configResponse = await fetch('/api/config');
+        if (!configResponse.ok) throw new Error(`API /api/config ответил ошибкой: ${configResponse.status}`);
+        APP_CONFIG = await configResponse.json();
+        console.log("--- [DEBUG] loadApp: /api/config УСПЕХ. Конфиг загружен:", APP_CONFIG);
 
-        const results = await Promise.allSettled([
-            fetch('/api/config'),
-            fetch('/api/calendar_log')
-        ]);
+        // 2. ГРУЗИМ ЯЗЫК (НОВОЕ)
+        console.log(`--- [DEBUG] loadApp: Вызываем fetchLang('${APP_CONFIG.language}')... ---`);
+        await fetchLang(APP_CONFIG.language);
 
-        // --- [DEBUG] Проверяем результаты ---
-        const configResult = results[0];
-        const logResult = results[1];
+        // 3. ПЕРЕВОДИМ UI (НОВОЕ)
+        console.log("--- [DEBUG] loadApp: Вызываем translateUI()... ---");
+        translateUI();
 
-        // 1. Проверка Конфига
-        if (configResult.status === 'fulfilled') {
-            if (!configResult.value.ok) throw new Error(`API /api/config ответил ошибкой: ${configResult.value.status}`);
-            APP_CONFIG = await configResult.value.json();
-            console.log("--- [DEBUG] loadApp: /api/config УСПЕХ. Конфиг загружен:", APP_CONFIG);
-        } else {
-            console.error("--- [DEBUG] loadApp: /api/config КРИТИЧЕСКАЯ ОШИБКА. Запрос упал.", configResult.reason);
-            throw configResult.reason;
-        }
+        // 4. Грузим лог календаря
+        console.log("--- [DEBUG] loadApp: Отправляем fetch для /api/calendar_log... ---");
+        const logResponse = await fetch('/api/calendar_log');
+        if (!logResponse.ok) throw new Error(`API /api/calendar_log ответил ошибкой: ${logResponse.status}`);
+        APP_LOG = await logResponse.json();
+        console.log("--- [DEBUG] loadApp: /api/calendar_log УСПЕХ. Лог загружен:", APP_LOG);
 
-        // 2. Проверка Лога
-        if (logResult.status === 'fulfilled') {
-            if (!logResult.value.ok) throw new Error(`API /api/calendar_log ответил ошибкой: ${logResult.value.status}`);
-            APP_LOG = await logResult.value.json();
-            console.log("--- [DEBUG] loadApp: /api/calendar_log УСПЕХ. Лог загружен:", APP_LOG);
-        } else {
-            console.error("--- [DEBUG] loadApp: /api/calendar_log КРИТИЧЕСКАЯ ОШИБКА. Запрос упал.", logResult.reason);
-            throw logResult.reason;
-        }
-        // --- Конец ИЗМЕНЕНИЯ ---
-
-        // 3. Применяем динамические стили
+        // 5. Применяем стили
         console.log("--- [DEBUG] loadApp: Вызываем applyDynamicStyles()... ---");
         applyDynamicStyles(APP_CONFIG.colors);
 
-        // 4. Настраиваем навигацию
+        // 6. Настраиваем навигацию
         console.log("--- [DEBUG] loadApp: Вызываем initNavigation()... ---");
         initNavigation();
 
-        // 5. Проверяем "Первый запуск"
+        // 7. Проверяем "Первый запуск"
         if (APP_CONFIG.is_first_launch) {
             console.warn("--- [DEBUG] ПЕРВЫЙ ЗАПУСК. Показываем настройки. (Пока переключим на главную) ---");
             // showPage('page-settings'); // <-- Будет на Этапе 5
@@ -69,27 +58,71 @@ async function loadApp() {
             initPageMain(APP_CONFIG);
         }
 
-        // 6. Инициализируем остальные страницы (пока пустые)
-        initPageCalendar(APP_CONFIG, APP_LOG); // <-- Будет на Этапе 3
-        // initPageSettings(APP_CONFIG, APP_LOG); // <-- Будет на Этапе 5
+        // 8. Инициализируем остальные страницы
+        console.log("--- [DEBUG] loadApp: Вызываем initPageCalendar()... ---");
+        initPageCalendar(APP_CONFIG, APP_LOG); // <-- Использует LANG_STRINGS
+        // initPageSettings(APP_CONFIG, APP_LOG);
+
+        // Инициализируем "слушатель" зума ОДИН РАЗ
+        console.log("--- [DEBUG] loadApp: Вызываем initCalendarZoom()... ---");
+        initCalendarZoom();
+
 
         console.log("--- [DEBUG] loadApp: Приложение загружено УСПЕШНО. ---");
 
     } catch (error) {
-        // --- [DEBUG] ЭТО САМОЕ ВАЖНОЕ: БЛОК ПЕРЕХВАТА ОШИБОК ---
-        console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА ВНУТРИ loadApp() ---");
-        console.error(error); // Выводим саму ошибку
+        console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА ВНУТРИ loadApp() ---", error);
         document.body.innerHTML =
-            `<div style="color: red; padding: 20px; font-family: monospace; background: #222; height: 100vh;">
-                <h1>Критическая ошибка JS</h1>
-                <p>Не удалось загрузить приложение. Открой консоль (F12) и посмотри ошибку.</p>
-                <pre style="color: #ffb3b3; border: 1px solid red; padding: 10px; margin-top: 10px; overflow-wrap: break-word;">${error.stack}</pre>
-            </div>`;
+            `<div style="color: red; padding: 20px;"><h1>Ошибка JS</h1><pre>${error.stack}</pre></div>`;
     }
 }
 
-// --- 2. Модули Инициализации (Без изменений, но с логами) ---
+// --- НОВЫЕ ФУНКЦИИ i18n ---
 
+/**
+ * [НОВОЕ] Загружает .json файл с языком
+ * @param {string} lang - 'ru' или 'en'
+ */
+async function fetchLang(lang = 'ru') {
+    try {
+        const response = await fetch(`/static/lang/${lang}.json`);
+        if (!response.ok) throw new Error(`Не найден файл языка: ${lang}.json`);
+        LANG_STRINGS = await response.json();
+        console.log(`--- [DEBUG] fetchLang: Язык '${lang}' загружен.`, LANG_STRINGS);
+    } catch (e) {
+        console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА fetchLang() ---", e);
+        // Пытаемся загрузить 'ru' как запасной
+        if (lang !== 'ru') {
+            await fetchLang('ru');
+        }
+    }
+}
+
+/**
+ * [НОВОЕ] Пробегается по DOM и переводит все элементы с [data-lang-key]
+ */
+function translateUI() {
+    try {
+        document.querySelectorAll('[data-lang-key]').forEach(element => {
+            const key = element.dataset.langKey;
+            if (LANG_STRINGS[key]) {
+                element.innerText = LANG_STRINGS[key];
+            } else {
+                console.warn(`--- [DEBUG] translateUI: Не найден ключ '${key}' в LANG_STRINGS.`);
+                element.innerText = `[${key}]`; // Показываем ключ, если нет перевода
+            }
+        });
+        console.log("--- [DEBUG] translateUI: УСПЕХ. UI переведен. ---");
+    } catch (e) {
+        console.error("--- [DEBUG] ОШИБКА в translateUI() ---", e);
+    }
+}
+// ---
+
+// ... (applyDynamicStyles, initNavigation, showPage - без изменений) ...
+function applyDynamicStyles(colors) { /* ... */ }
+function initNavigation() { /* ... */ }
+function showPage(pageIdToShow) { /* ... */ }
 function applyDynamicStyles(colors) {
     try {
         const root = document.documentElement;
@@ -98,18 +131,23 @@ function applyDynamicStyles(colors) {
             const cssVal = colors[key];
             root.style.setProperty(cssVar, cssVal);
         });
+        root.style.setProperty('--calendar-empty-cell-color', APP_CONFIG.calendar_empty_cell_color);
         console.log("--- [DEBUG] applyDynamicStyles: УСПЕХ. Стили применены. ---");
     } catch (e) {
         console.error("--- [DEBUG] ОШИБКА в applyDynamicStyles() ---", e);
     }
 }
-
 function initNavigation() {
     try {
         const navButtons = document.querySelectorAll('.nav-button');
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const targetPageId = button.dataset.page;
+
+                if (targetPageId === 'page-calendar' && !APP_CONFIG.calendar_save_zoom) {
+                    resetCalendarZoom();
+                }
+
                 showPage(targetPageId);
             });
         });
@@ -118,21 +156,16 @@ function initNavigation() {
         console.error("--- [DEBUG] ОШИБКА в initNavigation() ---", e);
     }
 }
-
 function showPage(pageIdToShow) {
     try {
         const navButtons = document.querySelectorAll('.nav-button');
         const pages = document.querySelectorAll('.page-content');
-
         pages.forEach(page => page.classList.remove('active'));
         navButtons.forEach(btn => btn.classList.remove('active'));
-
         const pageToShow = document.getElementById(pageIdToShow);
         const buttonToActivate = document.querySelector(`.nav-button[data-page="${pageIdToShow}"]`);
-
         if (pageToShow) pageToShow.classList.add('active');
         if (buttonToActivate) buttonToActivate.classList.add('active');
-        // console.log(`--- [DEBUG] showPage: Переключено на ${pageIdToShow} ---`); // Раскомментируй, если нужно
     } catch (e) {
         console.error("--- [DEBUG] ОШИБКА в showPage() ---", e);
     }

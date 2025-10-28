@@ -1,0 +1,12 @@
+{
+    "header_main": "Main",
+    "header_calendar": "Calendar",
+    "header_settings": "Settings",
+
+    "weekdays_short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+
+    "calendar_empty_title": "Oops! Nothing to show here :)",
+    "calendar_empty_p1": "You are either cuddling together right now, or you forgot the point!",
+    "calendar_empty_p2": "The calendar displays the time from your cutie-patootie's departure date until their arrival date! <strong>Set it up in \"Settings\" :)</strong>",
+    "calendar_empty_p3": "But if your sweetie-pie is right next to you, then come back when they aren't :("
+}

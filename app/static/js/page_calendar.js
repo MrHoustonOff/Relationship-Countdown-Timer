@@ -1,57 +1,64 @@
-// /mrhoustontimer/app/static/js/page_calendar.js
+// /mrhoustontimer/app/static/js/page_calendar.js (v2.2)
 
-// Массив для хедера дней недели
-const WEEK_DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+function parseDateAsUTC(dateString) {
+    const parts = dateString.split('-').map(Number);
+    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+}
+function zeroTime(date) {
+    date.setUTCHours(0, 0, 0, 0);
+    return date;
+}
 
-/**
- * Главная функция инициализации страницы "Календарик"
- * @param {object} config - Глобальный APP_CONFIG
- * @param {object} log - Глобальный APP_LOG
- */
 function initPageCalendar(config, log) {
-    console.log("--- [DEBUG] initPageCalendar: Старт. ---");
+    console.log("--- [DEBUG] initPageCalendar (v2.3): Старт. ---");
     try {
         const container = document.getElementById('page-calendar');
-        if (!container) {
-            console.error("--- [DEBUG] initPageCalendar: Не найден контейнер #page-calendar!");
-            return;
-        }
-
-        // 1. Очищаем контейнер (на случай будущих 'ре-рендеров')
-        // Мы заменяем "<h1>Календарь (Этап 3)</h1>"
         container.innerHTML = '';
-
-        // 2. Создаем главную сетку
         const grid = document.createElement('div');
         grid.className = 'calendar-grid';
 
-        // 3. Парсим даты из ТЗ
-        // new Date() корректно парсит "YYYY-MM-DD"
-        // Важно: 'date_vova_departure' - это *последний* день *до* начала отсчета.
-        // Поэтому начинаем со *следующего* дня.
-        const startDate = new Date(config.date_vova_departure);
-        startDate.setDate(startDate.getDate() + 1); // Начинаем со след. дня
+        const departureDateStr = config.date_vova_departure.split('T')[0];
+        const arrivalDateStr = config.date_vova_arrival.split('T')[0];
 
-        const endDate = new Date(config.date_vova_arrival);
+        const departureDate = parseDateAsUTC(departureDateStr);
+        const arrivalDate = parseDateAsUTC(arrivalDateStr);
+        departureDate.setUTCDate(departureDate.getUTCDate() + 1);
 
-        console.log(`--- [DEBUG] initPageCalendar: Диапазон дат: ${startDate.toISOString()} до ${endDate.toISOString()} ---`);
+        const globalStartDate = zeroTime(departureDate);
+        const globalEndDate = zeroTime(arrivalDate);
 
-        // 4. Генерируем "Модули Месяцев"
-        // Мы будем итерировать 'currentDate', начиная с startDate
-        let currentDate = new Date(startDate);
+        console.log(`--- [DEBUG] initPageCalendar: Диапазон UTC: ${globalStartDate.toISOString()} до ${globalEndDate.toISOString()} ---`);
 
-        while (currentDate <= endDate) {
-            // Создаем модуль для 'currentDate.getMonth()'
-            const monthModule = createMonthModule(currentDate.getFullYear(), currentDate.getMonth(), startDate, endDate, config, log);
+        if (globalStartDate > globalEndDate) {
+            console.warn("--- [DEBUG] initPageCalendar: ОШИБКА ДИАПАЗОНА. Рендер отменен.");
+
+            // --- ИСПРАВЛЕНО: "Упси!" из LANG_STRINGS ---
+            const upsMessage = document.createElement('div');
+            upsMessage.className = 'calendar-empty-message';
+            upsMessage.innerHTML = `
+                <h2>${LANG_STRINGS.calendar_empty_title}</h2>
+                <p>${LANG_STRINGS.calendar_empty_p1}</p>
+                <p>${LANG_STRINGS.calendar_empty_p2}</p>
+                <p>${LANG_STRINGS.calendar_empty_p3}</p>
+            `;
+            container.appendChild(upsMessage);
+            return;
+        }
+
+        let currentDate = new Date(globalStartDate);
+        while (currentDate <= globalEndDate) {
+            const monthModule = createMonthModule(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), globalStartDate, globalEndDate, config, log);
             grid.appendChild(monthModule);
-
-            // Переходим к первому дню *следующего* месяца
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            currentDate.setDate(1);
+            currentDate.setUTCMonth(currentDate.getUTCMonth() + 1);
+            currentDate.setUTCDate(1);
         }
 
         container.appendChild(grid);
-        console.log("--- [DEBUG] initPageCalendar: УСПЕХ. Календарь отрисован. ---");
+
+        initCalendarInteraction(container, config);
+
+
+        console.log("--- [DEBUG] initPageCalendar: УСПЕХ. Календарь (v2.3) отрисован. ---");
 
     } catch (e) {
         console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА в initPageCalendar() ---", e);
@@ -59,85 +66,61 @@ function initPageCalendar(config, log) {
 }
 
 /**
- * Создает HTML-элемент для одного "Модуля Месяца"
- * @param {number} year - Год (e.g. 2025)
- * @param {number} month - Месяц (0-11)
- * @param {Date} globalStartDate - Самый первый день для рендера
- * @param {Date} globalEndDate - Самый последний день для рендера
- * @param {object} config - APP_CONFIG
- * @param {object} log - APP_LOG
+ * [v2.3] Создает Модуль Месяца
  */
 function createMonthModule(year, month, globalStartDate, globalEndDate, config, log) {
-
-    // --- 1. Создаем обертки ---
     const module = document.createElement('div');
     module.className = 'month-module';
 
-    // --- 2. Создаем Заголовок Месяца (e.g. "ОКТЯБРЬ 2025") ---
     const title = document.createElement('div');
     title.className = 'month-title';
-    // 'ru-RU' - для локализации (в будущем возьмем из config.language)
-    const monthName = new Date(year, month).toLocaleString(config.language || 'ru-RU', { month: 'long' });
+    // --- ИСПРАВЛЕНО: 'config.language' уже есть в APP_CONFIG ---
+    const monthName = new Date(Date.UTC(year, month)).toLocaleString(config.language, { month: 'long', timeZone: 'UTC' });
     title.innerText = `${monthName.toUpperCase()} ${year}`;
     module.appendChild(title);
 
-    // --- 3. Создаем Хедер Дней Недели (Пн, Вт...) ---
+    // --- ИСПРАВЛЕНО: Дни недели из LANG_STRINGS ---
     const weekHeader = document.createElement('div');
     weekHeader.className = 'week-days-header';
-    for (const day of WEEK_DAYS) {
+    const WEEK_DAYS_SHORT = LANG_STRINGS.weekdays_short || ['E', 'R', 'R', 'O', 'R', '!', '!'];
+    WEEK_DAYS_SHORT.forEach(day => {
         const dayEl = document.createElement('div');
         dayEl.className = 'week-day';
         dayEl.innerText = day;
         weekHeader.appendChild(dayEl);
-    }
+    });
     module.appendChild(weekHeader);
 
-    // --- 4. Создаем Сетку Дней ---
     const daysGrid = document.createElement('div');
     daysGrid.className = 'days-grid';
-
-    // --- 5. Вычисляем "пустые" ячейки в начале месяца ---
-    // День недели первого числа месяца (0=Вс, 1=Пн, ...)
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    // Корректируем под наш формат (Пн=0, Вс=6)
+    // ... (вся остальная логика 42 ячеек, стикеров и т.д. БЕЗ ИЗМЕНЕНИЙ) ...
+    const firstDayOfMonth = new Date(Date.UTC(year, month, 1)).getUTCDay();
     const paddingDays = (firstDayOfMonth === 0) ? 6 : (firstDayOfMonth - 1);
-
-    for (let i = 0; i < paddingDays; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'day-cell empty';
-        daysGrid.appendChild(emptyCell);
-    }
-
-    // --- 6. Рендерим ячейки с датами ---
-    const daysInMonth = new Date(year, month + 1, 0).getDate(); // 30, 31, 28...
-
-    for (let day = 1; day <= daysInMonth; day++) {
-        const cellDate = new Date(year, month, day);
-
-        // Пропускаем дни *вне* нашего глобального диапазона (ТЗ)
-        if (cellDate < globalStartDate || cellDate > globalEndDate) {
-            const emptyCell = document.createElement('div');
-            emptyCell.className = 'day-cell empty';
-            daysGrid.appendChild(emptyCell);
-            continue; // Пропускаем этот день
-        }
-
-        // --- Создаем ячейку ---
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    for (let i = 0; i < 42; i++) {
+        const day = i - paddingDays + 1;
         const cell = document.createElement('div');
         cell.className = 'day-cell';
-        // Форматируем дату в "YYYY-MM-DD" для data-атрибута и O(1) поиска
+        if (day < 1 || day > daysInMonth) {
+            cell.classList.add('empty');
+            daysGrid.appendChild(cell);
+            continue;
+        }
+        const cellDate = new Date(Date.UTC(year, month, day));
+        if (cellDate < globalStartDate || cellDate > globalEndDate) {
+            cell.classList.add('empty');
+            daysGrid.appendChild(cell);
+            continue;
+        }
+        cell.classList.add('in-range');
         const dateString = cellDate.toISOString().split('T')[0];
         cell.dataset.date = dateString;
-
-        // Добавляем номер дня
         const dayNumber = document.createElement('span');
         dayNumber.className = 'day-number';
-        // TODO: Применить .pos-center и т.д. из config.day_number (Этап 5)
         dayNumber.innerText = day;
         cell.appendChild(dayNumber);
-
-        // --- Проверяем Стили Дня Приезда (ТЗ 5.1) ---
-        if (dateString === config.date_vova_arrival) {
+        const arrivalDateStr = globalEndDate.toISOString().split('T')[0];
+        if (dateString === arrivalDateStr) {
             if (config.arrival_day.use_bg) {
                 cell.classList.add('arrival-highlight-bg');
             }
@@ -145,25 +128,171 @@ function createMonthModule(year, month, globalStartDate, globalEndDate, config, 
                 const sticker = document.createElement('div');
                 sticker.className = 'sticker arrival-sticker';
                 sticker.innerText = config.arrival_day.sticker_emoji;
-                // TODO: Применить 'sticker_scale' (Этап 5)
+                let transformStyles = '';
+                if (config.arrival_day.sticker_scale) {
+                    transformStyles += ` scale(${config.arrival_day.sticker_scale})`;
+                }
+                sticker.style.transform = transformStyles;
                 cell.appendChild(sticker);
             }
         }
-
-        // --- Проверяем отметку в calendar_log.json (ТЗ 5.1) ---
         const logEntry = log.marked_dates[dateString];
         if (logEntry) {
             const sticker = document.createElement('div');
             sticker.className = 'sticker';
             sticker.innerText = logEntry.sticker;
-            // Применяем поворот (ТЗ 2.2)
             sticker.style.transform = `rotate(${logEntry.rotation}deg)`;
             cell.appendChild(sticker);
         }
-
         daysGrid.appendChild(cell);
     }
 
     module.appendChild(daysGrid);
     return module;
+}
+
+/**
+ * [v2.3] Инициализирует "слушатель кликов" для всего календаря
+ * (Вызывается из 'initPageCalendar')
+ * @param {HTMLElement} container - Элемент #page-calendar
+ * @param {object} config - Глобальный APP_CONFIG
+ */
+function initCalendarInteraction(container, config) {
+    console.log("--- [DEBUG] initCalendarInteraction: Активируем 'слушатель' кликов.");
+
+    container.addEventListener('click', async (event) => {
+        // 1. Находим ячейку, по которой кликнули
+        // .closest() найдет ближайшего родителя (или сам элемент)
+        const cell = event.target.closest('.day-cell.in-range');
+
+        // 2. Если клик был *не* по ячейке (а по фону) - игнорируем
+        if (!cell) {
+            console.log("--- [DEBUG] Клик мимо ячейки.");
+            return;
+        }
+
+        // 3. Получаем дату из data-атрибута (YYYY-MM-DD)
+        const dateString = cell.dataset.date;
+        if (!dateString) return; // На всякий случай
+
+        console.log(`--- [DEBUG] Клик по дате: ${dateString}. Отправляем /api/calendar/toggle...`);
+
+        try {
+            // 4. Асинхронно стучимся на наш API
+            const response = await fetch('/api/calendar/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: dateString })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API /api/calendar/toggle ответил ошибкой: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("--- [DEBUG] API ответил:", result);
+
+            // 5. Обновляем UI (без перезагрузки)
+            updateCellSticker(cell, result, config);
+
+            // 6. Обновляем наш *локальный* кэш лога (APP_LOG)
+            // Это нужно, чтобы при (будущем) ре-рендере все было OК
+            if (result.status === 'added') {
+                APP_LOG.marked_dates[dateString] = result.entry;
+            } else if (result.status === 'removed') {
+                delete APP_LOG.marked_dates[dateString];
+            }
+
+        } catch (error) {
+            console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА при toggle:", error);
+            // TODO: Показать юзеру красивую ошибку
+        }
+    });
+}
+
+/**
+ * [v2.3] Обновляет ОДНУ ячейку (добавляет/удаляет стикер)
+ * @param {HTMLElement} cell - Ячейка, которую обновляем
+ * @param {object} result - Ответ от API (result.status, result.entry)
+ * @param {object} config - Глобальный APP_CONFIG
+ */
+function updateCellSticker(cell, result, config) {
+    // Находим стикер (если он уже есть)
+    const existingSticker = cell.querySelector('.sticker');
+
+    if (result.status === 'added') {
+        // Если стикер уже есть (например, 'arrival-sticker') - ничего не делаем
+        // (хотя API не должен был этого допустить, но защита не помешает)
+        if (existingSticker) return;
+
+        // Создаем новый стикер
+        const sticker = document.createElement('div');
+        sticker.className = 'sticker';
+        sticker.innerText = result.entry.sticker;
+        sticker.style.transform = `rotate(${result.entry.rotation}deg)`;
+
+        cell.appendChild(sticker);
+        console.log(`--- [DEBUG] updateCellSticker: Стикер ДОБАВЛЕН в ${cell.dataset.date}`);
+
+    } else if (result.status === 'removed') {
+        // Если стикер ЕСТЬ и он НЕ "arrival-sticker"
+        if (existingSticker && !existingSticker.classList.contains('arrival-sticker')) {
+            existingSticker.remove();
+            console.log(`--- [DEBUG] updateCellSticker: Стикер УДАЛЕН из ${cell.dataset.date}`);
+        } else {
+             console.log(`--- [DEBUG] updateCellSticker: Нечего удалять (или это arrival-sticker).`);
+        }
+    }
+}
+// ... (весь код initCalendarInteraction и updateCellSticker остается ВЫШЕ) ...
+
+// --- НОВЫЙ КОД ДЛЯ ЭТАПА 4.5 (Zoom) ---
+
+// Храним текущее значение зума в памяти
+const DEFAULT_MIN_WIDTH = 320; // Дефолтный зум
+let currentMinModuleWidth = DEFAULT_MIN_WIDTH; // 'px'
+/**
+ * [v2.4] Сбрасывает зум к дефолту
+ */
+function resetCalendarZoom() {
+    console.log(`--- [DEBUG] Zoom: Сброс к ${DEFAULT_MIN_WIDTH}px`);
+    currentMinModuleWidth = DEFAULT_MIN_WIDTH;
+    document.documentElement.style.setProperty(
+        '--calendar-module-min-width',
+        currentMinModuleWidth + 'px'
+    );
+}
+/**
+ * [v2.4] Инициализирует "слушатель" колеса мыши для зума
+ */
+function initCalendarZoom() {
+    const container = document.getElementById('page-calendar');
+    console.log("--- [DEBUG] initCalendarZoom: Активируем 'слушатель' колеса мыши.");
+    const mainArea = document.querySelector('.app-main');
+
+    mainArea.addEventListener('wheel', (event) => {
+        if (!container.classList.contains('active') || !event.ctrlKey) {
+            return;
+        }
+        event.preventDefault();
+
+        // --- ИСПРАВЛЕНИЕ: (Твоя Критика 2A: "Плавный") ---
+        const zoomStep = 40; // Увеличиваем шаг (было 20)
+
+        if (event.deltaY < 0) {
+            currentMinModuleWidth += zoomStep;
+        } else {
+            currentMinModuleWidth -= zoomStep;
+        }
+
+        if (currentMinModuleWidth < 240) currentMinModuleWidth = 240;
+        if (currentMinModuleWidth > 800) currentMinModuleWidth = 800;
+
+        document.documentElement.style.setProperty(
+            '--calendar-module-min-width',
+            currentMinModuleWidth + 'px'
+        );
+
+        console.log(`--- [DEBUG] Zoom: new width = ${currentMinModuleWidth}px`);
+    }, { passive: false });
 }
