@@ -101,53 +101,80 @@ function createMonthModule(year, month, globalStartDate, globalEndDate, config, 
         const day = i - paddingDays + 1;
         const cell = document.createElement('div');
         cell.className = 'day-cell';
+
         if (day < 1 || day > daysInMonth) {
-            cell.classList.add('empty');
-            daysGrid.appendChild(cell);
-            continue;
+            cell.classList.add('empty'); daysGrid.appendChild(cell); continue;
         }
         const cellDate = new Date(Date.UTC(year, month, day));
         if (cellDate < globalStartDate || cellDate > globalEndDate) {
-            cell.classList.add('empty');
-            daysGrid.appendChild(cell);
-            continue;
+            cell.classList.add('empty'); daysGrid.appendChild(cell); continue;
         }
+
+        // --- Ячейка ВАЛИДНА ---
         cell.classList.add('in-range');
         const dateString = cellDate.toISOString().split('T')[0];
         cell.dataset.date = dateString;
+
+        // Номер дня
         const dayNumber = document.createElement('span');
         dayNumber.className = 'day-number';
+        // TODO: Применить config.day_number.position (Этап 5+)
         dayNumber.innerText = day;
         cell.appendChild(dayNumber);
-        const arrivalDateStr = globalEndDate.toISOString().split('T')[0];
-        if (dateString === arrivalDateStr) {
-            if (config.arrival_day.use_bg) {
-                cell.classList.add('arrival-highlight-bg');
-            }
-            if (config.arrival_day.use_sticker) {
-                const sticker = document.createElement('div');
-                sticker.className = 'sticker arrival-sticker';
-                sticker.innerText = config.arrival_day.sticker_emoji;
-                let transformStyles = '';
-                if (config.arrival_day.sticker_scale) {
-                    transformStyles += ` scale(${config.arrival_day.sticker_scale})`;
-                }
-                sticker.style.transform = transformStyles;
-                cell.appendChild(sticker);
-            }
-        }
+
+        // --- Проверяем лог (ДО Дня Приезда, чтобы фон приезда перебил) ---
         const logEntry = log.marked_dates[dateString];
         if (logEntry) {
+            // (Хотелка 2) Добавляем класс и фон
+            cell.classList.add('marked');
+            cell.style.backgroundColor = config.calendar_marked_day_color || ''; // Применяем цвет фона
+
+            // Создаем стикер
             const sticker = document.createElement('div');
             sticker.className = 'sticker';
             sticker.innerText = logEntry.sticker;
-            sticker.style.transform = `rotate(${logEntry.rotation}deg)`;
+            // (Хотелка 2) Применяем цвет и масштаб из config
+            sticker.style.color = config.sticker_color || '';
+            let transform = `rotate(${logEntry.rotation}deg)`;
+            if (config.sticker_scale && config.sticker_scale !== 1.0) {
+                 transform += ` scale(${config.sticker_scale})`;
+            }
+            sticker.style.transform = transform;
+
             cell.appendChild(sticker);
         }
+
+        // --- День Приезда (перебивает фон 'marked', если совпадают) ---
+        const arrivalDateStr = globalEndDate.toISOString().split('T')[0];
+        if (dateString === arrivalDateStr) {
+            if (config.arrival_day.use_bg) {
+                cell.style.backgroundColor = config.colors.color_arrival_highlight_bg || ''; // Явный стиль
+                cell.classList.add('arrival-highlight-bg'); // Оставляем класс для hover и т.п.
+            }
+            if (config.arrival_day.use_sticker) {
+                 // Удаляем обычный стикер, если он был добавлен ранее
+                 const existingSticker = cell.querySelector('.sticker:not(.arrival-sticker)');
+                 if (existingSticker) existingSticker.remove();
+
+                 const sticker = document.createElement('div');
+                 sticker.className = 'sticker arrival-sticker';
+                 sticker.innerText = config.arrival_day.sticker_emoji;
+                 let transform = '';
+                 // Применяем масштаб из config.arrival_day
+                 if (config.arrival_day.sticker_scale && config.arrival_day.sticker_scale !== 1.0) {
+                     transform += ` scale(${config.arrival_day.sticker_scale})`;
+                 }
+                 sticker.style.transform = transform;
+                 cell.appendChild(sticker);
+            }
+        }
+
         daysGrid.appendChild(cell);
     }
 
     module.appendChild(daysGrid);
+
+    checkMonthCompletion(module);
     return module;
 }
 
@@ -217,30 +244,59 @@ function initCalendarInteraction(container, config) {
  * @param {object} config - Глобальный APP_CONFIG
  */
 function updateCellSticker(cell, result, config) {
-    // Находим стикер (если он уже есть)
     const existingSticker = cell.querySelector('.sticker');
+    const parentMonthModule = cell.closest('.month-module');
+    const dateString = cell.dataset.date; // Получаем дату для лога
 
     if (result.status === 'added') {
-        // Если стикер уже есть (например, 'arrival-sticker') - ничего не делаем
-        // (хотя API не должен был этого допустить, но защита не помешает)
         if (existingSticker) return;
 
-        // Создаем новый стикер
+        cell.classList.add('marked');
+        cell.style.backgroundColor = config.calendar_marked_day_color || '';
+
+        // ... (код создания стикера) ...
         const sticker = document.createElement('div');
         sticker.className = 'sticker';
         sticker.innerText = result.entry.sticker;
-        sticker.style.transform = `rotate(${result.entry.rotation}deg)`;
-
+        sticker.style.color = config.sticker_color || '';
+        let transform = `rotate(${result.entry.rotation}deg)`;
+        if (config.sticker_scale && config.sticker_scale !== 1.0) {
+             transform += ` scale(${config.sticker_scale})`;
+        }
+        sticker.style.transform = transform;
         cell.appendChild(sticker);
-        console.log(`--- [DEBUG] updateCellSticker: Стикер ДОБАВЛЕН в ${cell.dataset.date}`);
+        console.log(`--- [DEBUG] updateCellSticker: Стикер/Фон ДОБАВЛЕН в ${dateString}`);
+
+        // Вызываем проверку ПОСЛЕ изменения DOM
+        console.log(`--- [DEBUG] updateCellSticker: Вызываем checkMonthCompletion для ${parentMonthModule?.querySelector('.month-title')?.innerText} ПОСЛЕ добавления ${dateString}`);
+
+        if (config.effects_enabled) {
+            spawnParticles({
+                originElement: cell,
+                symbol: config.effect_particle_day || '💖',
+                count: 1, // Одна частица
+                spread: 360, // Во все стороны
+                distance: 100, // Недалеко
+                duration: 800 // Быстрее
+            });
+        }
+
+        checkMonthCompletion(parentMonthModule);
+
 
     } else if (result.status === 'removed') {
-        // Если стикер ЕСТЬ и он НЕ "arrival-sticker"
         if (existingSticker && !existingSticker.classList.contains('arrival-sticker')) {
             existingSticker.remove();
-            console.log(`--- [DEBUG] updateCellSticker: Стикер УДАЛЕН из ${cell.dataset.date}`);
+            cell.classList.remove('marked');
+            cell.style.backgroundColor = '';
+            console.log(`--- [DEBUG] updateCellSticker: Стикер/Фон УДАЛЕН из ${dateString}`);
+
+            // Вызываем проверку ПОСЛЕ изменения DOM
+            console.log(`--- [DEBUG] updateCellSticker: Вызываем checkMonthCompletion для ${parentMonthModule?.querySelector('.month-title')?.innerText} ПОСЛЕ удаления ${dateString}`);
+            checkMonthCompletion(parentMonthModule);
+
         } else {
-             console.log(`--- [DEBUG] updateCellSticker: Нечего удалять (или это arrival-sticker).`);
+             console.log(`--- [DEBUG] updateCellSticker: Нечего удалять в ${dateString} (или это arrival-sticker).`);
         }
     }
 }
@@ -295,4 +351,81 @@ function initCalendarZoom() {
 
         console.log(`--- [DEBUG] Zoom: new width = ${currentMinModuleWidth}px`);
     }, { passive: false });
+}
+
+/**
+ * [НОВОЕ] Проверяет, все ли активные дни в модуле месяца отмечены,
+ * и добавляет/убирает класс .month-completed
+ * @param {HTMLElement | null} monthModule - Элемент .month-module
+ */
+/**
+ * [ИСПРАВЛЕНО v3.1] Проверяет, все ли *активные дни месяца* отмечены.
+ * @param {HTMLElement | null} monthModule - Элемент .month-module
+ */
+function checkMonthCompletion(monthModule) {
+    if (!monthModule) {
+        console.warn("--- [DEBUG] checkMonthCompletion: Вызван с null monthModule!");
+        return;
+    }
+    const monthTitle = monthModule.querySelector('.month-title')?.innerText || 'Неизвестный месяц';
+    console.log(`--- [DEBUG] checkMonthCompletion: Проверка для ${monthTitle}...`);
+
+    const dayCellsWithDate = monthModule.querySelectorAll('.day-cell[data-date]');
+    if (dayCellsWithDate.length === 0) {
+        monthModule.classList.remove('month-completed');
+        console.log(`--- [DEBUG] checkMonthCompletion: ${monthTitle} - Нет ячеек с датой. Убираем .month-completed.`);
+        return;
+    }
+
+    let actualDaysInMonthInRange = 0;
+    let markedDaysInMonthInRange = 0;
+    let daysToCheck = []; // Для лога
+
+    dayCellsWithDate.forEach(cell => {
+        if (!cell.classList.contains('empty') && cell.classList.contains('in-range')) {
+            actualDaysInMonthInRange++;
+            const dateString = cell.dataset.date;
+            const isMarked = cell.classList.contains('marked'); // Проверяем класс ПОСЛЕ updateCellSticker
+            daysToCheck.push({date: dateString, marked: isMarked}); // Собираем инфо для лога
+            if (isMarked) {
+                markedDaysInMonthInRange++;
+            }
+        }
+    });
+
+    // Детальный лог проверяемых дней
+    // console.log(`--- [DEBUG] checkMonthCompletion: ${monthTitle} - Дни для проверки:`, daysToCheck);
+
+    const isCompleted = (actualDaysInMonthInRange > 0 && markedDaysInMonthInRange === actualDaysInMonthInRange);
+
+    // Логируем результат ПЕРЕД изменением класса
+    console.log(`---> [DEBUG] checkMonthCompletion: ${monthTitle} - Итог: Активных дней=${actualDaysInMonthInRange}, Отмечено=${markedDaysInMonthInRange}. Завершен=${isCompleted}. Применяем класс...`);
+    const wasCompleted = monthModule.classList.contains('month-completed'); // Запоминаем старое состояние
+
+    monthModule.classList.toggle('month-completed', isCompleted);
+
+    if (isCompleted && !wasCompleted && APP_CONFIG.effects_enabled) { // Используем APP_CONFIG напрямую
+        console.log(`--- [DEBUG] ЭФФЕКТ: Месяц ${monthTitle} ЗАВЕРШЕН!`);
+
+        // 1. Частицы из каждого дня
+        dayCellsWithDate.forEach(cell => {
+            if (cell.classList.contains('in-range')) { // Только из активных дней
+                spawnParticles({
+                    originElement: cell,
+                    symbol: APP_CONFIG.effect_particle_day || '💖',
+                    count: 1, // По одной из ячейки
+                    spread: 360,
+                    distance: 500,
+                    duration: 2000
+                });
+            }
+        });
+    }
+
+    // Логируем ПОСЛЕ изменения класса
+    if (monthModule.classList.contains('month-completed')) {
+         console.log(`---> [DEBUG] checkMonthCompletion: ${monthTitle} - Класс .month-completed ДОБАВЛЕН.`);
+    } else {
+         console.log(`---> [DEBUG] checkMonthCompletion: ${monthTitle} - Класс .month-completed УБРАН.`);
+    }
 }

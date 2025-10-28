@@ -120,18 +120,23 @@ function translateUI() {
 // ---
 
 // ... (applyDynamicStyles, initNavigation, showPage - без изменений) ...
-function applyDynamicStyles(colors) { /* ... */ }
-function initNavigation() { /* ... */ }
-function showPage(pageIdToShow) { /* ... */ }
-function applyDynamicStyles(colors) {
+function applyDynamicStyles(colors) { // Принимает APP_CONFIG.colors
     try {
         const root = document.documentElement;
+        // 1. Цвета UI из APP_CONFIG.colors
         Object.keys(colors).forEach(key => {
             const cssVar = `--${key.replace(/_/g, '-')}`;
             const cssVal = colors[key];
             root.style.setProperty(cssVar, cssVal);
         });
+        // 2. Параметры Календаря НЕ из APP_CONFIG.colors
         root.style.setProperty('--calendar-empty-cell-color', APP_CONFIG.calendar_empty_cell_color);
+        root.style.setProperty('--calendar-marked-day-color', APP_CONFIG.calendar_marked_day_color);
+        // --- НОВЫЕ СТРОКИ ---
+        root.style.setProperty('--sticker-color', APP_CONFIG.sticker_color);
+        root.style.setProperty('--sticker-scale-factor', APP_CONFIG.sticker_scale);
+        // ---
+
         console.log("--- [DEBUG] applyDynamicStyles: УСПЕХ. Стили применены. ---");
     } catch (e) {
         console.error("--- [DEBUG] ОШИБКА в applyDynamicStyles() ---", e);

@@ -106,4 +106,78 @@ function createCustomTimerElement(container, timerData, config) {
         config.timers.timer_completed_message
     );
     timer.start();
+    initMainPageHovers();
+}
+
+function initMainPageHovers() {
+    console.log("--- [DEBUG] initMainPageHovers (v3.1): Активируем hover с условной анимацией...");
+    const body = document.body;
+    const arrivalTimer = document.getElementById('timer-arrival-module');
+    const relationshipTimer = document.getElementById('timer-relationship-module');
+    const customTimersContainer = document.getElementById('custom-timers-container');
+
+    const animationsEnabled = APP_CONFIG.animations_enabled; // Читаем настройку
+    console.log("--- [DEBUG] Анимации включены:", animationsEnabled);
+
+    let blurTimeoutId = null;
+
+    // --- Функция для Блюра (без изменений) ---
+    const setBlurEffect = (isActive, hoveredElement = null) => { /* ... (код из v3.0) ... */ };
+
+    // --- Функция УПРАВЛЕНИЯ АНИМАЦИЕЙ ---
+    const applyAnimation = (element, animationName, isActive) => {
+        if (!element) return;
+        if (animationsEnabled && isActive) {
+            element.style.animation = animationName;
+        } else {
+            element.style.animation = 'none'; // Убираем анимацию
+        }
+    };
+
+    // --- Слушатели ---
+
+    // 1. Hover на Основные Таймеры
+    [arrivalTimer, relationshipTimer].forEach(timerModule => {
+        if (timerModule) {
+            timerModule.addEventListener('mouseenter', () => {
+                setBlurEffect(true, timerModule);
+                applyAnimation(timerModule, 'heartbeat 1s infinite ease-in-out', true); // Применяем, если можно
+            });
+            timerModule.addEventListener('mouseleave', (event) => {
+                applyAnimation(timerModule, '', false); // Убираем анимацию
+                const related = event.relatedTarget;
+                if (!related || !related.closest || !(related.closest('.timer-module') || related.closest('.custom-timer-module'))) {
+                    setBlurEffect(false);
+                }
+            });
+        }
+    });
+
+    // 2. Hover на Кастомные Таймеры (Делегирование)
+    if (customTimersContainer) {
+        customTimersContainer.addEventListener('mouseenter', (event) => {
+            const customModule = event.target.closest('.custom-timer-module');
+            if (customModule) {
+                setBlurEffect(true, relationshipTimer || customModule);
+                applyAnimation(relationshipTimer, 'heartbeat 1s infinite ease-in-out', true); // Анимируем основной
+            }
+        }, true);
+
+        customTimersContainer.addEventListener('mouseleave', (event) => {
+            const customModule = event.target.closest('.custom-timer-module');
+            if (customModule) {
+                 const related = event.relatedTarget;
+                 const isLeavingToInteractive = related && related.closest && (related.closest('.timer-module') || related.closest('.custom-timer-module'));
+
+                 if (!isLeavingToInteractive) {
+                     setBlurEffect(false);
+                     applyAnimation(relationshipTimer, '', false); // Убираем анимацию с основного
+                 } else {
+                     // Если перешли на основной, его mouseenter сам включит анимацию
+                     // Если перешли на другой кастомный, свечение основного остается включенным
+                 }
+            }
+        }, true);
+    }
+    console.log("--- [DEBUG] initMainPageHovers: Hover эффекты настроены.");
 }

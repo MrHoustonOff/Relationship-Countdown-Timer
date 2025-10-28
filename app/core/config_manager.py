@@ -38,7 +38,7 @@ class ColorConfig(BaseModel):
     color_arrival_highlight_bg: str = "#4E353F"     # Глубже розово-серый фон дня приезда
     color_arrival_highlight_sticker: str = "#F48FB1" # Розовый стикер дня приезда
     color_calendar_day_bg: str = "rgba(0,0,0,0.4)" # Фон активного дня (чуть темнее)
-    color_calendar_marked_day_bg: str = "#4E353F"  # Фон отмеченного дня
+    color_calendar_marked_day_bg: str = "#F48FB1"  # Фон отмеченного дня
 
 class DayNumberConfig(BaseModel):
     position: Literal["center", "top-left", "top-right", "bottom-left", "bottom-right"] = "center"
@@ -82,8 +82,13 @@ class AppConfig(BaseModel):
     date_relationship_start: datetime = Field(default_factory=datetime.now)
     # ---
 
+    animations_enabled: bool = True
+
     timers: TimerConfig = Field(default_factory=TimerConfig)
     sticker_emoji: str = "X"
+    sticker_color: str = "#F48FB1"
+    sticker_scale: float = 1.0
+
     sticker_random_rotation_max: int = 15
     calendar_min_scale_limit: float = 0.5
     day_number: DayNumberConfig = Field(default_factory=DayNumberConfig)
@@ -96,6 +101,9 @@ class AppConfig(BaseModel):
     calendar_marked_day_color: str = "#5C3A47"
 
     calendar_save_zoom: bool = False
+
+    effects_enabled: bool = True  # Включены ли эффекты
+    effect_particle_day: str = "💖"  # Частица для дня (сердце)
     # ---
 
 

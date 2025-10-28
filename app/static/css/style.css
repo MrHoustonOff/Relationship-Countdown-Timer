@@ -8,6 +8,7 @@
 @import url('header.css');        /* Стили для хедера и навигации */
 @import url('page_main.css');     /* Стили для страницы "Главная" (таймеры) */
 @import url('page_calendar.css'); /* Стили для страницы "Календарчик" */
+@import url('effects.css');
 
 /* * На Этапе 3 мы добавим:
  * @import url('page_calendar.css');

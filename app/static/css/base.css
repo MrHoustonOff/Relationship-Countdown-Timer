@@ -35,6 +35,9 @@
     --border-radius-medium: 12px;
     --border-radius-large: 16px;
     --transition-fast: 0.2s ease-out;
+
+    --sticker-color: #F48FB1; /* Цвет стикера (из config) */
+    --sticker-scale-factor: 1.0; /* Масштаб стикера (из config) */
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -111,3 +114,35 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
     }
 }
 
+@keyframes heartbeat {
+    0%   { transform: scale(1.0); } /* Начинаем с нормального размера */
+    50%  { transform: scale(1.01); } /* Слегка увеличиваемся */
+    100% { transform: scale(1.0); } /* Возвращаемся */
+}
+
+body.blur-effect-active > .app-header:not(.hover-active),
+body.blur-effect-active > .app-main > .page-content.active > *:not(.hover-active) {
+    filter: blur(3px) brightness(0.65); /* Стиль блюра/затемнения */
+    transition: filter 0.4s ease-out;
+    will-change: filter;
+    pointer-events: none; /* Запрещаем взаимодействие */
+}
+/* Стили для элементов, когда НЕ блюрим */
+.app-header, /* Включаем хедер сюда */
+.app-main > .page-content.active > * {
+    transition: filter 0.4s ease-out;
+    will-change: filter;
+    pointer-events: auto; /* Разрешаем взаимодействие */
+}
+
+@keyframes particle-fly-out {
+    0% {
+        transform: translate(0, 0) scale(1); /* Начинаем в центре, нормальный размер */
+        opacity: 1;
+    }
+    100% {
+        /* Двигаемся далеко за экран (значения подбираются), вращаясь */
+        transform: translate(var(--particle-x, 0px), var(--particle-y, -300px)) scale(0) rotate(360deg);
+        opacity: 0; /* Исчезаем */
+    }
+}

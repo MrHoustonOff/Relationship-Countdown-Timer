@@ -3,29 +3,16 @@
 /* * 1. Основные Модули Таймеров
  */
 .timer-module {
-    width: 100%;
-    padding: 2rem 1.5rem;
-    background-color: var(--color-timer-module-bg); /* Дефолт */
+    width: 75%; min-width: 600px; margin: 0 auto; padding: 1.8rem 1.5rem;
     border-radius: var(--border-radius-large);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    transition: transform var(--transition-fast), background-color var(--transition-fast);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), filter var(--transition-fast);
     cursor: default;
+    animation: none;
 }
-
-/* Специфичные фоны */
-#timer-arrival-module { background-color: var(--color-timer-arrival-bg); }
-#timer-relationship-module { background-color: var(--color-timer-relationship-bg); }
-
-/* Hover для ОСНОВНЫХ модулей */
-.timer-module:hover {
-    transform: scale(1.02);
-    /* Затемняем, используя ВТОРИЧНЫЙ АКЦЕНТ */
-    background-color: var(--color-accent-secondary);
-}
-
 /* Заголовок таймера */
 .timer-module-title {
     font-size: 1.5rem; /* 24px */
@@ -70,20 +57,26 @@
     /* border-radius: var(--border-radius-medium); */
     /* --- End Changes --- */
 }
+#timer-arrival-module {
+    background-color: var(--color-timer-arrival-bg);
+}
+#timer-relationship-module {
+    background-color: var(--color-timer-relationship-bg);
+}
 
 /* * 3. Отдельный Кастомный Таймер
  */
 .custom-timer-module {
     padding: 1rem 1.2rem;
-    background-color: var(--color-timer-custom-bg); /* Свой фон */
+    background-color: var(--color-timer-custom-bg);
     border-radius: var(--border-radius-medium);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
     transition: transform var(--transition-fast), background-color var(--transition-fast);
+    will-change: transform, background-color;
+    /* Явно убираем любую анимацию */
+    animation: none;
+    transform: scale(1);
 }
-
 /* Hover для КАСТОМНЫХ модулей (Твоя Критика 3: Ярче) */
 .custom-timer-module:hover {
     transform: scale(1.03);

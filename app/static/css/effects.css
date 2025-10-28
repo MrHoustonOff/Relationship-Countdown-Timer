@@ -1,0 +1,19 @@
+/* /mrhoustontimer/app/static/css/effects.css */
+
+.particle {
+    position: fixed; /* Позиционируем относительно окна */
+    z-index: 1000; /* Поверх всего */
+    font-size: 24px; /* Базовый размер частицы */
+    pointer-events: none; /* Не мешают кликам */
+    user-select: none; /* Нельзя выделить */
+    will-change: transform, opacity; /* Оптимизация */
+
+    /* Применяем анимацию */
+    /* Имя, Длительность, Функция времени, Задержка, Кол-во, Направление, Режим заполнения */
+    animation: particle-fly-out 1.2s ease-out 0s 1 forwards;
+}
+
+/* Опционально: стиль для частиц месяца (могут быть крупнее) */
+.particle.month-particle {
+    font-size: 32px;
+}
