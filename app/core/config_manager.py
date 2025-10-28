@@ -9,13 +9,33 @@ from typing import Optional, Literal, List
 
 # ... (ColorConfig, DayNumberConfig - без изменений) ...
 class ColorConfig(BaseModel):
-    color_background: str = "#1a1a1a"
-    color_text: str = "#e0e0e0"
-    color_accent_primary: str = "#ff8c00"
-    color_accent_secondary: str = "#4a4a4a"
-    color_arrival_highlight_bg: str = "#2f2c00"
-    color_arrival_highlight_sticker: str = "#ffbf00"
+    # --- Новая палитра: Почти Черный + Розовый ---
+    color_background: str = "#141414"              # Еще темнее фон
+    color_text: str = "#E8EAED"                   # Светло-серый текст
+    color_text_emphasis: str = "#FFFFFF"         # Сочно белый
+    color_accent_primary: str = "#F48FB1"         # Более насыщенный нежный розовый
+    color_accent_secondary: str = "#2A2A2A"      # Темнее второстепенный фон
+    color_divider: str = "#444444"               # Темнее разделители
 
+    # --- Фоны таймеров ---
+    color_timer_arrival_bg: str = "#2A2A2A"       # Фон таймера "До Встречи"
+    color_timer_relationship_bg: str = "#2A2A2A" # Фон таймера "Мы Вместе"
+    color_timer_custom_bg: str = "#212121"       # Фон кастомных (темнее основного фона)
+    # --- НОВЫЙ Цвет для hover кастомных таймеров ---
+    color_timer_custom_bg_hover: str = "#313131" # Чуть светлее, чем кастомный фон
+
+    # --- Цвета цифр таймеров ---
+    color_timer_countdown: str = "#F48FB1"        # Розовый для обратного отсчета (ЗАМЕНЕН)
+    color_timer_elapsed: str = "#AECBFA"          # Нежно-голубой (ОК)
+
+    # --- Хедер ---
+    color_nav_active_indicator: str = "#F48FB1"   # Розовый для кругляшка
+
+    # --- Календарь (Обновляем под новую палитру) ---
+    color_arrival_highlight_bg: str = "#4E353F"     # Глубже розово-серый фон дня приезда
+    color_arrival_highlight_sticker: str = "#F48FB1" # Розовый стикер дня приезда
+    color_calendar_day_bg: str = "rgba(0,0,0,0.4)" # Фон активного дня (чуть темнее)
+    color_calendar_marked_day_bg: str = "#4E353F"  # Фон отмеченного дня
 
 class DayNumberConfig(BaseModel):
     position: Literal["center", "top-left", "top-right", "bottom-left", "bottom-right"] = "center"
@@ -70,6 +90,7 @@ class AppConfig(BaseModel):
     # --- ИСПРАВЛЕНИЕ: (Твой Пункт 2) ---
     # Делаем "потемнее"
     calendar_empty_cell_color: str = "rgba(0, 0, 0, 0.15)"
+    calendar_marked_day_color: str = "#5C3A47"
 
     calendar_save_zoom: bool = False
     # ---

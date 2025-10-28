@@ -54,38 +54,56 @@ function initPageMain(config) {
         relationshipModule.style.display = 'none';
     }
 }
-/**
- * Создает HTML-элемент для одного "кастомного" таймера
- * @param {HTMLElement} container - Куда добавлять
+/* [v2.3 - НОВАЯ ВЕРСТКА] Создает HTML-элемент для одного кастомного таймера
+ * @param {HTMLElement} container - Куда добавлять (#custom-timers-container)
  * @param {object} timerData - Объект таймера из config
+ * @param {object} config - Полный APP_CONFIG для доступа к цветам
  */
-function createCustomTimerElement(container, timerData, config) { // <-- Принимаем config
-    // ... (код создания entry, label, display) ...
-    const entry = document.createElement('div');
-    entry.className = 'custom-timer-entry';
-    const label = document.createElement('span');
+function createCustomTimerElement(container, timerData, config) {
+    // 1. Создаем ОБЕРТКУ-МОДУЛЬ (Новое!)
+    const module = document.createElement('div');
+    module.className = 'custom-timer-module'; // Новый класс
+
+    // 2. Создаем заголовок
+    const label = document.createElement('h3'); // Используем h3 для семантики
     label.className = 'custom-timer-label';
     label.innerText = timerData.label;
-    const display = document.createElement('span');
-    display.className = 'custom-timer-display';
-    display.id = `timer-${timerData.id}`;
-    display.innerText = '--:--:--:--';
-    entry.appendChild(label);
-    entry.appendChild(display);
-    container.appendChild(entry);
+    label.title = timerData.label; // Всплывающая подсказка, если текст обрезан
 
+    // 3. Создаем дисплей таймера
+    const display = document.createElement('div'); // Используем div
+    display.className = 'custom-timer-display';
+    display.id = `timer-${timerData.id}`; // Уникальный ID
+    display.innerText = '--:--:--:--';
+
+    // 4. Собираем модуль
+    module.appendChild(label);
+    module.appendChild(display);
+
+    // 5. Добавляем модуль в главный контейнер
+    container.appendChild(module);
+
+    // --- 6. Определяем режим и ЦВЕТ (Твоя Критика 3) ---
     const now = new Date();
     const targetDate = new Date(timerData.date);
     const mode = (targetDate > now) ? 'countdown' : 'elapsed';
 
-    console.log(`--- [DEBUG] createCustomTimer: ...`);
+    // Применяем цвет цифр ИЗ КОНФИГА
+    if (mode === 'countdown') {
+        display.style.color = config.colors.color_timer_countdown;
+    } else {
+        display.style.color = config.colors.color_timer_elapsed;
+    }
+    // ---
 
-    // --- ИСПРАВЛЕНИЕ (Твоя Критика 1) ---
+    console.log(`--- [DEBUG] createCustomTimer (v2.3): Таймер '${timerData.label}' | Режим: ${mode}`);
+
+    // 7. Запускаем "Тикер"
     const timer = new Ticker(
         display,
         targetDate,
         mode,
-        config.timers.timer_completed_message // <-- Берем из config
+        config.timers.timer_completed_message
     );
     timer.start();
 }

@@ -1,66 +1,112 @@
-/* /mrhoustontimer/app/static/css/page_main.css */
+/* /mrhoustontimer/app/static/css/page_main.css (v2.1 - Исправлен hover) */
 
+/* * 1. Основные Модули Таймеров
+ */
 .timer-module {
     width: 100%;
-    padding: 25px;
+    padding: 2rem 1.5rem;
+    background-color: var(--color-timer-module-bg); /* Дефолт */
+    border-radius: var(--border-radius-large);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
+    cursor: default;
+}
+
+/* Специфичные фоны */
+#timer-arrival-module { background-color: var(--color-timer-arrival-bg); }
+#timer-relationship-module { background-color: var(--color-timer-relationship-bg); }
+
+/* Hover для ОСНОВНЫХ модулей */
+.timer-module:hover {
+    transform: scale(1.02);
+    /* Затемняем, используя ВТОРИЧНЫЙ АКЦЕНТ */
     background-color: var(--color-accent-secondary);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
 }
 
+/* Заголовок таймера */
 .timer-module-title {
-    font-size: 20px;
-    font-weight: 300;
-    opacity: 0.8;
+    font-size: 1.5rem; /* 24px */
+    font-weight: 500;
+    color: var(--color-text-emphasis); /* Белый */
+    text-align: center;
 }
 
+/* Цифры таймера */
 .timer-display {
-    font-family: "Courier New", Courier, monospace;
-    font-weight: bold;
-    color: var(--color-text);
+    font-family: var(--font-timer);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
 }
 
-.timer-display.large {
-    font-size: 48px;
-    color: var(--color-accent-primary); /* Акцентный цвет для главного таймера */
+.timer-display.large { /* "До Встречи" */
+    font-size: 4rem; /* 64px */
+    color: var(--color-timer-countdown); /* Розовый */
+}
+.timer-display.medium { /* "Мы Вместе" */
+    font-size: 3rem; /* 48px */
+    color: var(--color-timer-elapsed); /* Голубой */
 }
 
-.timer-display.medium {
-    font-size: 36px;
-}
-
-/* Стили для кастомных (доп.) таймеров */
-.custom-timers-list {
-    margin-top: 10px;
+/* * 2. Контейнер Кастомных Таймеров
+ */
+#custom-timers-container {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem; /* Keep margin from module above */
+    max-height: 260px; /* Keep max-height */
+    overflow-y: auto;  /* Keep vertical scroll */
+    padding: 0.5rem; /* Add a little padding around the grid */
+
+    /* --- NEW/MODIFIED --- */
+    overflow-x: hidden; /* 1. Prevent horizontal scrollbar */
+    background-color: transparent; /* 2. Remove specific background */
+    /* Add border-radius if you want rounded corners for the scroll area */
+    /* border-radius: var(--border-radius-medium); */
+    /* --- End Changes --- */
+}
+
+/* * 3. Отдельный Кастомный Таймер
+ */
+.custom-timer-module {
+    padding: 1rem 1.2rem;
+    background-color: var(--color-timer-custom-bg); /* Свой фон */
+    border-radius: var(--border-radius-medium);
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 20px;
-}
-
-.custom-timer-entry {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    width: 100%;
-    padding: 0 10px;
+    gap: 0.5rem;
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
+/* Hover для КАСТОМНЫХ модулей (Твоя Критика 3: Ярче) */
+.custom-timer-module:hover {
+    transform: scale(1.03);
+    /* ИСПОЛЬЗУЕМ НОВЫЙ ЦВЕТ ИЗ CONFIG */
+    background-color: var(--color-timer-custom-bg-hover); /* Становится светлее */
+}
+
+/* Заголовок кастомного таймера */
 .custom-timer-label {
-    font-size: 18px;
-    font-weight: 300;
-    opacity: 0.9;
+    font-size: 1rem; /* 16px */
+    font-weight: 500;
+    color: var(--color-text-emphasis); /* Белый */
+    text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
 }
 
+/* Цифры кастомного таймера */
 .custom-timer-display {
-    font-family: "Courier New", Courier, monospace;
-    font-size: 22px;
-    font-weight: bold;
-    color: var(--color-accent-primary);
-    opacity: 0.8;
+    font-family: var(--font-timer);
+    font-size: 1.5rem; /* 24px */
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
+    /* Цвет применяется через inline style в JS */
 }

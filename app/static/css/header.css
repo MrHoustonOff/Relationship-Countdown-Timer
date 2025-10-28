@@ -1,39 +1,51 @@
-/* /mrhoustontimer/app/static/css/header.css */
+/* /mrhoustontimer/app/static/css/header.css (v2.1 - Без фона, Сочный) */
 
 .app-header {
-    flex-shrink: 0; /* Хедер не сжимается */
-    background-color: var(--color-accent-secondary);
-    /* * Добавляем поддержку "перетаскивания" окна
-     * (полезно для pywebview, если мы уберем рамку)
-     */
-    -webkit-app-region: drag;
+    /* background-color: var(--color-accent-secondary); УБРАН ФОН */
+    padding: 0.8rem 0; /* Увеличиваем отступы ( ~13px ) */
+    border-bottom: 1px solid var(--color-divider);
+    -webkit-app-region: drag; /* Оставляем для перетаскивания */
 }
 
 .app-header nav {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 1.5rem; /* Увеличиваем отступ (24px) */
 }
 
 .nav-button {
-    font-family: var(--font-main);
-    padding: 12px 20px;
-    background: none;
-    border: none;
-    color: var(--color-text);
-    font-size: 16px;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s, border-bottom 0.2s;
-    border-bottom: 3px solid transparent;
-
-    -webkit-app-region: no-drag; /* Кнопки не должны "тащить" окно */
+    padding: 0.5rem 1rem; /* Уменьшаем внутренние отступы, т.к. шрифт больше */
+    font-size: 1.2rem; /* Крупнее шрифт ( ~19px ) */
+    font-weight: 600; /* Жирнее ("увесистый") */
+    border-radius: 20px;
+    position: relative;
+    color: var(--color-text-emphasis); /* Сочно белый */
+    opacity: 0.7; /* Неактивные чуть тусклее */
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    -webkit-app-region: no-drag;
 }
 
 .nav-button:hover {
     opacity: 1;
+    transform: scale(1.05); /* Легкое увеличение при наведении */
 }
 
 .nav-button.active {
     opacity: 1;
-    border-bottom: 3px solid var(--color-accent-primary);
+    /* color не нужен, он уже --color-text-emphasis */
+}
+
+/* Кругляшок */
+.nav-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; /* Чуть ниже из-за шрифта */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px; /* Чуть больше */
+    height: 8px;
+    background-color: var(--color-nav-active-indicator); /* Розовый */
+    border-radius: 50%;
+    transition: background-color var(--transition-fast);
 }
