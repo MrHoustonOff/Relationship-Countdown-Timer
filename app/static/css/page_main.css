@@ -1,0 +1,66 @@
+/* /mrhoustontimer/app/static/css/page_main.css */
+
+.timer-module {
+    width: 100%;
+    padding: 25px;
+    background-color: var(--color-accent-secondary);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.timer-module-title {
+    font-size: 20px;
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+.timer-display {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    color: var(--color-text);
+}
+
+.timer-display.large {
+    font-size: 48px;
+    color: var(--color-accent-primary); /* Акцентный цвет для главного таймера */
+}
+
+.timer-display.medium {
+    font-size: 36px;
+}
+
+/* Стили для кастомных (доп.) таймеров */
+.custom-timers-list {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.custom-timer-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+}
+
+.custom-timer-label {
+    font-size: 18px;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+.custom-timer-display {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--color-accent-primary);
+    opacity: 0.8;
+}

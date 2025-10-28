@@ -2,16 +2,54 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MrHoustonTimer (Loading...)</title>
-    <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: sans-serif;
-               display: grid; place-items: center; min-height: 100vh; }
-        h1 { font-weight: 300; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Relationship Countdown Timer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>MrHoustonTimer: Этап 1 пройден!</h1>
-    <p>Бэкенд запущен и API работает. Ждем Этап 2 (Фронтенд).</p>
+
+    <header class="app-header">
+        <nav>
+            <button id="nav-main" class="nav-button active" data-page="page-main">Главная</button>
+            <button id="nav-calendar" class="nav-button" data-page="page-calendar">Календарик</button>
+            <button id="nav-settings" class="nav-button" data-page="page-settings">Настроечки</button>
+        </nav>
+    </header>
+
+    <main class="app-main">
+
+        <section id="page-main" class="page-content active">
+
+            <div id="timer-arrival-module" class="timer-module">
+                <h2 class="timer-module-title">...</h2> <div class="timer-display large" id="timer-arrival-display">
+                    --:--:--:--
+                </div>
+            </div>
+
+            <div id="timer-relationship-module" class="timer-module">
+                <h2 class="timer-module-title">...</h2> <div class="timer-display medium" id="timer-relationship-display">
+                    --:--:--:--
+                </div>
+
+                <div id="custom-timers-container" class="custom-timers-list">
+                    </div>
+            </div>
+
+        </section>
+
+        <section id="page-calendar" class="page-content">
+            <h1>Календарь (Этап 3)</h1>
+        </section>
+
+        <section id="page-settings" class="page-content">
+            <h1>Настройки (Этап 5)</h1>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/page_main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/page_calendar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,115 @@
+/* /mrhoustontimer/app/static/css/page_calendar.css */
+
+/* * 1. Главная сетка календаря (Тот самый "улучшенный" CSS Grid)
+ * auto-fit: Добавляет столько колонок, сколько влезет.
+ * minmax(320px, 1fr): Каждая колонка *минимум* 320px,
+ * но может растягиваться, чтобы заполнить место (1fr).
+ */
+.calendar-grid {
+    display: grid;
+    /* Уменьшил min, чтобы на 1080p влезло 3-4 месяца */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* * 2. Модуль одного месяца
+ */
+.month-module {
+    background-color: var(--color-accent-secondary);
+    border-radius: 10px;
+    padding: 15px;
+    /* Добавляем 'flex', чтобы 'days-grid' растягивался */
+    display: flex;
+    flex-direction: column;
+}
+
+.month-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.week-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 5px;
+}
+
+.week-day {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 300;
+    opacity: 0.6;
+}
+
+/* * 3. Сетка дней
+ */
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    flex-grow: 1; /* Растягиваем сетку дней на всю высоту модуля */
+}
+
+.day-cell {
+    position: relative; /* Критично для стикеров */
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    /* 'aspect-ratio: 1' - это магия. Ячейка всегда будет квадратной. */
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+/* 'Пустая' ячейка (дни до 1-го числа) */
+.day-cell.empty {
+    background-color: transparent;
+    opacity: 0.3;
+}
+
+/* * 4. Стили Дня (ТЗ 5.1)
+ */
+.day-number {
+    z-index: 2; /* Номер дня всегда над стикером */
+}
+/* TODO: Добавить стили для .pos-top-left и т.д. (Этап 5) */
+
+.day-cell .sticker {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 32px; /* Размер стикера (пока) */
+    opacity: 0.8;
+
+    /* Поворот будет применен инлайн-стилем: style="transform: rotate(10deg)" */
+}
+
+/* * 5. Стили Дня Приезда (ТЗ 5.1)
+ */
+.day-cell.arrival-highlight-bg {
+    background-color: var(--color-arrival-highlight-bg);
+}
+
+.day-cell .arrival-sticker {
+    /* Используем тот же класс .sticker, но с другими цветами/размерами */
+    color: var(--color-arrival-highlight-sticker);
+    font-size: 40px; /* Скейлинг (ТЗ) */
+    opacity: 1;
+}

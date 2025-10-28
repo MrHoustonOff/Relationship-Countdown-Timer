@@ -1,0 +1,56 @@
+/* /mrhoustontimer/app/static/css/base.css */
+
+/* * 1. ОПРЕДЕЛЕНИЕ ЦВЕТОВ (Дефолтные, будут перезаписаны из JS)
+ */
+:root {
+    --color-background: #1a1a1a;
+    --color-text: #e0e0e0;
+    --color-accent-primary: #ff8c00;
+    --color-accent-secondary: #4a4a4a;
+    --color-arrival-highlight-bg: #2f2c00;
+    --color-arrival-highlight-sticker: #ffbf00;
+
+    --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* * 2. БАЗОВЫЕ СТИЛИ (Сброс)
+ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Запрещаем скролл на уровне 'body' */
+    font-family: var(--font-main);
+    background-color: var(--color-background);
+    color: var(--color-text);
+}
+
+/* * 3. СТРУКТУРА (Хедер, Мейн)
+ */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-main {
+    flex-grow: 1; /* Мейн занимает все оставшееся место */
+    overflow-y: auto; /* Включаем скролл, *если* контент не влезает */
+    padding: 20px;
+}
+
+/* * 4. ЛОГИКА "СТРАНИЦ"
+ */
+.page-content {
+    display: none; /* Все страницы по умолчанию скрыты */
+}
+
+.page-content.active {
+    display: flex; /* Активная страница видна */
+    flex-direction: column;
+    gap: 20px;
+}

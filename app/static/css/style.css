@@ -1,0 +1,19 @@
+/* /mrhoustontimer/app/static/css/style.css */
+
+/* * Главный CSS-файл.
+ * Он НЕ содержит стилей, он только импортирует модули.
+ */
+
+@import url('base.css');          /* Базовые стили, переменные, сброс */
+@import url('header.css');        /* Стили для хедера и навигации */
+@import url('page_main.css');     /* Стили для страницы "Главная" (таймеры) */
+@import url('page_calendar.css'); /* Стили для страницы "Календарчик" */
+
+/* * На Этапе 3 мы добавим:
+ * @import url('page_calendar.css');
+ */
+
+/* * На Этапе 5 мы добавим:
+ * @import url('page_settings.css');
+ * @import url('modals.css');
+ */
