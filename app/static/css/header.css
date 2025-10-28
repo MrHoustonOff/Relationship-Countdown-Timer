@@ -49,3 +49,77 @@
     border-radius: 50%;
     transition: background-color var(--transition-fast);
 }
+
+.app-header {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--color-divider);
+    -webkit-app-region: drag;
+    position: relative; /* Нужно для позиционирования свечения, если захотим эффект на весь хедер */
+    z-index: 1; /* Чтобы хедер был поверх свечения основного контента */
+}
+
+.app-header nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-button {
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 20px;
+    position: relative; /* Для свечения под кнопкой */
+    color: var(--color-text-emphasis);
+    opacity: 0.7;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    -webkit-app-region: no-drag;
+    z-index: 2; /* Кнопка поверх своего свечения */
+}
+
+.nav-button:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.nav-button.active {
+    opacity: 1;
+}
+
+/* Кругляшок */
+.nav-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-nav-active-indicator);
+    border-radius: 50%;
+    transition: background-color var(--transition-fast);
+}
+
+/* --- НОВЫЙ БЛОК: Свечение для кнопок хедера при наведении --- */
+.nav-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%; /* Ширина свечения относительно кнопки */
+    height: 100%; /* Высота свечения относительно кнопки */
+    background: radial-gradient(circle, var(--color-glow-effect) 0%, transparent 70%); /* Круглое свечение */
+    filter: blur(15px); /* Эффект размытия свечения */
+    opacity: 0; /* Изначально скрыто */
+    transform: translate(-50%, -50%) scale(0.5); /* Начинаем с маленького, в центре */
+    transition: all var(--transition-medium); /* Плавный переход */
+    border-radius: 50%; /* Сделать свечение круглым */
+    z-index: -1; /* Свечение под кнопкой */
+}
+
+.nav-button:hover::before {
+    opacity: 0.7; /* Появляется свечение */
+    transform: translate(-50%, -50%) scale(1.5); /* Расширяется */
+    animation: glow-pulse 2s infinite alternate ease-in-out; /* Пульсация */
+}

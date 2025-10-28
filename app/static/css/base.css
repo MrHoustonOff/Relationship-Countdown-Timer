@@ -9,6 +9,8 @@
     --color-accent-secondary: #2A2A2A;
     --color-divider: #444444;
 
+    --color-glow-effect: #F48FB1; /* Розовый для свечения */
+
     --color-timer-arrival-bg: #2A2A2A;
     --color-timer-relationship-bg: #2A2A2A;
     --color-timer-custom-bg: #212121;
@@ -93,3 +95,19 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
 ::-webkit-scrollbar-corner {
     background: var(--color-background);
 }
+
+@keyframes glow-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.5;
+    }
+}
+

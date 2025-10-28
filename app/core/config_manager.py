@@ -17,6 +17,9 @@ class ColorConfig(BaseModel):
     color_accent_secondary: str = "#2A2A2A"      # Темнее второстепенный фон
     color_divider: str = "#444444"               # Темнее разделители
 
+    color_glow_effect: str = "#F48FB1"
+
+
     # --- Фоны таймеров ---
     color_timer_arrival_bg: str = "#2A2A2A"       # Фон таймера "До Встречи"
     color_timer_relationship_bg: str = "#2A2A2A" # Фон таймера "Мы Вместе"
