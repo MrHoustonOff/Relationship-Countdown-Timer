@@ -128,7 +128,6 @@ body.blur-effect-active > .app-main > .page-content.active > *:not(.hover-active
     pointer-events: none; /* Запрещаем взаимодействие */
 }
 /* Стили для элементов, когда НЕ блюрим */
-.app-header, /* Включаем хедер сюда */
 .app-main > .page-content.active > * {
     transition: filter 0.4s ease-out;
     will-change: filter;

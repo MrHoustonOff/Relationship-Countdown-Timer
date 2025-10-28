@@ -21,34 +21,30 @@
         <section id="page-main" class="page-content active">
 
             <div id="timer-arrival-module" class="timer-module">
-                <h2 class="timer-module-title">...</h2> <div class="timer-display large" id="timer-arrival-display">
-                    --:--:--:--
-                </div>
+                <h2 class="timer-module-title">...</h2>
+                <div class="timer-display large" id="timer-arrival-display">--:--:--:--</div>
             </div>
 
             <div id="timer-relationship-module" class="timer-module">
-                <h2 class="timer-module-title">...</h2> <div class="timer-display medium" id="timer-relationship-display">
-                    --:--:--:--
-                </div>
+                <h2 class="timer-module-title">...</h2>
+                <div class="timer-display medium" id="timer-relationship-display">--:--:--:--</div>
 
                 <div id="custom-timers-container" class="custom-timers-list">
                     </div>
             </div>
 
+        </section> <section id="page-calendar" class="page-content">
+            </section> <section id="page-settings" class="page-content">
+            <form id="settings-form">
+                </form>
         </section>
-
-        <section id="page-calendar" class="page-content">
-            </section>
-
-        <section id="page-settings" class="page-content">
-            </section>
-
     </main>
 
     <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
     <script src="{{ url_for('static', filename='js/page_main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/page_calendar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/page_settings.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

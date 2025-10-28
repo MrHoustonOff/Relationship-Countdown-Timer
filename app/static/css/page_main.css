@@ -28,7 +28,10 @@
     letter-spacing: 0.05em;
     text-align: center;
 }
+.timer-display .digit-char {
+    display: inline-block; /* Или просто оставить как текст */
 
+}
 .timer-display.large { /* "До Встречи" */
     font-size: 4rem; /* 64px */
     color: var(--color-timer-countdown); /* Розовый */
