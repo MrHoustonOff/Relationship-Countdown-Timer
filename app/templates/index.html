@@ -59,14 +59,19 @@
 
                     <div class="settings-save-bar-top">
                         <button class="save-button"
-                                @click="$store.app.saveSettings()"
-                                x-text="$store.app.lang['settings_save_button'] || 'Сохранить'">
+                                @click="$store.app.saveSettings($store.app.form)"
+                                :disabled="$store.app.ui.isSaving"
+                                x-text="$store.app.ui.isSaving
+                                    ? ($store.app.lang['settings_saving_button'] || 'Перезагружаю...')
+                                    : ($store.app.lang['settings_save_button'] || 'Сохранить')">
                         </button>
                     </div>
 
                     <form id="settings-form" x-data="settingsForm()">
                         <template x-if="$store.app.form">
-                            <div> {% include '_settings_module_global.html' %}
+                            <div>
+                                {% include '_settings_module_global.html' %}
+                                {% include '_settings_module_dates.html' %}
                                 </div>
                         </template>
                     </form>

@@ -108,7 +108,7 @@ class AppConfig(BaseModel):
     language: Literal["ru", "en"] = "ru"
     animations_enabled: bool = True
     effects_enabled: bool = True
-    blur_strength: int = Field(default=1.5, ge=0, le=20)
+    blur_strength: float = Field(default=1.5, ge=0, le=20)
 
     # Ключевые даты
     date_vova_departure: datetime = Field(default_factory=_now_factory)

@@ -1,14 +1,15 @@
 # /mrhoustontimer/app/api.py
 """Blueprint для обработки API-запросов приложения."""
 
-from datetime import date
-from typing import Tuple, Dict, Any
+from datetime import date, datetime # <-- ДОБАВЬ ИМПОРТ datetime
+from typing import Tuple, Dict, Any, Optional # <-- ДОБАВЬ Optional
 
 from flask import Blueprint, jsonify, request, Response, current_app
 from pydantic import ValidationError
 
 # Импортируем синглтоны менеджеров конфигурации и лога календаря
 from . import config_manager, calendar_log
+from .core.config_manager import CustomTimer, AppConfig
 
 # Создаем Blueprint 'api' с префиксом '/api'
 api_bp = Blueprint('api', __name__)
@@ -66,6 +67,31 @@ def update_config() -> ResponseType:
         current_app.logger.error(f"Ошибка при обновлении конфига: {e}", exc_info=True)
         return jsonify({"error": "Internal server error saving config"}), 500
 
+@api_bp.route('/config/defaults', methods=['GET'])
+def get_default_config() -> ResponseType:
+    """Возвращает дефолтную конфигурацию приложения (простой вариант)."""
+    try:
+        # *** ИЗМЕНЕНО: Создаем экземпляр импортированного класса ***
+        default_config = AppConfig()
+
+        try:
+             if not default_config.timers.custom_timers:
+                 # *** ИЗМЕНЕНО: Используем импортированный CustomTimer ***
+                 default_config.timers.custom_timers.append(
+                     CustomTimer(label="Со дня знакомства", date=datetime(2023, 1, 1, 12, 0, 0))
+                 )
+                 default_config.timers.custom_timers.append(
+                     CustomTimer(label="Она моя невеста уже", date=datetime(2024, 1, 1, 12, 0, 0))
+                 )
+        except Exception as timer_err:
+             current_app.logger.warning(f"Не удалось добавить дефолтные таймеры: {timer_err}")
+
+        current_app.logger.info("Возвращаем дефолтный конфиг (простой вариант).")
+        return jsonify(default_config.model_dump(mode="json"))
+
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении дефолтного конфига: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error getting default config"}), 500
 
 # --- API для Календаря (/api/calendar_log, /api/calendar/*) ---
 

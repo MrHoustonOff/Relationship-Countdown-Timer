@@ -38,25 +38,138 @@ function settingsForm() {
              // Глобальный revertSettings сам обновит $store.app.form
         },
 
-        // --- Хелперы для Дат ---
-        // Эти хелперы нужны для работы с <input type="date/time">,
-        // они читают из $store.app.form и вызывают markDirty при изменении.
-        getDatePart(isoString) {
-            // Читаем из глобального store
-            const dateValue = Alpine.store('app').form[isoString];
-            return dateValue ? dateValue.split('T')[0] : '';
+// --- Хелперы для Дат (v1.1 - Seconds Enabled) ---
+        getDatePart(fieldName) {
+            const isoString = Alpine.store('app').form?.[fieldName]; // Безопасный доступ
+            if (!isoString) return ''; // Возвращаем пустую строку, чтобы input type="date" показал плейсхолдер
+            try {
+                // Пытаемся создать объект Date (может справиться с микросекундами)
+                const date = new Date(isoString);
+                // Проверяем, что дата валидна
+                if (isNaN(date.getTime())) return '';
+
+                // Форматируем в YYYY-MM-DD
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы 0-11 -> 01-12
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch (e) {
+                console.error(`getDatePart: Ошибка парсинга ${fieldName}: ${isoString}`, e);
+                return ''; // Возвращаем пустую строку при ошибке
+            }
         },
-        getTimePart(isoStringField) {
-             // Читаем из глобального store
-            const dateValue = Alpine.store('app').form[isoStringField];
-            return dateValue ? dateValue.split('T')[1].substring(0, 5) : ''; // HH:mm
+        /**
+         * (ИЗМЕНЕНО) Извлекает HH:mm:ss из ISO строки.
+         */
+        getTimePart(fieldName) {
+            const isoString = Alpine.store('app').form?.[fieldName]; // Безопасный доступ
+            // Возвращаем дефолт, если нет строки или парсинг не удался
+            const defaultTime = '00:00:00';
+            if (!isoString) return defaultTime;
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date.getTime())) return defaultTime;
+
+                // Форматируем в HH:mm:ss
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+            } catch (e) {
+                console.error(`getTimePart: Ошибка парсинга ${fieldName}: ${isoString}`, e);
+                return defaultTime;
+            }
         },
+        /**
+         * (ИЗМЕНЕНО) Обновляет ISO строку, включая секунды.
+         */
         updateDateTime(fieldName, part, value) {
-             // TODO: Реализовать логику сборки Date + Time обратно в ISO строку
-             // и записи в $store.app.form[fieldName]
-             console.warn(`TODO: Обновить ${fieldName}.${part} = ${value} в $store.app.form`);
-             // После обновления значения вызываем markDirty
-             Alpine.store('app').markDirty();
+            const store = Alpine.store('app');
+            // Check if form and the specific field exist before proceeding
+            if (!store.form || store.form[fieldName] === undefined) {
+                console.error(`updateDateTime: Field ${fieldName} not found in store.form`);
+                return;
+            }
+
+            try {
+                // Attempt to create a Date object from the current value in the store.
+                // Use current time as a fallback if the stored value is invalid or null.
+                const currentStoredValue = store.form[fieldName];
+                const currentFullDate = new Date(currentStoredValue || Date.now());
+
+                let year, month, day, hours, minutes, seconds;
+
+                // Extract components from the CURRENT date/time if valid
+                if (!isNaN(currentFullDate.getTime())) {
+                     year = currentFullDate.getFullYear();
+                     month = currentFullDate.getMonth(); // 0-11
+                     day = currentFullDate.getDate();
+                     hours = currentFullDate.getHours();
+                     minutes = currentFullDate.getMinutes();
+                     seconds = currentFullDate.getSeconds();
+                } else {
+                    // If the current stored value was invalid, use defaults based on 'now' for date, 0 for time
+                    const now = new Date();
+                    year = now.getFullYear(); month = now.getMonth(); day = now.getDate();
+                    hours = 0; minutes = 0; seconds = 0;
+                     console.warn(`updateDateTime: Invalid initial value for ${fieldName}. Using defaults.`);
+                }
+
+                // Update the relevant part (date or time) based on the NEW input 'value'
+                if (part === 'date' && value) { // value expected as "YYYY-MM-DD"
+                    const [newYear, newMonth, newDay] = value.split('-').map(Number);
+                    // Basic validation for date parts
+                    if (newYear && newMonth && newDay) {
+                        year = newYear;
+                        month = newMonth - 1; // Adjust month for Date object (0-11)
+                        day = newDay;
+                    } else {
+                         console.warn(`updateDateTime: Invalid date input value received: ${value}`);
+                    }
+                } else if (part === 'time' && value) { // value expected as "HH:mm" or "HH:mm:ss"
+                    const timeParts = value.split(':').map(Number);
+                    // Basic validation for time parts
+                    if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
+                        hours = timeParts[0];
+                        minutes = timeParts[1];
+                        seconds = timeParts[2] || 0; // Default seconds to 0 if not provided
+                    } else {
+                         console.warn(`updateDateTime: Invalid time input value received: ${value}`);
+                    }
+                }
+
+                // Assemble the NEW Date object using LOCAL time components
+                const newDate = new Date(year, month, day, hours, minutes, seconds);
+
+                // Validate the assembled date
+                if (isNaN(newDate.getTime())) {
+                    console.error(`updateDateTime: Failed to assemble a valid date for ${fieldName} from parts: Y=${year}, M=${month}, D=${day}, H=${hours}, m=${minutes}, s=${seconds}`);
+                    return; // Do not update the store if the date is invalid
+                }
+
+                // Manually format to "YYYY-MM-DDTHH:MM:SS" which Pydantic expects (avoids ISO 'Z' or timezone offset)
+                const newYear = newDate.getFullYear();
+                const newMonth = String(newDate.getMonth() + 1).padStart(2, '0');
+                const newDay = String(newDate.getDate()).padStart(2, '0');
+                const newHours = String(newDate.getHours()).padStart(2, '0');
+                const newMinutes = String(newDate.getMinutes()).padStart(2, '0');
+                const newSeconds = String(newDate.getSeconds()).padStart(2, '0');
+                const newIsoString = `${newYear}-${newMonth}-${newDay}T${newHours}:${newMinutes}:${newSeconds}`;
+
+                // *** DELAYED UPDATE using setTimeout ***
+                // This pushes the store update to the next event loop tick,
+                // allowing the browser to finish processing the input's @change event first.
+                setTimeout(() => {
+                    console.log(`--- [DEBUG] updateDateTime (Delayed): ${fieldName} = ${newIsoString}`);
+                    // Update the GLOBAL store.form value
+                    store.form[fieldName] = newIsoString;
+                    // Mark the form as dirty
+                    store.markDirty();
+                }, 0); // Delay of 0 milliseconds
+
+            } catch (error) {
+                 console.error(`updateDateTime: CRITICAL ERROR processing ${fieldName}`, error);
+            }
         }
     }
 }
@@ -189,12 +302,14 @@ document.addEventListener('alpine:init', () => {
         log: null,
         lang: {},
         form: null,
+        defaults: null,
         ui: {
             currentPage: 'page-main',
             isLoaded: false,
             error: null,
             hoverTargetType: null, // null | 'header-button' | 'arrival' | 'relationship'\
-            isDirty: false
+            isDirty: false,
+            isSaving: false
         },
 
         // --- 2. Инициализация (INIT) ---
@@ -202,23 +317,33 @@ document.addEventListener('alpine:init', () => {
         async init() {
             console.log("--- [DEBUG] Store.init(): Старт...");
             try {
-                console.log("--- [DEBUG] Store.init(): Запрос config и log...");
-                const [configRes, logRes] = await Promise.all([
+                console.log("--- [DEBUG] Store.init(): Запрос config, log и defaults...");
+
+                const [configRes, logRes, defaultsRes] = await Promise.all([
                     fetch('/api/config'),
-                    fetch('/api/calendar_log')
+                    fetch('/api/calendar_log'),
+                    fetch('/api/config/defaults') // <-- НОВЫЙ ЗАПРОС
                 ]);
+
                 if (!configRes.ok) throw new Error(`Ошибка API /api/config: ${configRes.status}`);
                 if (!logRes.ok) throw new Error(`Ошибка API /api/calendar_log: ${logRes.status}`);
+                if (!defaultsRes.ok) throw new Error(`API /api/config/defaults: ${defaultsRes.status}`);
+
                 this.config = await configRes.json();
                 this.log = await logRes.json();
-                console.log("--- [DEBUG] Store.init(): Config и Log получены.");
+                this.defaults = await defaultsRes.json();
+
+                console.log("--- [DEBUG] Store.init(): Config, Log, Defaults получены.");
+
                 if (!this.config || !this.log || !this.config.language) {
                     throw new Error("Структура config или log некорректна.");
                 }
+
                 console.log(`--- [DEBUG] Store.init(): Запрос языка ${this.config.language}...`);
                 const langRes = await fetch(`/static/lang/${this.config.language}.json`);
                 if (!langRes.ok) throw new Error(`Ошибка загрузки языка: ${this.config.language}.json`);
                 this.lang = await langRes.json();
+
                 console.log("--- [DEBUG] Store.init(): Язык загружен.");
                 this.applyDynamicStyles();
                 console.log("--- [DEBUG] Store.init(): УСПЕХ. Config, Log, Lang загружены.");
@@ -226,10 +351,9 @@ document.addEventListener('alpine:init', () => {
 
                 if (this.config) {
                      this.form = Alpine.reactive(JSON.parse(JSON.stringify(this.config)));
-                     console.log("--- [DEBUG] Store.init(): Создана реактивная копия конфига в this.form.");
+                     console.log("--- [DEBUG] Store.init(): Создана копия конфига в this.form.");
                 } else {
-                     throw new Error("Не удалось создать копию конфига для формы.");
-                }
+                    throw new Error("Не удалось создать копию конфига."); }
 
                 if (typeof resetCalendarZoom === 'function') {
                     resetCalendarZoom();
@@ -600,6 +724,7 @@ document.addEventListener('alpine:init', () => {
         handleFirstLaunchOK() {
             console.log("--- [DEBUG] handleFirstLaunchOK: Переход на страницу настроек.");
             this.navigateTo('page-settings');
+            this.markDirty();
             // Важно: Мы НЕ меняем is_first_launch здесь.
             // Флаг должен сброситься только после УСПЕШНОГО СОХРАНЕНИЯ
             // настроек в первый раз (это будет в функции saveSettings).
@@ -618,41 +743,91 @@ document.addEventListener('alpine:init', () => {
          * @param {string} fieldName - Имя поля в this.form (e.g., 'language')
          */
         resetField(fieldName) {
-            console.warn(`TODO: Сбросить поле ${fieldName}`);
-            // Здесь будет логика сброса к DEFAULT_CONFIG
-            this.markDirty();
+        if (!this.defaults || !this.form) {
+             console.error("!!! resetField: Defaults или Form не загружены.");
+             return;
+        }
+        console.log(`--- [DEBUG] Сброс поля ${fieldName}...`);
+
+        // Функция для доступа к вложенным свойствам объекта по строке
+        const getDescendantProp = (obj, path) => path.split('.').reduce((acc, part) => acc && acc[part], obj);
+        // Функция для установки вложенного свойства
+        const setDescendantProp = (obj, path, value) => {
+            const parts = path.split('.');
+            const last = parts.pop();
+            const target = parts.reduce((acc, part) => acc[part] = acc[part] || {}, obj);
+            if (target && last) target[last] = value;
+        };
+
+        const defaultValue = getDescendantProp(this.defaults, fieldName);
+
+        if (defaultValue !== undefined) {
+             // Клонируем дефолтное значение на всякий случай (особенно для объектов/массивов)
+             const clonedDefault = JSON.parse(JSON.stringify(defaultValue));
+             setDescendantProp(this.form, fieldName, clonedDefault);
+             console.log(`--- [DEBUG] Поле ${fieldName} сброшено к`, clonedDefault);
+             this.markDirty(); // Помечаем форму как измененную
+        } else {
+             console.warn(`!!! resetField: Дефолтное значение для ${fieldName} не найдено.`);
+            }
         },
 
         /**
-         * (НОВОЕ - Заглушка) Сохраняет текущие настройки из this.form.
-         */
-        async saveSettings(formData) { // Принимает formData из settingsForm()
-             console.warn("TODO: Сохранить настройки", JSON.stringify(formData, null, 2));
-             try {
-                const response = await fetch('/api/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData) // Отправляем данные из формы
-                });
-                if (!response.ok) {
-                     const errorData = await response.json();
-                     console.error("Ошибка сохранения:", errorData);
-                     alert(`Ошибка сохранения: ${JSON.stringify(errorData.details || errorData.error)}`);
-                     return false; // Сигнал об ошибке
-                }
-                 // Успех
-                 this.config = await response.json(); // Обновляем $store.app.config новыми данными
-                 this.ui.isDirty = false;
-                 document.body.classList.remove('form-dirty');
-                 this.applyDynamicStyles(); // Применяем новые стили (например, цвета)
-                 alert("Настройки сохранены! Перезагрузка..."); // Временный alert
-                 window.location.reload(); // Перезагружаем приложение
-                 return true; // Сигнал об успехе
+     * (РЕАЛИЗОВАНО) Сохраняет текущие настройки из this.form.
+     */
+    async saveSettings(formData) {
+        if (!formData) {
+             console.error("!!! saveSettings: Нет данных формы для сохранения.");
+             return false;
+        }
+        console.log("--- [DEBUG] Попытка сохранения настроек...");
 
-             } catch (error) {
-                  console.error("Критическая ошибка fetch при сохранении:", error);
-                  alert(`Критическая ошибка: ${error.message}`);
-                  return false;
+        this.ui.isSaving = true;
+        // (Опционально) Можно добавить индикатор загрузки
+
+        try {
+            const response = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData) // Отправляем данные из this.form
+            });
+
+            if (!response.ok) {
+                 let errorDetails = "Неизвестная ошибка";
+                 try {
+                     const errorData = await response.json();
+                     errorDetails = JSON.stringify(errorData.details || errorData.error);
+                 } catch (e) {
+                     errorDetails = await response.text(); // Если ответ не JSON
+                 }
+                 console.error(`!!! Ошибка сохранения (${response.status}):`, errorDetails);
+                 alert(`Ошибка сохранения настроек:\n${errorDetails}`);
+                 this.ui.isSaving = false;
+                 return false; // Сигнал об ошибке
+            }
+
+             console.log("--- [DEBUG] Настройки успешно сохранены.");
+             this.config = await response.json();
+             this.ui.isDirty = false;
+             document.body.classList.remove('form-dirty');
+             this.applyDynamicStyles();
+
+            // *** ИЗМЕНЕНО: Добавляем задержку перед перезагрузкой ***
+             console.log("--- [DEBUG] Задержка перед перезагрузкой (1 секунда)...");
+             setTimeout(() => {
+                 console.log("--- [DEBUG] Перезагрузка приложения...");
+                 window.location.reload();
+             }, 0); // 1000 миллисекунд = 1 секунда
+             // *** КОНЕЦ ИЗМЕНЕНИЙ ***
+             return true; // Сигнал об успехе (хотя мы уже перезагружаемся)
+
+         } catch (error) {
+              console.error("!!! КРИТИЧЕСКАЯ ошибка fetch при сохранении:", error);
+              alert(`Критическая ошибка при сохранении: ${error.message}`);
+              this.ui.isSaving = false;
+              return false;
+         } finally {
+             // (Опционально) Убрать индикатор загрузки
              }
         },
 

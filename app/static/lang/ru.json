@@ -29,5 +29,15 @@
     "settings_animations_desc": "Плавные переходы, пульсация кнопок и таймеров при наведении.",
     "settings_effects_label": "Включить эффекты",
     "settings_effects_desc": "Визуальные эффекты частиц при отметке дней и завершении месяца.",
-    "settings_save_button": "Сохранить и Перезагрузить"
+    "settings_save_button": "Сохранить и Перезагрузить",
+    "settings_saving_button": "Перезагружаю...",
+
+    "settings_section_dates": "Ключевые Даты",
+    "settings_desc_section_dates": "Основные даты, используемые таймерами и календарем.",
+    "settings_date_departure_label": "Дата Отъезда",
+    "settings_date_departure_desc": "День, когда вы расстаетесь. Календарь начнется со <strong>следующего</strong> дня.",
+    "settings_date_arrival_label": "Дата Приезда",
+    "settings_date_arrival_desc": "День вашей следующей встречи. Конечная дата для календаря и таймера \"До Встречи\".",
+    "settings_date_relationship_label": "Дата Начала Отношений",
+    "settings_date_relationship_desc": "День, с которого вы считаете начало ваших отношений. Используется таймером \"Мы Вместе\"."
 }

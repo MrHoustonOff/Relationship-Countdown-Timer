@@ -2,7 +2,6 @@
 
 #page-settings {
     /* Отступ сверху, чтобы было место для будущей кнопки "Сохранить" */
-    padding-top: 60px;
     align-items: center; /* Центрируем модули */
 }
 
@@ -16,9 +15,6 @@
     display: flex;
     justify-content: center;
     padding: 10px;
-    margin-bottom: 20px; /* Отступ до первого модуля */
-    background-color: var(--color-background); /* Фон как у body */
-    border-bottom: 1px solid var(--color-divider);
     /* Изначально скрыта */
     opacity: 0;
     pointer-events: none;
@@ -57,8 +53,8 @@ body.form-dirty .settings-save-bar-top {
 .settings-module {
     width: 100%;
     max-width: 800px; /* Ограничиваем ширину для читаемости */
-    margin: 0 auto 25px auto; /* Центрируем и добавляем отступ снизу */
     padding: 25px;
+    margin-bottom: 20px;
     background-color: var(--color-accent-secondary); /* Фон модуля */
     border-radius: var(--border-radius-medium);
 }
@@ -217,4 +213,38 @@ body.form-dirty .settings-save-bar-top {
 }
 .setting-row.setting-disabled button {
     cursor: default;
+}
+/* --- Описание Модуля (под заголовком) --- */
+.module-description {
+    grid-column: 1 / -1; /* Занимает все колонки */
+    margin-bottom: 20px; /* Отступ до первой настройки */
+    font-size: 0.95rem;
+    opacity: 0.8;
+    /* Убираем курсив, если не нужно */
+    /* font-style: italic; */
+}
+
+/* --- Группа полей Date + Time --- */
+.date-time-inputs {
+    display: flex;
+    gap: 10px; /* Отступ между date и time */
+}
+.date-time-inputs input[type="date"],
+.date-time-inputs input[type="time"] {
+    flex-grow: 1; /* Растягиваем оба поля */
+    /* Стили (padding, background и т.д.) наследуются от общих стилей input */
+}
+/* Убедимся, что иконка календаря/часов видна на темном фоне */
+.date-time-inputs input[type="date"]::-webkit-calendar-picker-indicator,
+.date-time-inputs input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8); /* Делаем иконку светлее */
+    cursor: pointer;
+}
+
+/* Опционально: Выравниваем кнопку сброса по центру полей date/time */
+.setting-row.date-time-row .reset-button-placeholder {
+     align-items: center; /* Центрируем кнопку по вертикали */
+     padding-top: 0; /* Убираем верхний отступ, т.к. есть label */
+     /* Можно добавить margin-top, чтобы сместить чуть ниже label */
+     margin-top: 32px;
 }
