@@ -1,159 +1,217 @@
-/* /mrhoustontimer/app/static/css/page_calendar.css (v3.0 - С НУЛЯ) */
+/* /mrhoustontimer/app/static/css/page_calendar.css (v3.1 - Рефакторинг + Фикс Скролла?) */
 
-/* * 1. Главная сетка календаря
- */
+/* ==========================================================================
+   1. Главная Сетка Календаря (.calendar-grid)
+   ========================================================================== */
+
 .calendar-grid {
+    /* --- Grid Раскладка --- */
     display: grid;
-    /* Мин. ширина из переменной (для зума), макс. - растягиваться */
+    padding-bottom: 3rem;
+    /* Адаптивные колонки:
+       - auto-fit: Создавать столько колонок, сколько поместится.
+       - minmax(): Ширина колонки от --calendar-module-min-width до 1fr (равномерное растяжение).
+       - --calendar-module-min-width: Переменная для JS-зума (дефолт 320px из page_calendar_zoom.js). */
     grid-template-columns: repeat(auto-fit, minmax(var(--calendar-module-min-width, 320px), 1fr));
-    gap: 1.5rem; /* Отступ между модулями (24px) */
-    justify-content: center; /* Центрируем, если остается место */
+    gap: 1.5rem; /* Отступ между модулями месяцев (24px) */
+    justify-content: center; /* Центрируем модули, если остается пустое место в строке */
+
+    /* --- [ПОПЫТКА ФИКСА СКРОЛЛА] --- */
+    width: 100%; /* Занимать всю ширину родителя */
+    /* align-content: start; */ /* Располагать строки сверху (если понадобится) */
+    /* --- [КОНЕЦ ПОПЫТКИ] --- */
 }
 
-/* * 2. Модуль одного месяца
- */
+/* ==========================================================================
+   2. Модуль Одного Месяца (.month-module)
+   ========================================================================== */
+
 .month-module {
-    background-color: var(--color-accent-secondary); /* Фон модуля */
-    border-radius: var(--border-radius-medium); /* Скругление (12px) */
-    padding: 1rem; /* Внутренний отступ (16px) */
+    /* --- Внешний Вид --- */
+    background-color: var(--color-accent-secondary); /* Фон из base.css */
+    border-radius: var(--border-radius-medium);     /* Скругление из base.css */
+    padding: 1rem;                                  /* Внутренний отступ (16px) */
+
+    /* --- Flexbox Раскладка (для содержимого) --- */
     display: flex;
-    flex-direction: column;
-    transition: transform 0.5s ease-out, filter 0.5s ease-out; /* Плавное увеличение */
-    will-change: transform, filter;
+    flex-direction: column; /* Располагаем заголовок, хедер, сетку дней вертикально */
+
+    /* --- Переходы и Эффекты --- */
+    /* Плавный переход для уменьшения/затемнения при завершении */
+    transition: transform 0.5s ease-out, filter 0.5s ease-out;
+    will-change: transform, filter; /* Оптимизация */
 }
 
-/* (Хотелка 3) Hover для месяца */
-
-/* Заголовок месяца */
+/* --- 2.1 Заголовок Месяца --- */
 .month-title {
     text-align: center;
     font-size: 1.1rem; /* ~18px */
     font-weight: 500;
     color: var(--color-text-emphasis); /* Белый */
-    padding-bottom: 0.8rem; /* 13px */
-    margin-bottom: 0.8rem;
-    border-bottom: 1px solid var(--color-divider); /* Цвет разделителя из config */
-    letter-spacing: 1px;
+    padding-bottom: 0.8rem; /* Отступ до линии (~13px) */
+    margin-bottom: 0.8rem;  /* Отступ после линии */
+    border-bottom: 1px solid var(--color-divider); /* Линия-разделитель */
+    letter-spacing: 1px; /* Небольшое разрежение букв */
 }
 
-/* Хедер дней недели */
+/* --- 2.2 Хедер Дней Недели --- */
 .week-days-header {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 0.5rem; /* 8px */
+    grid-template-columns: repeat(7, 1fr); /* 7 равных колонок */
+    margin-bottom: 0.5rem; /* Отступ до сетки дней (8px) */
 }
+
 .week-day {
     text-align: center;
     font-size: 0.85rem; /* ~14px */
-    font-weight: 400; /* Нормальный */
-    color: var(--color-text); /* Обычный текст */
-    opacity: 0.7; /* Слегка приглушен */
+    font-weight: 400;   /* Нормальный */
+    color: var(--color-text); /* Обычный цвет текста */
+    opacity: 0.7;       /* Слегка приглушен */
 }
 
-/* * 3. Сетка дней (6x7)
- */
+/* ==========================================================================
+   3. Сетка Дней Внутри Месяца (.days-grid)
+   ========================================================================== */
+
 .days-grid {
+    /* --- Grid Раскладка --- */
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr); /* Всегда 6 рядов */
-    gap: 0.3rem; /* Маленький отступ (5px) */
-    flex-grow: 1; /* Занимает оставшееся место в модуле */
+    grid-template-columns: repeat(7, 1fr); /* 7 равных колонок */
+    grid-template-rows: repeat(6, 1fr);    /* Всегда 6 рядов для стабильной высоты */
+    gap: 0.3rem;                           /* Маленький отступ между ячейками (5px) */
+
+    /* --- Размеры --- */
+    flex-grow: 1; /* Сетка дней занимает все оставшееся место в .month-module */
 }
 
-/* Ячейка дня */
+/* ==========================================================================
+   4. Ячейка Дня (.day-cell)
+   ========================================================================== */
+
 .day-cell {
+    /* --- Позиционирование и Размеры --- */
     position: relative; /* Для позиционирования номера и стикера */
-    background-color: var(--calendar-empty-cell-color); /* Фон пустой ячейки */
+    aspect-ratio: 1;    /* Делаем ячейку квадратной */
+    overflow: hidden;   /* Обрезаем все, что выходит за границы (ВАЖНО для стикеров) */
+
+    /* --- Внешний Вид --- */
+    background-color: var(--calendar-empty-cell-color); /* Фон по умолчанию (для пустых) */
     border-radius: 4px; /* Небольшое скругление */
-    aspect-ratio: 1; /* Квадратная */
+
+    /* --- Flexbox Раскладка (для содержимого) --- */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Центрируем номер/стикер по горизонтали */
+    align-items: center;     /* Центрируем по вертикали */
+
+    /* --- Типографика (для номера дня) --- */
     font-size: 1rem; /* 16px */
     font-weight: 500;
-    color: var(--color-text); /* Цвет цифры */
+    color: var(--color-text);
+
+    /* --- Эффекты и Переходы --- */
     transition: transform var(--transition-fast), filter var(--transition-fast), background-color var(--transition-fast);
     will-change: transform, filter, background-color;
-    overflow: hidden; /* Обрезаем стикер, если он больше ячейки */
     cursor: default; /* По умолчанию нельзя кликнуть */
 }
 
-/* Стили для ячейки ВНЕ диапазона (до 1го, после 31го, вне дат ТЗ) */
+/* --- 4.1 Состояния Ячейки --- */
+
+/* Ячейка вне текущего месяца ИЛИ вне глобального диапазона */
 .day-cell.empty {
     background-color: var(--calendar-empty-cell-color);
     color: transparent; /* Скрываем цифру */
-    user-select: none; /* Нельзя выделить */
+    user-select: none;
+    cursor: default; /* Точно нельзя кликнуть */
 }
 
-/* Стили для ячейки ВНУТРИ диапазона */
+/* Ячейка ВНУТРИ глобального диапазона (активная) */
 .day-cell.in-range {
-    background-color: var(--color-calendar-day-bg); /* Фон активного дня */
-    cursor: pointer; /* Можно кликнуть */
+    background-color: var(--color-calendar-day-bg); /* Фон из base.css */
+    cursor: pointer;
 }
 
-/* (Хотелка 3) Hover для активного дня */
+/* Наведение на АКТИВНУЮ ячейку */
 .day-cell.in-range:hover {
-    transform: scale(1.08); /* Совсем чуть-чуть увеличиваем */
-    filter: brightness(1.2); /* Совсем чуть-чуть светлее */
-    z-index: 5; /* Чтобы был поверх соседних при увеличении */
+    transform: scale(1.08);  /* Увеличиваем */
+    filter: brightness(1.2); /* Осветляем */ /* <--- ПОПЫТКА ФИКСА ЯРКОСТИ */
+    z-index: 5;              /* Поверх соседних */
 }
 
-/* (Хотелка 2) Стиль для ОТМЕЧЕННОГО дня */
+/* Отмеченная ячейка */
 .day-cell.marked {
-    background-color: var(--color-calendar-marked-day-bg) !important; /* Важный фон из config, перебивает .in-range */
+    /* Важно (!important), чтобы перебить .in-range */
+    background-color: var(--color-calendar-marked-day-bg) !important;
 }
 .day-cell.marked:hover {
-    filter: brightness(1.3); /* Делаем чуть ярче при наведении на отмеченный */
+    filter: brightness(1.3); /* Делаем еще чуть ярче */
 }
 
-/* Номер дня (пока только 'center') */
-.day-number {
-    z-index: 1; /* Над стикером */
-    position: relative; /* Чтобы z-index сработал */
-}
-
-/* Стикер */
-.sticker {
-    position: absolute;
-    z-index: 2; /* Под номером дня */
-    top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center;
-    font-size: calc(2rem * var(--sticker-scale-factor, 1.0)); /* Размер из config (2rem = 32px база) */
-    color: var(--sticker-color); /* Цвет из config */
-    opacity: 0.9;
-    pointer-events: none; /* Чтобы не мешал клику на ячейку */
-    /* transform: rotate(...) будет применен инлайново */
-}
-
-/* День приезда */
+/* Ячейка дня приезда с фоном */
 .day-cell.arrival-highlight-bg {
-    background-color: var(--color-arrival-highlight-bg) !important; /* Важный фон дня приезда */
+    background-color: var(--color-arrival-highlight-bg) !important;
 }
 .day-cell.arrival-highlight-bg:hover {
     filter: brightness(1.3);
 }
-/* Стикер дня приезда (использует класс .sticker, но имеет свои стили) */
-.arrival-sticker {
-    color: var(--color-arrival-highlight-sticker);
-    /* Масштаб применится инлайново через JS */
-    opacity: 1;
+
+/* --- 4.2 Номер Дня Внутри Ячейки --- */
+.day-number {
+    position: relative; /* Чтобы z-index сработал */
+    z-index: 2;         /* Номер дня ПОВЕРХ стикера */
 }
 
-/* * 4. Сообщение "Упси!" (без изменений)
- */
+/* --- 4.3 Стикер Внутри Ячейки --- */
+.sticker {
+    position: absolute;
+    /* Позиционируем относительно .day-cell */
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1; /* Стикер ПОД номером дня */
+
+    /* --- Flexbox для центрирования символа --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* --- Внешний вид (из переменных base.css / inline стилей) --- */
+    font-size: calc(2rem * var(--sticker-scale-factor, 1.0)); /* База 32px * масштаб */
+    color: var(--sticker-color);
+    opacity: 0.9;
+
+    /* --- Поведение --- */
+    pointer-events: none; /* Не мешает клику на ячейку */
+    /* transform: rotate(...) scale(...) применяется через inline style (:style) */
+}
+
+/* Модификатор для стикера дня приезда */
+.arrival-sticker {
+    color: var(--color-arrival-highlight-sticker);
+    opacity: 1; /* Полностью непрозрачный */
+    /* Масштаб также применится через inline style */
+}
+
+/* ==========================================================================
+   5. Сообщение "Упси!" (Если месяцев нет)
+   ========================================================================== */
+
 .calendar-empty-message {
+    /* --- Размеры и Позиционирование --- */
     padding: 2rem;
+    max-width: 600px; /* Ограничиваем ширину */
+    margin: 2rem auto; /* Центрируем и даем отступы */
+    grid-column: 1 / -1; /* Занимает всю ширину grid, если он есть */
+
+    /* --- Внешний Вид --- */
     text-align: center;
     background-color: var(--color-accent-secondary);
     border-radius: var(--border-radius-medium);
-    max-width: 600px;
-    margin: 2rem auto;
 }
+
 .calendar-empty-message h2 {
     color: var(--color-accent-primary);
     margin-bottom: 1rem;
     font-size: 1.5rem;
 }
+
 .calendar-empty-message p {
     font-size: 1rem;
     line-height: 1.6;
@@ -161,19 +219,21 @@
     margin-bottom: 0.8rem;
 }
 
-/* --- НОВЫЙ БЛОК: Стили для Завершенного Месяца --- */
+/* ==========================================================================
+   6. Стили для Завершенного Месяца (.month-completed)
+   ========================================================================== */
 
 .month-module.month-completed {
-    transform: scale(0.95); /* Уменьшаем до 95% */
+    transform: scale(0.95);  /* Уменьшаем */
     filter: brightness(0.7); /* Затемняем */
-    /* Можно добавить легкий блюр, если хочешь */
-    /* filter: brightness(0.7) blur(1px); */
-
-    /* Убираем hover-эффект увеличения для завершенных */
-    pointer-events: none; /* Блокируем hover самого модуля */
+    pointer-events: none;    /* Блокируем hover самого модуля */
 }
 
-/* Разрешаем клики на ЯЧЕЙКИ внутри завершенного модуля */
+/* Но разрешаем клики на ЯЧЕЙКИ внутри завершенного модуля */
 .month-module.month-completed .day-cell.in-range {
-    pointer-events: auto; /* Возвращаем возможность кликнуть на день */
+    pointer-events: auto;
 }
+
+/* ==========================================================================
+   (Конец page_calendar.css)
+   ========================================================================== */

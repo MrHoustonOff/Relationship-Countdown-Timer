@@ -16,31 +16,48 @@
 
 </head>
 
-<body x-data @alpine:initialized="$store.app.init()" x-show="$store.app.ui.isLoaded" style="display: none;">
+<body x-data @alpine:initialized="$store.app.init()" x-show="$store.app.ui.isLoaded" style="display: none;"
+      :class="{
+          'loading': !$store.app.ui.isLoaded,
+          'blur-effect-active': $store.app.ui.hoverTargetType !== null
+      }">
 
     <template x-if="$store.app.config">
-        <div> <header class="app-header">
+        <div> <header class="app-header"
+                @mouseenter="$store.app.setHoverTarget('header')"
+                @mouseleave="$store.app.setHoverTarget(null)"
+                :class="{ 'hover-active': $store.app.ui.hoverTargetType === 'header' }">
                 <nav>
-                    <button @click="$store.app.navigateTo('page-main')" :class="{ 'active': $store.app.ui.currentPage === 'page-main' }" x-text="$store.app.lang['header_main'] || '...'"></button>
-                    <button @click="$store.app.navigateTo('page-calendar')" :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }" x-text="$store.app.lang['header_calendar'] || '...'"></button>
-                    <button @click="$store.app.navigateTo('page-settings')" :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }" x-text="$store.app.lang['header_settings'] || '...'"></button>
+                    <button
+                        class="nav-button"
+                        @click="$store.app.navigateTo('page-main')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-main' }"
+                        x-text="$store.app.lang['header_main'] || '...'">
+                    </button>
+                    <button
+                        class="nav-button"
+                        @click="$store.app.navigateTo('page-calendar')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }"
+                        x-text="$store.app.lang['header_calendar'] || '...'">
+                    </button>
+                    <button
+                        class="nav-button"
+                        @click="$store.app.navigateTo('page-settings')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }"
+                        x-text="$store.app.lang['header_settings'] || '...'">
+                    </button>
                 </nav>
             </header>
 
             <main class="app-main">
-
                 {% include '_page_main.html' %}
-
                 {% include '_page_calendar.html' %}
-
                 <section
                     id="page-settings"
                     class="page-content"
                     :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }">
-
                     <h1>[ЗАГЛУШКА] Страница Настроек</h1>
                 </section>
-
             </main>
 
         </div>
@@ -48,7 +65,7 @@
 
     <template x-if="$store.app.ui.error">
          <div class="critical-error-fallback">
-            <h2>Критическая ошибка (v2.4)</h2>
+            <h2>Критическая ошибка (v2.6)</h2>
             <pre x-text="$store.app.ui.error"></pre>
         </div>
     </template>

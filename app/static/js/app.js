@@ -136,8 +136,7 @@ document.addEventListener('alpine:init', () => {
             currentPage: 'page-main',
             isLoaded: false,
             error: null,
-            // (НОВОЕ) Для блюра (вернем на Шаге 5)
-            // hoverTarget: null
+            hoverTargetType: null // null | 'header-button' | 'arrival' | 'relationship'
         },
 
         // --- 2. Инициализация (INIT) ---
@@ -207,6 +206,15 @@ document.addEventListener('alpine:init', () => {
                 root.style.setProperty('--calendar-marked-day-color', this.config.calendar_marked_day_color);
                 root.style.setProperty('--sticker-color', this.config.sticker_color);
                 root.style.setProperty('--sticker-scale-factor', this.config.sticker_scale);
+                const blurValue = parseInt(this.config.blur_strength, 10);
+                if (!isNaN(blurValue) && blurValue >= 0) {
+                     root.style.setProperty('--blur-strength', `${blurValue}px`);
+                     console.log(`--- [DEBUG] Store: Установлен --blur-strength: ${blurValue}px`);
+                } else {
+                     console.warn("[App.applyDynamicStyles] Некорректное значение blur_strength в конфиге.");
+                     root.style.setProperty('--blur-strength', '3px'); // Дефолт на всякий случай
+                }
+
                 console.log("--- [DEBUG] Store: CSS-переменные применены.");
             } catch (error) {
                  console.error("--- [DEBUG] Ошибка в applyDynamicStyles:", error);
@@ -507,6 +515,11 @@ document.addEventListener('alpine:init', () => {
                      particleClass: 'month-particle' // Для возможной стилизации
                  });
             }
-        } // Конец triggerMonthCompletionEffect
+        },
+        setHoverTarget(type) {
+            this.ui.hoverTargetType = type;
+        },
+         // Конец triggerMonthCompletionEffect
+
     });
 });

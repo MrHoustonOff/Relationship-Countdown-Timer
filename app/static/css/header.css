@@ -1,125 +1,114 @@
-/* /mrhoustontimer/app/static/css/header.css (v2.1 - Без фона, Сочный) */
+/* /mrhoustontimer/app/static/css/header.css (v3.0 - Рефакторинг) */
+
+/* ==========================================================================
+   1. Контейнер Хедера (.app-header)
+   ========================================================================== */
 
 .app-header {
-    /* background-color: var(--color-accent-secondary); УБРАН ФОН */
-    padding: 0.8rem 0; /* Увеличиваем отступы ( ~13px ) */
-    border-bottom: 1px solid var(--color-divider);
-    -webkit-app-region: drag; /* Оставляем для перетаскивания */
+    /* --- Размеры и Отступы --- */
+    padding: 0.8rem 0; /* Вертикальные отступы (~13px) */
+
+
+    /* --- Позиционирование и z-index --- */
+    position: relative; /* Необходимо для позиционирования псевдоэлементов (свечения) */
+    z-index: 1; /* Хедер над основным контентом (если контент имеет z-index) */
+
+    /* --- Для Desktop-приложения (pywebview) --- */
+    -webkit-app-region: drag; /* Позволяет перетаскивать окно за хедер */
 }
+
+/* ==========================================================================
+   2. Навигация Внутри Хедера (nav)
+   ========================================================================== */
 
 .app-header nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem; /* Увеличиваем отступ (24px) */
+    /* --- Flexbox Раскладка --- */
+    display: flex;             /* Включаем Flexbox */
+    justify-content: center; /* Центрируем кнопки по горизонтали */
+    align-items: center;     /* Центрируем кнопки по вертикали */
+    gap: 1.5rem;             /* Отступ между кнопками (24px) */
 }
+
+/* ==========================================================================
+   3. Кнопки Навигации (.nav-button)
+   ========================================================================== */
 
 .nav-button {
-    padding: 0.5rem 1rem; /* Уменьшаем внутренние отступы, т.к. шрифт больше */
-    font-size: 1.2rem; /* Крупнее шрифт ( ~19px ) */
-    font-weight: 600; /* Жирнее ("увесистый") */
-    border-radius: 20px;
-    position: relative;
-    color: var(--color-text-emphasis); /* Сочно белый */
-    opacity: 0.7; /* Неактивные чуть тусклее */
+    /* --- Базовые Стили --- */
+    /* (наследуются из base.css: background, border, font-family, cursor) */
+    color: var(--color-text-emphasis); /* Белый цвет текста */
+    padding: 0.5rem 1rem;              /* Внутренние отступы */
+    border-radius: 20px;             /* Скругление углов */
+    position: relative;              /* Необходимо для псевдоэлементов (точка, свечение) */
+    z-index: 2;                      /* Кнопка должна быть над своим свечением */
+    -webkit-app-region: no-drag;     /* Отменяем перетаскивание окна для кнопок */
+
+    /* --- Типографика --- */
+    font-size: 1.2rem;   /* Размер шрифта (~19px) */
+    font-weight: 600;    /* Полужирное начертание */
+
+    /* --- Визуальные Эффекты --- */
+    opacity: 0.7; /* Неактивные кнопки слегка прозрачны */
+    /* Плавные переходы для прозрачности и увеличения при наведении */
     transition: opacity var(--transition-fast), transform var(--transition-fast);
-    -webkit-app-region: no-drag;
 }
 
+/* --- 3.1 Состояние Наведения (:hover) --- */
 .nav-button:hover {
-    opacity: 1;
-    transform: scale(1.05); /* Легкое увеличение при наведении */
+    opacity: 1;              /* Становится полностью непрозрачной */
+    transform: scale(1.05); /* Слегка увеличивается */
 }
 
+/* --- 3.2 Состояние Активности (.active) --- */
 .nav-button.active {
-    opacity: 1;
-    /* color не нужен, он уже --color-text-emphasis */
+    opacity: 1; /* Активная кнопка всегда непрозрачна */
+    /* Цвет текста не меняем, он уже --color-text-emphasis */
 }
 
-/* Кругляшок */
+/* --- 3.3 Индикатор Активности (Точка ::after) --- */
 .nav-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -8px; /* Чуть ниже из-за шрифта */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px; /* Чуть больше */
-    height: 8px;
-    background-color: var(--color-nav-active-indicator); /* Розовый */
-    border-radius: 50%;
+    content: '';             /* Обязательно для псевдоэлементов */
+    position: absolute;      /* Позиционируем относительно кнопки */
+    bottom: -8px;            /* Смещаем вниз под кнопку */
+    left: 50%;               /* Центрируем по горизонтали */
+    transform: translateX(-50%); /* Точная центровка */
+    width: 8px;              /* Ширина точки */
+    height: 8px;             /* Высота точки */
+    background-color: var(--color-nav-active-indicator); /* Цвет из переменных */
+    border-radius: 50%;      /* Делаем круглой */
+    /* Плавный переход (на случай, если цвет индикатора будет меняться) */
     transition: background-color var(--transition-fast);
 }
 
-.app-header {
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--color-divider);
-    -webkit-app-region: drag;
-    position: relative; /* Нужно для позиционирования свечения, если захотим эффект на весь хедер */
-    z-index: 1; /* Чтобы хедер был поверх свечения основного контента */
-}
-
-.app-header nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.nav-button {
-    padding: 0.5rem 1rem;
-    font-size: 1.2rem;
-    font-weight: 600;
-    border-radius: 20px;
-    position: relative; /* Для свечения под кнопкой */
-    color: var(--color-text-emphasis);
-    opacity: 0.7;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
-    -webkit-app-region: no-drag;
-    z-index: 2; /* Кнопка поверх своего свечения */
-}
-
-.nav-button:hover {
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-.nav-button.active {
-    opacity: 1;
-}
-
-/* Кругляшок */
-.nav-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 8px;
-    background-color: var(--color-nav-active-indicator);
-    border-radius: 50%;
-    transition: background-color var(--transition-fast);
-}
-
-/* --- НОВЫЙ БЛОК: Свечение для кнопок хедера при наведении --- */
+/* --- 3.4 Эффект Свечения при Наведении (::before) --- */
 .nav-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%; /* Ширина свечения относительно кнопки */
-    height: 100%; /* Высота свечения относительно кнопки */
-    background: radial-gradient(circle, var(--color-glow-effect) 0%, transparent 70%); /* Круглое свечение */
-    filter: blur(15px); /* Эффект размытия свечения */
-    opacity: 0; /* Изначально скрыто */
-    transform: translate(-50%, -50%) scale(0.5); /* Начинаем с маленького, в центре */
-    transition: all var(--transition-medium); /* Плавный переход */
-    border-radius: 50%; /* Сделать свечение круглым */
-    z-index: -1; /* Свечение под кнопкой */
+    content: '';             /* Обязательно для псевдоэлементов */
+    position: absolute;      /* Позиционируем относительно кнопки */
+    top: 50%;                /* Центрируем по вертикали */
+    left: 50%;               /* Центрируем по горизонтали */
+    width: 100%;             /* Ширина свечения = ширина кнопки */
+    height: 100%;            /* Высота свечения = высота кнопки */
+    /* Создаем радиальный градиент от цвета свечения к прозрачному */
+    background: radial-gradient(circle, var(--color-glow-effect) 0%, transparent 70%);
+    filter: blur(15px);      /* Размываем градиент */
+    opacity: 0;              /* Изначально свечение невидимо */
+    /* Начинаем с маленького размера в центре */
+    transform: translate(-50%, -50%) scale(0.5);
+    /* Плавный переход для всех свойств */
+    transition: all var(--transition-medium);
+    border-radius: 50%;      /* Делаем свечение круглым */
+    z-index: -1;             /* Помещаем свечение ПОД кнопкой */
+    pointer-events: none;    /* Свечение не должно мешать кликам */
 }
 
 .nav-button:hover::before {
-    opacity: 0.7; /* Появляется свечение */
-    transform: translate(-50%, -50%) scale(1.5); /* Расширяется */
-    animation: glow-pulse 2s infinite alternate ease-in-out; /* Пульсация */
+    opacity: 0.7;            /* Показываем свечение */
+    /* Увеличиваем размер свечения */
+    transform: translate(-50%, -50%) scale(1.5);
+    /* Запускаем анимацию пульсации */
+    animation: glow-pulse 2s infinite alternate ease-in-out;
 }
+
+/* ==========================================================================
+   (Конец header.css)
+   ========================================================================== */
