@@ -63,12 +63,12 @@ function initCalendarZoom() {
 
 // --- Запускаем Инициализацию Зума ---
 // ЖДЕМ, ПОКА DOM БУДЕТ ГОТОВ, ПРЕЖДЕ ЧЕМ ЧТО-ТО ИСКАТЬ
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("--- [DEBUG] Zoom: DOMContentLoaded. Запуск initCalendarZoom...");
-    if (typeof resetCalendarZoom === 'function') {
-        resetCalendarZoom(); // Устанавливаем дефолт
-    }
-    if (typeof initCalendarZoom === 'function') {
-        initCalendarZoom(); // Вешаем слушатель колеса
-    }
-});
+//document.addEventListener('DOMContentLoaded', () => {
+//    console.log("--- [DEBUG] Zoom: DOMContentLoaded. Запуск initCalendarZoom...");
+//    if (typeof resetCalendarZoom === 'function') {
+//        resetCalendarZoom(); // Устанавливаем дефолт
+//    }
+//    if (typeof initCalendarZoom === 'function') {
+//        initCalendarZoom(); // Вешаем слушатель колеса
+//    }
+//});

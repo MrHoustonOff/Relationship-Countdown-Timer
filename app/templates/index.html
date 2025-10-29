@@ -12,28 +12,18 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
     <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
-    </head>
+    <script src="{{ url_for('static', filename='js/page_calendar_zoom.js') }}"></script>
+
+</head>
 
 <body x-data @alpine:initialized="$store.app.init()" x-show="$store.app.ui.isLoaded" style="display: none;">
 
     <template x-if="$store.app.config">
         <div> <header class="app-header">
                 <nav>
-                    <button
-                        @click="$store.app.navigateTo('page-main')"
-                        :class="{ 'active': $store.app.ui.currentPage === 'page-main' }"
-                        x-text="$store.app.lang['header_main'] || '...'">
-                    </button>
-                    <button
-                        @click="$store.app.navigateTo('page-calendar')"
-                        :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }"
-                        x-text="$store.app.lang['header_calendar'] || '...'">
-                    </button>
-                    <button
-                        @click="$store.app.navigateTo('page-settings')"
-                        :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }"
-                        x-text="$store.app.lang['header_settings'] || '...'">
-                    </button>
+                    <button @click="$store.app.navigateTo('page-main')" :class="{ 'active': $store.app.ui.currentPage === 'page-main' }" x-text="$store.app.lang['header_main'] || '...'"></button>
+                    <button @click="$store.app.navigateTo('page-calendar')" :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }" x-text="$store.app.lang['header_calendar'] || '...'"></button>
+                    <button @click="$store.app.navigateTo('page-settings')" :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }" x-text="$store.app.lang['header_settings'] || '...'"></button>
                 </nav>
             </header>
 
@@ -41,13 +31,7 @@
 
                 {% include '_page_main.html' %}
 
-                <section
-                    id="page-calendar"
-                    class="page-content"
-                    :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }">
-
-                    <h1>[ЗАГЛУШКА] Страница Календаря</h1>
-                </section>
+                {% include '_page_calendar.html' %}
 
                 <section
                     id="page-settings"
@@ -64,7 +48,7 @@
 
     <template x-if="$store.app.ui.error">
          <div class="critical-error-fallback">
-            <h2>Критическая ошибка (v2.3)</h2>
+            <h2>Критическая ошибка (v2.4)</h2>
             <pre x-text="$store.app.ui.error"></pre>
         </div>
     </template>
