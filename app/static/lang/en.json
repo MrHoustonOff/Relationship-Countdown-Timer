@@ -8,5 +8,16 @@
     "calendar_empty_title": "Oops! Nothing to show here :)",
     "calendar_empty_p1": "You are either cuddling together right now, or you forgot the point!",
     "calendar_empty_p2": "The calendar displays the time from your cutie-patootie's departure date until their arrival date! <strong>Set it up in \"Settings\" :)</strong>",
-    "calendar_empty_p3": "But if your sweetie-pie is right next to you, then come back when they aren't :("
+    "calendar_empty_p3": "But if your sweetie-pie is right next to you, then come back when they aren't :(",
+
+    "first_launch_title": "Hello! 👋 First Launch",
+    "first_launch_text_ru": "<p>Пожалуйста, выбери предпочитаемый язык и настрой основные даты в разделе \"Настроечки\".</p><p>После настройки <strong>обязательно</strong> нажми кнопку \"Сохранить\" вверху страницы настроек. 👉👈</p>",
+    "first_launch_text_en": "<p>Please choose your preferred language and set the main dates in the \"Settings\" section.</p><p>After configuring, <strong>make sure</strong> to press the \"Save\" button at the top of the settings page. 👉👈</p>",
+    "modal_ok_button": "ok...",
+
+    "modal_unsaved_title": "Unsaved Changes",
+    "modal_unsaved_text": "You have unsaved changes. Do you want to save them before leaving?",
+    "modal_save_button": "Save and Exit",
+    "modal_discard_button": "Discard",
+    "modal_cancel_button": "Cancel"
 }

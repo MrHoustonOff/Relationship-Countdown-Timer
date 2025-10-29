@@ -56,8 +56,21 @@
                     id="page-settings"
                     class="page-content"
                     :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }">
-                    <h1>[ЗАГЛУШКА] Страница Настроек</h1>
-                </section>
+
+                    <div class="settings-save-bar-top">
+                        <button class="save-button"
+                                @click="$store.app.saveSettings()"
+                                x-text="$store.app.lang['settings_save_button'] || 'Сохранить'">
+                        </button>
+                    </div>
+
+                    <form id="settings-form" x-data="settingsForm()">
+                        <template x-if="$store.app.form">
+                            <div> {% include '_settings_module_global.html' %}
+                                </div>
+                        </template>
+                    </form>
+                    </section>
             </main>
 
         </div>
@@ -69,6 +82,29 @@
             <pre x-text="$store.app.ui.error"></pre>
         </div>
     </template>
+    <div id="first-launch-modal" class="modal-overlay"
+         x-data="{ isVisible: false }"
+         x-show="isVisible"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         style="display: none;"
+         >
+        <div class="modal-content large"> <h2 x-text="$store.app.lang['first_launch_title'] || 'Добро пожаловать!'"></h2>
 
+            <div id="first-launch-text" x-html="$store.app.lang['first_launch_text_ru'] || 'Загрузка текста...'"></div>
+
+
+            <div class="modal-buttons single-button">
+                 <button id="modal-btn-ok" class="save-button"
+                        @click="$store.app.handleFirstLaunchOK(); isVisible = false;"
+                        x-text="$store.app.lang['modal_ok_button'] || 'Понятно'">
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

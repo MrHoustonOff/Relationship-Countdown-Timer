@@ -9,12 +9,110 @@
 @import url('page_main.css');     /* Стили для страницы "Главная" (таймеры) */
 @import url('page_calendar.css'); /* Стили для страницы "Календарчик" */
 @import url('effects.css');
+@import url('page_settings.css');
 
-/* * На Этапе 3 мы добавим:
- * @import url('page_calendar.css');
- */
+.modal-overlay {
+    position: fixed; /* Поверх всего */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* Сильное затемнение фона */
+    z-index: 1000; /* Высший слой */
+    display: flex; /* Центрирование через Flexbox */
+    justify-content: center;
+    align-items: center;
+    padding: 1rem; /* Отступы для маленьких экранов */
+    /* Плавность появления/исчезновения управляется Alpine x-transition */
+}
 
-/* * На Этапе 5 мы добавим:
- * @import url('page_settings.css');
- * @import url('modals.css');
- */
+.modal-content {
+    background-color: var(--color-accent-secondary); /* Фон из твоей палитры */
+    padding: 1.8rem 2.2rem; /* Внутренние отступы */
+    border-radius: var(--border-radius-medium); /* Скругление из твоей палитры */
+    max-width: 500px; /* Макс. ширина по умолчанию */
+    width: 95%; /* Адаптивная ширина */
+    text-align: center; /* Текст по центру (заголовок, кнопки) */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4); /* Тень */
+    pointer-events: auto; /* Разрешаем клики внутри контента */
+}
+
+/* Модификатор для более широкого окна */
+.modal-content.large {
+    max-width: 650px;
+}
+
+.modal-content h2 {
+    color: var(--color-accent-primary); /* Акцентный цвет заголовка */
+    margin-bottom: 1.5rem; /* Отступ снизу */
+    font-size: 1.5rem; /* Размер заголовка */
+    border-bottom: 1px solid var(--color-divider); /* Линия под заголовком */
+    padding-bottom: 0.8rem; /* Отступ до линии */
+}
+
+/* Контейнер для текста первого запуска */
+#first-launch-text {
+    text-align: left; /* Текст внутри блока - по левому краю */
+    margin-bottom: 2rem; /* Отступ до кнопок */
+    font-size: 1rem; /* Стандартный размер текста */
+    line-height: 1.6;
+    color: var(--color-text); /* Стандартный цвет текста */
+    opacity: 0.9;
+}
+
+#first-launch-text p {
+    margin-bottom: 1rem; /* Отступ между параграфами */
+}
+
+#first-launch-text strong { /* Выделение важного */
+    color: var(--color-accent-primary);
+    font-weight: 600;
+}
+
+/* Контейнер для кнопок */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end; /* Кнопки справа по умолчанию */
+    gap: 1rem; /* Отступ между кнопками */
+    margin-top: 1rem; /* Отступ сверху от текста/контента */
+}
+
+/* Центрирование, если кнопка одна */
+.modal-buttons.single-button {
+    justify-content: center;
+}
+
+/* Базовые стили кнопок в модалке */
+.modal-buttons button {
+    /* Попробуем использовать стили твоей кнопки "Сохранить" */
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px; /* Как у .save-button */
+    cursor: pointer;
+    transition: transform var(--transition-fast), background-color var(--transition-fast), opacity var(--transition-fast);
+    border: none; /* Убедимся, что рамки нет */
+}
+
+.modal-buttons button:hover {
+    transform: scale(1.05); /* Эффект при наведении */
+}
+
+/* Стили для кнопки "ОК" (используем класс .save-button) */
+/* Убедись, что стиль .save-button определен где-то в твоих CSS */
+#modal-btn-ok.save-button {
+    background-color: var(--color-accent-primary);
+    color: var(--color-background);
+}
+
+/* (Опционально) Стили для других кнопок, если понадобятся */
+/* Например, кнопка "Отмена" */
+/*
+.modal-buttons .cancel-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+}
+.modal-buttons .cancel-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+*/

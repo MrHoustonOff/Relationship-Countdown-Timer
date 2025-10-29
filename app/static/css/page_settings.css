@@ -1,0 +1,220 @@
+/* /mrhoustontimer/app/static/css/page_settings.css (Базовый) */
+
+#page-settings {
+    /* Отступ сверху, чтобы было место для будущей кнопки "Сохранить" */
+    padding-top: 60px;
+    align-items: center; /* Центрируем модули */
+}
+
+/* --- Кнопка "Сохранить" (Пока просто плейсхолдер) --- */
+.settings-save-bar-top {
+    position: sticky; /* Прилипает к верху при скролле */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Поверх модулей */
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    margin-bottom: 20px; /* Отступ до первого модуля */
+    background-color: var(--color-background); /* Фон как у body */
+    border-bottom: 1px solid var(--color-divider);
+    /* Изначально скрыта */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+/* Показываем кнопку, когда форма "грязная" */
+body.form-dirty .settings-save-bar-top {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.save-button { /* Общий стиль для кнопки */
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background-color: var(--color-accent-primary);
+    color: var(--color-background); /* Контрастный цвет текста */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+.save-button:hover:not(:disabled) {
+    transform: scale(1.03);
+    filter: brightness(1.1);
+}
+.save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* --- Общий стиль Модуля Настроек --- */
+.settings-module {
+    width: 100%;
+    max-width: 800px; /* Ограничиваем ширину для читаемости */
+    margin: 0 auto 25px auto; /* Центрируем и добавляем отступ снизу */
+    padding: 25px;
+    background-color: var(--color-accent-secondary); /* Фон модуля */
+    border-radius: var(--border-radius-medium);
+}
+.settings-module h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--color-accent-primary); /* Акцентный цвет заголовка */
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 10px;
+    margin-bottom: 25px; /* Отступ после заголовка */
+}
+
+/* --- Сетка для Строки Настройки --- */
+.setting-row {
+    display: grid;
+    /* [Лейбл+Инпут] [Кнопка сброса] [Описание] */
+    grid-template-columns: minmax(200px, 2fr) 40px minmax(200px, 1fr);
+    gap: 10px 15px; /* Отступы между колонками и рядами */
+    align-items: start; /* Выравниваем по верху */
+    margin-bottom: 25px; /* Отступ между настройками */
+}
+/* Убираем отступ у последней строки в модуле */
+.settings-module .setting-row:last-child {
+    margin-bottom: 0;
+}
+
+
+/* --- Группа Label + Input(s) --- */
+.input-group {
+    grid-column: 1; /* Занимает первую колонку */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Отступ между label и input */
+}
+.input-group label,
+.form-group-checkbox label { /* Общий стиль для всех лейблов */
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--color-text-emphasis);
+    opacity: 0.9;
+    cursor: pointer;
+}
+
+/* --- Стили для Input, Select --- */
+.input-group input[type="text"],
+.input-group input[type="number"],
+.input-group input[type="color"],
+.input-group input[type="date"],
+.input-group input[type="time"],
+.input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(0, 0, 0, 0.25); /* Полупрозрачный темный фон */
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-family: var(--font-main);
+}
+/* Фокус для инпутов */
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 5px rgba(244, 143, 177, 0.5); /* Розовая тень */
+}
+
+/* --- Стили для Checkbox --- */
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px; /* Чтобы по высоте совпадал с обычными инпутами */
+}
+.form-group-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0; /* Не сжиматься */
+    accent-color: var(--color-accent-primary); /* Розовый цвет галочки */
+    cursor: pointer;
+}
+.form-group-checkbox label {
+    margin-bottom: 0; /* Убираем лишний отступ */
+    font-weight: 400; /* Обычный вес */
+    color: var(--color-text); /* Обычный цвет текста */
+}
+/* Модификатор для чекбокса справа от лейбла */
+.form-group-checkbox.checkbox-label-first {
+    flex-direction: row-reverse; /* Меняем порядок: input, label */
+    justify-content: flex-end; /* Прижимаем вправо (если нужно) */
+}
+
+
+/* --- Кнопка Сброса --- */
+.reset-button-placeholder {
+    grid-column: 2; /* Занимает вторую колонку */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 32px; /* Примерный отступ сверху, чтобы кнопка была напротив инпута */
+}
+.reset-default-btn {
+    background: none; border: none;
+    color: var(--color-text);
+    opacity: 0.4;
+    font-size: 24px; /* Размер иконки */
+    cursor: pointer;
+    padding: 0;
+    line-height: 1; /* Убираем лишнюю высоту строки */
+    width: 30px; height: 30px; /* Фикс. размер */
+    transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+.reset-default-btn:hover {
+    opacity: 1;
+    color: var(--color-accent-primary);
+}
+
+/* --- Описание Настройки --- */
+.form-description {
+    grid-column: 3; /* Занимает третью колонку */
+    align-self: start; /* Выравнивание по верху */
+    font-size: 0.85rem;
+    color: var(--color-text);
+    opacity: 0.6;
+    font-style: italic;
+    line-height: 1.5;
+    padding-top: 5px; /* Небольшой отступ сверху */
+}
+.form-description strong { /* Выделение в описании */
+     color: var(--color-accent-primary);
+     font-style: normal;
+}
+
+/* --- Подсказка (например, при первом запуске) --- */
+.form-hint {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: rgba(var(--color-accent-primary-rgb, 244, 143, 177), 0.1); /* Легкий розовый фон */
+    border-left: 3px solid var(--color-accent-primary);
+    border-radius: 4px;
+}
+.form-hint.first-launch-hint { /* Особый стиль для подсказки первого запуска */
+    /* Можно добавить иконку или другие стили */
+}
+/* (Нужно будет добавить --color-accent-primary-rgb в :root, если хочешь rgba) */
+
+/* --- Стили для Отключенных Элементов (Каскад) --- */
+.setting-row.setting-disabled {
+    opacity: 0.4;
+    pointer-events: none; /* Блокируем взаимодействие */
+}
+.setting-row.setting-disabled .input-group label {
+    cursor: default;
+}
+.setting-row.setting-disabled button {
+    cursor: default;
+}

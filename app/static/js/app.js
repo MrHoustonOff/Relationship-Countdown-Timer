@@ -3,7 +3,63 @@
  * Реактивное ядро.
  * Шаг 3: Добавлен alpineTicker для страницы таймеров.
  */
+function settingsForm() {
+    return {
+        // --- Локальное Состояние Формы ---
+        // НЕТ ЛОКАЛЬНОГО СОСТОЯНИЯ 'form'.
+        // Все x-model будут привязаны к ГЛОБАЛЬНОМУ $store.app.form
 
+        // --- Инициализация Компонента ---
+        init() {
+            console.log("--- [DEBUG] Компонент settingsForm() инициализирован.");
+            // Alpine.effect() больше не нужен здесь, так как
+            // $store.app.form инициализируется в $store.app.init(),
+            // а $store.app.revertSettings() сам делает копию.
+        },
+
+        // --- Методы Компонента (прокси к $store) ---
+        // Эти методы просто вызывают соответствующие методы в глобальном store
+        markDirty() {
+            Alpine.store('app').markDirty();
+        },
+        resetField(fieldName) {
+            // Вызываем глобальный метод сброса (который все еще TODO)
+            Alpine.store('app').resetField(fieldName);
+            // markDirty() вызовется внутри глобального resetField
+        },
+        save() {
+            // Вызываем глобальный метод сохранения, передавая ему
+            // ссылку на ГЛОБАЛЬНЫЙ объект формы
+            Alpine.store('app').saveSettings(Alpine.store('app').form);
+        },
+        revert() {
+            // Вызываем глобальный метод отмены
+             Alpine.store('app').revertSettings();
+             // Глобальный revertSettings сам обновит $store.app.form
+        },
+
+        // --- Хелперы для Дат ---
+        // Эти хелперы нужны для работы с <input type="date/time">,
+        // они читают из $store.app.form и вызывают markDirty при изменении.
+        getDatePart(isoString) {
+            // Читаем из глобального store
+            const dateValue = Alpine.store('app').form[isoString];
+            return dateValue ? dateValue.split('T')[0] : '';
+        },
+        getTimePart(isoStringField) {
+             // Читаем из глобального store
+            const dateValue = Alpine.store('app').form[isoStringField];
+            return dateValue ? dateValue.split('T')[1].substring(0, 5) : ''; // HH:mm
+        },
+        updateDateTime(fieldName, part, value) {
+             // TODO: Реализовать логику сборки Date + Time обратно в ISO строку
+             // и записи в $store.app.form[fieldName]
+             console.warn(`TODO: Обновить ${fieldName}.${part} = ${value} в $store.app.form`);
+             // После обновления значения вызываем markDirty
+             Alpine.store('app').markDirty();
+        }
+    }
+}
 // --- Утилита Ticker (x-init) ---
 function alpineTicker(elementId, getTargetDate, getMode, getCompletedMsg) {
     return {
@@ -132,11 +188,13 @@ document.addEventListener('alpine:init', () => {
         config: null,
         log: null,
         lang: {},
+        form: null,
         ui: {
             currentPage: 'page-main',
             isLoaded: false,
             error: null,
-            hoverTargetType: null // null | 'header-button' | 'arrival' | 'relationship'
+            hoverTargetType: null, // null | 'header-button' | 'arrival' | 'relationship'\
+            isDirty: false
         },
 
         // --- 2. Инициализация (INIT) ---
@@ -166,6 +224,13 @@ document.addEventListener('alpine:init', () => {
                 console.log("--- [DEBUG] Store.init(): УСПЕХ. Config, Log, Lang загружены.");
                 this.ui.isLoaded = true;
 
+                if (this.config) {
+                     this.form = Alpine.reactive(JSON.parse(JSON.stringify(this.config)));
+                     console.log("--- [DEBUG] Store.init(): Создана реактивная копия конфига в this.form.");
+                } else {
+                     throw new Error("Не удалось создать копию конфига для формы.");
+                }
+
                 if (typeof resetCalendarZoom === 'function') {
                     resetCalendarZoom();
                 } else { console.warn("[App.init] resetCalendarZoom не найдена"); }
@@ -174,8 +239,21 @@ document.addEventListener('alpine:init', () => {
                 } else { console.warn("[App.init] initCalendarZoom не найдена"); }
 
                 if (this.config.is_first_launch) {
-                     console.log("--- [DEBUG] ПЕРВЫЙ ЗАПУСК. (Логика модалки будет здесь)");
-                     this.navigateTo('page-settings');
+                     console.log("--- [DEBUG] ПЕРВЫЙ ЗАПУСК: Показываем модальное окно...");
+                     // Используем Alpine.deferLoading = false и nextTick для гарантии
+                     Alpine.deferLoading = false;
+                     Alpine.nextTick(() => {
+                         // Находим Alpine-компонент модального окна по ID
+                         const modalElement = document.getElementById('first-launch-modal');
+                         if (modalElement && modalElement._x_dataStack) {
+                             // Устанавливаем его локальное свойство isVisible в true
+                             modalElement._x_dataStack[0].isVisible = true;
+                             console.log("--- [DEBUG] Модальное окно первого запуска показано.");
+                         } else {
+                             console.error("!!! Не удалось найти Alpine-компонент #first-launch-modal");
+                         }
+                     });
+
                 }
             } catch (error) {
                 console.error("--- [DEBUG] КРИТИЧЕСКАЯ ОШИБКА в Store.init():", error);
@@ -518,6 +596,82 @@ document.addEventListener('alpine:init', () => {
         },
         setHoverTarget(type) {
             this.ui.hoverTargetType = type;
+        },
+        handleFirstLaunchOK() {
+            console.log("--- [DEBUG] handleFirstLaunchOK: Переход на страницу настроек.");
+            this.navigateTo('page-settings');
+            // Важно: Мы НЕ меняем is_first_launch здесь.
+            // Флаг должен сброситься только после УСПЕШНОГО СОХРАНЕНИЯ
+            // настроек в первый раз (это будет в функции saveSettings).
+        },
+        markDirty() {
+            if (!this.ui.isDirty) {
+                console.log("--- [DEBUG] Форма помечена как 'грязная'");
+                this.ui.isDirty = true;
+                // Добавляем класс к body для показа кнопки Сохранить
+                 document.body.classList.add('form-dirty');
+            }
+        },
+
+        /**
+         * (НОВОЕ - Заглушка) Сбрасывает поле к значению по умолчанию.
+         * @param {string} fieldName - Имя поля в this.form (e.g., 'language')
+         */
+        resetField(fieldName) {
+            console.warn(`TODO: Сбросить поле ${fieldName}`);
+            // Здесь будет логика сброса к DEFAULT_CONFIG
+            this.markDirty();
+        },
+
+        /**
+         * (НОВОЕ - Заглушка) Сохраняет текущие настройки из this.form.
+         */
+        async saveSettings(formData) { // Принимает formData из settingsForm()
+             console.warn("TODO: Сохранить настройки", JSON.stringify(formData, null, 2));
+             try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData) // Отправляем данные из формы
+                });
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     console.error("Ошибка сохранения:", errorData);
+                     alert(`Ошибка сохранения: ${JSON.stringify(errorData.details || errorData.error)}`);
+                     return false; // Сигнал об ошибке
+                }
+                 // Успех
+                 this.config = await response.json(); // Обновляем $store.app.config новыми данными
+                 this.ui.isDirty = false;
+                 document.body.classList.remove('form-dirty');
+                 this.applyDynamicStyles(); // Применяем новые стили (например, цвета)
+                 alert("Настройки сохранены! Перезагрузка..."); // Временный alert
+                 window.location.reload(); // Перезагружаем приложение
+                 return true; // Сигнал об успехе
+
+             } catch (error) {
+                  console.error("Критическая ошибка fetch при сохранении:", error);
+                  alert(`Критическая ошибка: ${error.message}`);
+                  return false;
+             }
+        },
+
+        /**
+         * (НОВОЕ - Заглушка) Отменяет изменения и возвращает форму к this.config.
+         */
+        revertSettings() {
+            console.log("--- [DEBUG] Отмена изменений...");
+            // *** ИСПРАВЛЕНО: Явно копируем config обратно в form ***
+            if (this.config) {
+                this.form = Alpine.reactive(JSON.parse(JSON.stringify(this.config)));
+                 console.log("--- [DEBUG] revertSettings: this.form восстановлен из this.config.");
+            } else {
+                 console.error("!!! revertSettings: Не удалось восстановить форму, т.к. this.config пуст.");
+            }
+            // *** КОНЕЦ ИСПРАВЛЕНИЙ ***
+            this.ui.isDirty = false;
+            document.body.classList.remove('form-dirty');
+            this.applyDynamicStyles(); // Восстанавливаем стили
         },
          // Конец triggerMonthCompletionEffect
 
