@@ -4,47 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Relationship Countdown Timer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
 
-    <header class="app-header">
-        <nav>
-            <button id="nav-main" class="nav-button active" data-page="page-main" data-lang-key="header_main"></button>
-            <button id="nav-calendar" class="nav-button" data-page="page-calendar" data-lang-key="header_calendar"></button>
-            <button id="nav-settings" class="nav-button" data-page="page-settings" data-lang-key="header_settings"></button>
-        </nav>
-    </header>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
+
+    </head>
+
+<body x-data @alpine:initialized="$store.app.init()" :class="{ 'loading': !$store.app.ui.isLoaded }">
+
+    <template x-if="$store.app.ui.isLoaded">
+        <header class="app-header">
+            <nav>
+                <button
+                    @click="$store.app.navigateTo('page-main')"
+                    :class="{ 'active': $store.app.ui.currentPage === 'page-main' }"
+                    x-text="$store.app.lang['header_main'] || '...'">
+                </button>
+                <button
+                    @click="$store.app.navigateTo('page-calendar')"
+                    :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }"
+                    x-text="$store.app.lang['header_calendar'] || '...'">
+                </button>
+                <button
+                    @click="$store.app.navigateTo('page-settings')"
+                    :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }"
+                    x-text="$store.app.lang['header_settings'] || '...'">
+                </button>
+            </nav>
+        </header>
+    </template>
 
     <main class="app-main">
 
-        <section id="page-main" class="page-content active">
+        <section
+            id="page-main"
+            class="page-content"
+            :class="{ 'active': $store.app.ui.isLoaded && $store.app.ui.currentPage === 'page-main' }">
+            <p>1</p>
+            </section>
 
-            <div id="timer-arrival-module" class="timer-module">
-                <h2 class="timer-module-title">...</h2>
-                <div class="timer-display large" id="timer-arrival-display">--:--:--:--</div>
-            </div>
+        <section
+            id="page-calendar"
+            class="page-content"
+            :class="{ 'active': $store.app.ui.isLoaded && $store.app.ui.currentPage === 'page-calendar' }">
+            <p>2</p>
+            </section>
 
-            <div id="timer-relationship-module" class="timer-module">
-                <h2 class="timer-module-title">...</h2>
-                <div class="timer-display medium" id="timer-relationship-display">--:--:--:--</div>
-
-                <div id="custom-timers-container" class="custom-timers-list">
-                    </div>
-            </div>
-
-        </section> <section id="page-calendar" class="page-content">
-            </section> <section id="page-settings" class="page-content">
-            <form id="settings-form">
+        <section
+            id="page-settings"
+            class="page-content"
+            :class="{ 'active': $store.app.ui.isLoaded && $store.app.ui.currentPage === 'page-settings' }">
+            <p>3</p>
+            <form id="settings-form" x-data="settingsForm()">
                 </form>
-        </section>
-    </main>
 
-    <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/page_main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/page_calendar.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/page_settings.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        </section>
+
+        <template x-if="$store.app.ui.error">
+             <div class="critical-error-fallback">
+                <h2>Критическая ошибка (v2.1)</h2>
+                <pre x-text="$store.app.ui.error"></pre>
+            </div>
+        </template>
+
+    </main>
 </body>
 </html>
