@@ -11,25 +11,60 @@
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
+    <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
     </head>
 
 <body x-data @alpine:initialized="$store.app.init()" x-show="$store.app.ui.isLoaded" style="display: none;">
 
     <template x-if="$store.app.config">
-        <main class="app-main">
-            <h1>Тест Реактивности (Шаг 1):</h1>
-            <p>Название страницы (пока заглушка): <strong style="color: var(--color-accent-primary);">Главная</strong></p>
-            <p>Ниже ты должен увидеть *весь* загруженный store (конфиг и ui):</p>
+        <div> <header class="app-header">
+                <nav>
+                    <button
+                        @click="$store.app.navigateTo('page-main')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-main' }"
+                        x-text="$store.app.lang['header_main'] || '...'">
+                    </button>
+                    <button
+                        @click="$store.app.navigateTo('page-calendar')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }"
+                        x-text="$store.app.lang['header_calendar'] || '...'">
+                    </button>
+                    <button
+                        @click="$store.app.navigateTo('page-settings')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }"
+                        x-text="$store.app.lang['header_settings'] || '...'">
+                    </button>
+                </nav>
+            </header>
 
-            <pre style="background-color: #222; padding: 10px; border-radius: 8px; border: 1px solid var(--color-divider); font-size: 12px; max-height: 500px; overflow-y: auto;"
-                 x-text="JSON.stringify($store.app, null, 2)">
-            </pre>
-        </main>
+            <main class="app-main">
+
+                {% include '_page_main.html' %}
+
+                <section
+                    id="page-calendar"
+                    class="page-content"
+                    :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }">
+
+                    <h1>[ЗАГЛУШКА] Страница Календаря</h1>
+                </section>
+
+                <section
+                    id="page-settings"
+                    class="page-content"
+                    :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }">
+
+                    <h1>[ЗАГЛУШКА] Страница Настроек</h1>
+                </section>
+
+            </main>
+
+        </div>
     </template>
 
     <template x-if="$store.app.ui.error">
          <div class="critical-error-fallback">
-            <h2>Критическая ошибка (v2.0)</h2>
+            <h2>Критическая ошибка (v2.3)</h2>
             <pre x-text="$store.app.ui.error"></pre>
         </div>
     </template>

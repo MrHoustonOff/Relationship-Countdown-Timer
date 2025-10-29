@@ -1,7 +1,8 @@
 <section
     id="page-main"
     class="page-content"
-    :class="{ 'active': $store.app.ui.isLoaded && $store.app.ui.currentPage === 'page-main' }">
+    :class="{ 'active': $store.app.ui.currentPage === 'page-main' }">
+
     <template x-if="$store.app.config.timers.arrival_timer_enabled">
         <div
             id="timer-arrival-module"
@@ -57,4 +58,4 @@
         </div>
     </template>
 
-</section>
+    </section>
