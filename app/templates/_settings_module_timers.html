@@ -1,0 +1,146 @@
+<template x-if="form && form.timers"> <div class="settings-module">
+        <h2 x-text="$store.app.lang['settings_section_timers'] || 'Настройки Таймеров'"></h2>
+        <p class="form-description module-description" x-html="$store.app.lang['settings_desc_timers'] || 'Параметры для таймеров...'"></p>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_timers_subtitle_general'] || 'Общие'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-timers-limit-length"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-timers-limit-length"
+                            x-model="form.timers.limit_text_length">
+                     <label for="setting-timers-limit-length" x-text="$store.app.lang['settings_timers_limit_length_label'] || 'Ограничить длину текста'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.limit_text_length')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_timers_limit_length_desc'] || 'Обрезает тексты до 20 симв.'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-timers-completed" x-text="$store.app.lang['settings_timers_completed_label'] || 'Сообщение о завершении'"></label>
+                <input type="text" id="setting-timers-completed"
+                       x-model="form.timers.timer_completed_message">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.timer_completed_message')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_timers_completed_desc'] || 'Текст для завершенных таймеров.'"></p>
+        </div>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_desc_timers_subtitle_arrival'] || 'Таймер До Встречи'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-timers-arrival-enabled"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-timers-arrival-enabled"
+                            x-model="form.timers.arrival_timer_enabled">
+                     <label for="setting-timers-arrival-enabled" x-text="$store.app.lang['settings_timers_arrival_enabled_label'] || 'Отображать'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.arrival_timer_enabled')">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row" :class="{ 'setting-disabled': !form.timers.arrival_timer_enabled }">
+            <div class="input-group">
+                <label for="setting-timers-arrival-text" x-text="$store.app.lang['settings_timers_arrival_text_label'] || 'Текст таймера'"></label>
+                <input type="text" id="setting-timers-arrival-text"
+                       x-model="form.timers.arrival_timer_text"
+                       :disabled="!form.timers.arrival_timer_enabled">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.arrival_timer_text')"
+                        :disabled="!form.timers.arrival_timer_enabled">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_timers_arrival_text_desc'] || 'Заголовок таймера До Встречи.'"></p>
+        </div>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_desc_timers_subtitle_relationship'] || 'Таймер Мы Вместе'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-timers-relationship-enabled"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-timers-relationship-enabled"
+                            x-model="form.timers.relationship_timer_enabled">
+                     <label for="setting-timers-relationship-enabled" x-text="$store.app.lang['settings_timers_relationship_enabled_label'] || 'Отображать'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.relationship_timer_enabled')">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row" :class="{ 'setting-disabled': !form.timers.relationship_timer_enabled }">
+            <div class="input-group">
+                <label for="setting-timers-relationship-text" x-text="$store.app.lang['settings_timers_relationship_text_label'] || 'Текст таймера'"></label>
+                <input type="text" id="setting-timers-relationship-text"
+                       x-model="form.timers.relationship_timer_text"
+                       :disabled="!form.timers.relationship_timer_enabled">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('timers.relationship_timer_text')"
+                        :disabled="!form.timers.relationship_timer_enabled">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_timers_relationship_text_desc'] || 'Заголовок таймера Мы Вместе.'"></p>
+        </div>
+
+        <fieldset class="cascading-group" :disabled="!form.timers.relationship_timer_enabled">
+
+            <h3 class="sub-header" x-text="$store.app.lang['settings_desc_timers_subtitle_custom'] || 'Дополнительные Таймеры'"></h3>
+            <p class="form-description module-description" x-html="$store.app.lang['settings_desc_timers_subtitle_custom_desc'] || 'Список кастомных таймеров.'"></p>
+
+            <div class="custom-timer-list">
+                <template x-for="(timer, index) in form.timers.custom_timers" :key="timer.id">
+
+                    <div class="custom-timer-list-item setting-row">
+                        <div class="input-group custom-timer-col-toggle">
+                            <input type="checkbox" :id="'custom-timer-enabled-' + timer.id"
+                                   x-model="timer.enabled">
+                            <label :for="'custom-timer-enabled-' + timer.id" class="sr-only">Включить</label>
+                        </div>
+
+                        <div class="input-group custom-timer-col-label">
+                             <input type="text" :id="'custom-timer-label-' + timer.id"
+                                    x-model="timer.label"
+                                    placeholder="Название таймера">
+                        </div>
+
+                        <div class="input-group custom-timer-col-datetime">
+                             <input type="date" :id="'custom-timer-date-' + timer.id"
+                                    :value="getCustomTimerDatePart(timer.id)"
+                                    @change="updateCustomTimerDateTime(timer.id, 'date', $event.target.value)">
+                             <input type="time" :id="'custom-timer-time-' + timer.id"
+                                    step="1"
+                                    :value="getCustomTimerTimePart(timer.id)"
+                                    @change="updateCustomTimerDateTime(timer.id, 'time', $event.target.value)">
+                        </div>
+
+                        <div class="reset-button-placeholder custom-timer-col-delete">
+                             <button type="button" class="delete-timer-btn"
+                                     @click="removeTimer(timer.id)"
+                                     title="Удалить таймер">×</button>
+                        </div>
+                    </div> </template>
+            </div> <div class="add-button-container">
+                <button type="button" class="add-timer-btn"
+                        @click="addTimer()"
+                        x-text="$store.app.lang['settings_timers_add_button'] || '+ Добавить таймер'">
+                </button>
+            </div>
+
+        </fieldset>
+
+    </div> </template>

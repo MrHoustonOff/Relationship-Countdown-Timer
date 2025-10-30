@@ -1,59 +1,61 @@
-<div class="settings-module">
-    <h2 x-text="$store.app.lang['settings_section_global'] || 'Глобальные Настройки'"></h2>
+<template x-if="form">
+    <div class="settings-module">
+        <h2 x-text="$store.app.lang['settings_section_global'] || 'Глобальные Настройки'"></h2>
 
-    <template x-if="$store.app.config.is_first_launch">
-        <p class="form-hint first-launch-hint" x-html="$store.app.lang['settings_first_launch_hint'] || 'Подсказка...'"></p>
-    </template>
+        <template x-if="form.is_first_launch">
+            <p class="form-hint first-launch-hint" x-html="$store.app.lang['settings_first_launch_hint'] || 'Подсказка...'"></p>
+        </template>
 
-    <div class="setting-row">
-        <div class="input-group">
-            <label for="setting-language" x-text="$store.app.lang['settings_language_label'] || 'Язык'"></label>
-            <select id="setting-language"
-                    x-model="$store.app.form.language"
-                    @change="markDirty()">
-                <option value="ru">Русский</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-        <div class="reset-button-placeholder">
-            <button type="button" class="reset-default-btn" title="Сбросить язык к значению по умолчанию"
-                    @click="resetField('language')">↺</button>
-        </div>
-        <p class="form-description" x-html="$store.app.lang['settings_language_desc'] || 'Язык интерфейса.'"></p>
-    </div>
-
-    <div class="setting-row">
-        <div class="input-group">
-             <label for="setting-animations-enabled"></label>
-             <div class="form-group-checkbox checkbox-label-first">
-                 <input type="checkbox" id="setting-animations-enabled"
-                        x-model="$store.app.form.animations_enabled"
-                        @change="markDirty()">
-                 <label for="setting-animations-enabled" x-text="$store.app.lang['settings_animations_label'] || 'Включить анимации'"></label>
-             </div>
-        </div>
-        <div class="reset-button-placeholder">
-            <button type="button" class="reset-default-btn" title="Сбросить анимации к значению по умолчанию"
-                    @click="resetField('animations_enabled')">↺</button>
-        </div>
-        <p class="form-description" x-html="$store.app.lang['settings_animations_desc'] || 'Плавные переходы, пульсация и т.д.'"></p>
-    </div>
-
-    <div class="setting-row">
-        <div class="input-group">
-            <label for="setting-effects-enabled"></label>
-            <div class="form-group-checkbox checkbox-label-first">
-                <input type="checkbox" id="setting-effects-enabled"
-                       x-model="$store.app.form.effects_enabled"
-                       @change="markDirty()">
-                <label for="setting-effects-enabled" x-text="$store.app.lang['settings_effects_label'] || 'Включить эффекты'"></label>
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-language" x-text="$store.app.lang['settings_language_label'] || 'Язык'"></label>
+                <select id="setting-language"
+                        x-model="form.language"
+                        >
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
             </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить язык к значению по умолчанию"
+                        @click="resetField('language')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_language_desc'] || 'Язык интерфейса.'"></p>
         </div>
-        <div class="reset-button-placeholder">
-            <button type="button" class="reset-default-btn" title="Сбросить эффекты к значению по умолчанию"
-                   @click="resetField('effects_enabled')">↺</button>
-        </div>
-        <p class="form-description" x-html="$store.app.lang['settings_effects_desc'] || 'Эффекты частиц при кликах/завершении.'"></p>
-    </div>
 
-</div>
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-animations-enabled"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-animations-enabled"
+                            x-model="form.animations_enabled"
+                            >
+                     <label for="setting-animations-enabled" x-text="$store.app.lang['settings_animations_label'] || 'Включить анимации'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить анимации к значению по умолчанию"
+                        @click="resetField('animations_enabled')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_animations_desc'] || 'Плавные переходы, пульсация...'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-effects-enabled"></label>
+                <div class="form-group-checkbox checkbox-label-first">
+                    <input type="checkbox" id="setting-effects-enabled"
+                           x-model="form.effects_enabled"
+                           >
+                    <label for="setting-effects-enabled" x-text="$store.app.lang['settings_effects_label'] || 'Включить эффекты'"></label>
+                </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить эффекты к значению по умолчанию"
+                       @click="resetField('effects_enabled')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_effects_desc'] || 'Эффекты частиц...'"></p>
+        </div>
+
+    </div>
+</template>

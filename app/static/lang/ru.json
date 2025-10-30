@@ -39,5 +39,27 @@
     "settings_date_arrival_label": "Дата Приезда",
     "settings_date_arrival_desc": "День вашей следующей встречи. Конечная дата для календаря и таймера \"До Встречи\".",
     "settings_date_relationship_label": "Дата Начала Отношений",
-    "settings_date_relationship_desc": "День, с которого вы считаете начало ваших отношений. Используется таймером \"Мы Вместе\"."
+    "settings_date_relationship_desc": "День, с которого вы считаете начало ваших отношений. Используется таймером \"Мы Вместе\".",
+
+    "settings_section_timers": "Настройки Таймеров",
+    "settings_desc_timers": "Управление отображением и текстом таймеров на главной странице.",
+    "settings_timers_subtitle_general": "Общие",
+    "settings_timers_limit_length_label": "Ограничить длину текста",
+    "settings_timers_limit_length_desc": "Обрезает тексты заголовков таймеров до ~20 символов.",
+    "settings_timers_completed_label": "Сообщение о завершении",
+    "settings_timers_completed_desc": "Текст, который отображается, когда таймер обратного отсчета достигает нуля.",
+
+    "settings_desc_timers_subtitle_arrival": "Таймер \"До Встречи\"",
+    "settings_timers_arrival_enabled_label": "Отображать",
+    "settings_timers_arrival_text_label": "Текст таймера",
+    "settings_timers_arrival_text_desc": "Заголовок для главного таймера обратного отсчета.",
+
+    "settings_desc_timers_subtitle_relationship": "Таймер \"Мы Вместе\"",
+    "settings_timers_relationship_enabled_label": "Отображать",
+    "settings_timers_relationship_text_label": "Текст таймера",
+    "settings_timers_relationship_text_desc": "Заголовок для главного таймера прошедшего времени.",
+
+    "settings_desc_timers_subtitle_custom": "Дополнительные Таймеры",
+    "settings_desc_timers_subtitle_custom_desc": "Этот список таймеров отображается под таймером \"Мы Вместе\".",
+    "settings_timers_add_button": "+ Добавить таймер"
 }

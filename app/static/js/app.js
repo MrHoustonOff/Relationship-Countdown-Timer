@@ -3,173 +3,245 @@
  * Реактивное ядро.
  * Шаг 3: Добавлен alpineTicker для страницы таймеров.
  */
+const getDescendantProp = (obj, path) => {
+    if (!obj || !path) return undefined;
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+// --- Alpine Компонент для Формы Настроек (v3.0 - ЛОКАЛЬНОЕ СОСТОЯНИЕ) ---
 function settingsForm() {
     return {
-        // --- Локальное Состояние Формы ---
-        // НЕТ ЛОКАЛЬНОГО СОСТОЯНИЯ 'form'.
-        // Все x-model будут привязаны к ГЛОБАЛЬНОМУ $store.app.form
+        // --- 1. Локальное Состояние ---
+        form: {
+            language: 'ru',
+            animations_enabled: true,
+            effects_enabled: true,
+            date_vova_departure_date: '',
+            date_vova_departure_time: '',
+            date_vova_arrival_date: '',
+            date_vova_arrival_time: '',
+            date_relationship_start_date: '',
+            date_relationship_start_time: '',
 
-        // --- Инициализация Компонента ---
-        init() {
-            console.log("--- [DEBUG] Компонент settingsForm() инициализирован.");
-            // Alpine.effect() больше не нужен здесь, так как
-            // $store.app.form инициализируется в $store.app.init(),
-            // а $store.app.revertSettings() сам делает копию.
-        },
-
-        // --- Методы Компонента (прокси к $store) ---
-        // Эти методы просто вызывают соответствующие методы в глобальном store
-        markDirty() {
-            Alpine.store('app').markDirty();
-        },
-        resetField(fieldName) {
-            // Вызываем глобальный метод сброса (который все еще TODO)
-            Alpine.store('app').resetField(fieldName);
-            // markDirty() вызовется внутри глобального resetField
-        },
-        save() {
-            // Вызываем глобальный метод сохранения, передавая ему
-            // ссылку на ГЛОБАЛЬНЫЙ объект формы
-            Alpine.store('app').saveSettings(Alpine.store('app').form);
-        },
-        revert() {
-            // Вызываем глобальный метод отмены
-             Alpine.store('app').revertSettings();
-             // Глобальный revertSettings сам обновит $store.app.form
+            timers: {
+                limit_text_length: true,
+                timer_completed_message: '',
+                arrival_timer_enabled: true,
+                arrival_timer_text: '',
+                relationship_timer_enabled: true,
+                relationship_timer_text: '',
+                custom_timers: [] // (Пока пустой, реализуем на Шаге 2)
+            }
+            // (Сюда будем добавлять поля из будущих модулей)
         },
 
-// --- Хелперы для Дат (v1.1 - Seconds Enabled) ---
-        getDatePart(fieldName) {
-            const isoString = Alpine.store('app').form?.[fieldName]; // Безопасный доступ
-            if (!isoString) return ''; // Возвращаем пустую строку, чтобы input type="date" показал плейсхолдер
+        // --- Хелперы для парсинга (внутренние) ---
+        _getDatePart(isoString) {
+            if (!isoString) return '';
             try {
-                // Пытаемся создать объект Date (может справиться с микросекундами)
                 const date = new Date(isoString);
-                // Проверяем, что дата валидна
                 if (isNaN(date.getTime())) return '';
-
-                // Форматируем в YYYY-MM-DD
                 const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы 0-11 -> 01-12
+                const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
-            } catch (e) {
-                console.error(`getDatePart: Ошибка парсинга ${fieldName}: ${isoString}`, e);
-                return ''; // Возвращаем пустую строку при ошибке
-            }
+            } catch (e) { return ''; }
         },
-        /**
-         * (ИЗМЕНЕНО) Извлекает HH:mm:ss из ISO строки.
-         */
-        getTimePart(fieldName) {
-            const isoString = Alpine.store('app').form?.[fieldName]; // Безопасный доступ
-            // Возвращаем дефолт, если нет строки или парсинг не удался
-            const defaultTime = '00:00:00';
-            if (!isoString) return defaultTime;
+        _getTimePart(isoString) {
+            if (!isoString || !isoString.includes('T')) return '00:00:00';
             try {
                 const date = new Date(isoString);
-                if (isNaN(date.getTime())) return defaultTime;
-
-                // Форматируем в HH:mm:ss
+                if (isNaN(date.getTime())) return '00:00:00';
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 const seconds = String(date.getSeconds()).padStart(2, '0');
                 return `${hours}:${minutes}:${seconds}`;
-            } catch (e) {
-                console.error(`getTimePart: Ошибка парсинга ${fieldName}: ${isoString}`, e);
-                return defaultTime;
+            } catch (e) { return '00:00:00'; }
+        },
+
+        // --- 2. Инициализация Компонента ---
+        init() {
+console.log("--- [DEBUG] settingsForm() v3.7: Инициализация...");
+
+            // *** СЛУШАТЕЛЬ (Revert/Save/Load) ***
+            Alpine.effect(() => {
+                const storeForm = Alpine.store('app').form;
+                const isDirty = Alpine.store('app').ui.isDirty;
+                if (storeForm && !isDirty) {
+                     console.log("--- [DEBUG] settingsForm (effect): Загрузка данных из $store.app.form...");
+                     this.loadFormFromStore(storeForm);
+                }
+            });
+
+            // *** СИНХРОНИЗАТОР (Local -> Store) ***
+            let firstRun = true;
+            Alpine.watch(() => this.form, (newFormData) => {
+                if (firstRun || !newFormData) {
+                    firstRun = false; return;
+                }
+                console.log("--- [DEBUG] settingsForm (watch): Локальная форма изменилась. Синхронизация с $store...");
+
+                const store = Alpine.store('app');
+                if (!store.form) return;
+
+                // 1. Синхронизируем "Global"
+                store.form.language = newFormData.language;
+                store.form.animations_enabled = newFormData.animations_enabled;
+                store.form.effects_enabled = newFormData.effects_enabled;
+
+                // 2. Собираем ISO строки
+                this.updateStoreFromLocalForm('date_vova_departure');
+                this.updateStoreFromLocalForm('date_vova_arrival');
+                this.updateStoreFromLocalForm('date_relationship_start');
+
+                // *** НОВОЕ: Синхронизируем "Timers" (глубокое копирование) ***
+                // Простое присваивание (store.form.timers = newFormData.timers)
+                // НЕ сработает, если this.form - это proxy.
+                // Вместо этого, копируем каждое свойство.
+                store.form.timers.limit_text_length = newFormData.timers.limit_text_length;
+                store.form.timers.timer_completed_message = newFormData.timers.timer_completed_message;
+                store.form.timers.arrival_timer_enabled = newFormData.timers.arrival_timer_enabled;
+                store.form.timers.arrival_timer_text = newFormData.timers.arrival_timer_text;
+                store.form.timers.relationship_timer_enabled = newFormData.timers.relationship_timer_enabled;
+                store.form.timers.relationship_timer_text = newFormData.timers.relationship_timer_text;
+                store.form.timers.custom_timers = newFormData.timers.custom_timers;
+                // 3. Помечаем форму как "грязную"
+                store.markDirty();
+            }, { deep: true });
+        },
+
+        // --- 3. Методы-Хелперы (Внутренние) ---
+        loadFormFromStore(sourceForm) {
+            if (!sourceForm) {
+                 console.warn("--- [DEBUG] loadFormFromStore: sourceForm пуст.");
+                 return;
+            }
+            // "Global" поля
+            this.form.language = sourceForm.language;
+            this.form.animations_enabled = sourceForm.animations_enabled;
+            this.form.effects_enabled = sourceForm.effects_enabled;
+            // "Dates" поля
+            this.form.date_vova_departure_date = this._getDatePart(sourceForm.date_vova_departure);
+            this.form.date_vova_departure_time = this._getTimePart(sourceForm.date_vova_departure);
+            this.form.date_vova_arrival_date = this._getDatePart(sourceForm.date_vova_arrival);
+            this.form.date_vova_arrival_time = this._getTimePart(sourceForm.date_vova_arrival);
+            this.form.date_relationship_start_date = this._getDatePart(sourceForm.date_relationship_start);
+            this.form.date_relationship_start_time = this._getTimePart(sourceForm.date_relationship_start);
+
+            // *** НОВОЕ: "Timers" (глубокое копирование) ***
+            // Мы должны скопировать объект timers целиком, чтобы x-model="form.timers.X" работал
+            if (sourceForm.timers) {
+                // Используем JSON-копирование для вложенного объекта 'timers'
+                this.form.timers = JSON.parse(JSON.stringify(sourceForm.timers));
+            } else {
+                 console.warn("--- [DEBUG] loadFormFromStore: sourceForm.timers не найден!");
             }
         },
-        /**
-         * (ИЗМЕНЕНО) Обновляет ISO строку, включая секунды.
-         */
-        updateDateTime(fieldName, part, value) {
+        updateStoreFromLocalForm(fieldName) {
             const store = Alpine.store('app');
-            // Check if form and the specific field exist before proceeding
-            if (!store.form || store.form[fieldName] === undefined) {
-                console.error(`updateDateTime: Field ${fieldName} not found in store.form`);
-                return;
+            if (!this.form || !store.form) return;
+            const datePart = this.form[`${fieldName}_date`];
+            const timePart = this.form[`${fieldName}_time`];
+            if (datePart && timePart) {
+                 const fullTimePart = timePart.length === 5 ? timePart + ':00' : timePart;
+                 store.form[fieldName] = `${datePart}T${fullTimePart}`;
+            }
+        },
+        getCustomTimerDatePart(timerId) {
+            if (!this.form.timers.custom_timers) return '';
+            const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
+            return timer ? this._getDatePart(timer.date) : '';
+        },
+        getCustomTimerTimePart(timerId) {
+            if (!this.form.timers.custom_timers) return '00:00:00';
+            const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
+            return timer ? this._getTimePart(timer.date) : '00:00:00';
+        },
+        updateCustomTimerDateTime(timerId, part, value) {
+            if (!this.form.timers.custom_timers) return;
+            const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
+            if (!timer) return;
+
+            // Используем _getDatePart и _getTimePart для получения текущих значений
+            let currentDate = this._getDatePart(timer.date);
+            let currentTime = this._getTimePart(timer.date);
+
+            if (part === 'date') {
+                currentDate = value;
+            } else if (part === 'time') {
+                currentTime = value.length === 5 ? value + ':00' : value;
             }
 
-            try {
-                // Attempt to create a Date object from the current value in the store.
-                // Use current time as a fallback if the stored value is invalid or null.
-                const currentStoredValue = store.form[fieldName];
-                const currentFullDate = new Date(currentStoredValue || Date.now());
+            // Обновляем ISO строку ПРЯМО В 'this.form'
+            // $watch() поймает это изменение и вызовет markDirty()
+            timer.date = `${currentDate}T${currentTime}`;
+        },
+        // --- 4. Методы-Прокси (для кнопок) ---
 
-                let year, month, day, hours, minutes, seconds;
-
-                // Extract components from the CURRENT date/time if valid
-                if (!isNaN(currentFullDate.getTime())) {
-                     year = currentFullDate.getFullYear();
-                     month = currentFullDate.getMonth(); // 0-11
-                     day = currentFullDate.getDate();
-                     hours = currentFullDate.getHours();
-                     minutes = currentFullDate.getMinutes();
-                     seconds = currentFullDate.getSeconds();
-                } else {
-                    // If the current stored value was invalid, use defaults based on 'now' for date, 0 for time
-                    const now = new Date();
-                    year = now.getFullYear(); month = now.getMonth(); day = now.getDate();
-                    hours = 0; minutes = 0; seconds = 0;
-                     console.warn(`updateDateTime: Invalid initial value for ${fieldName}. Using defaults.`);
-                }
-
-                // Update the relevant part (date or time) based on the NEW input 'value'
-                if (part === 'date' && value) { // value expected as "YYYY-MM-DD"
-                    const [newYear, newMonth, newDay] = value.split('-').map(Number);
-                    // Basic validation for date parts
-                    if (newYear && newMonth && newDay) {
-                        year = newYear;
-                        month = newMonth - 1; // Adjust month for Date object (0-11)
-                        day = newDay;
-                    } else {
-                         console.warn(`updateDateTime: Invalid date input value received: ${value}`);
-                    }
-                } else if (part === 'time' && value) { // value expected as "HH:mm" or "HH:mm:ss"
-                    const timeParts = value.split(':').map(Number);
-                    // Basic validation for time parts
-                    if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
-                        hours = timeParts[0];
-                        minutes = timeParts[1];
-                        seconds = timeParts[2] || 0; // Default seconds to 0 if not provided
-                    } else {
-                         console.warn(`updateDateTime: Invalid time input value received: ${value}`);
-                    }
-                }
-
-                // Assemble the NEW Date object using LOCAL time components
-                const newDate = new Date(year, month, day, hours, minutes, seconds);
-
-                // Validate the assembled date
-                if (isNaN(newDate.getTime())) {
-                    console.error(`updateDateTime: Failed to assemble a valid date for ${fieldName} from parts: Y=${year}, M=${month}, D=${day}, H=${hours}, m=${minutes}, s=${seconds}`);
-                    return; // Do not update the store if the date is invalid
-                }
-
-                // Manually format to "YYYY-MM-DDTHH:MM:SS" which Pydantic expects (avoids ISO 'Z' or timezone offset)
-                const newYear = newDate.getFullYear();
-                const newMonth = String(newDate.getMonth() + 1).padStart(2, '0');
-                const newDay = String(newDate.getDate()).padStart(2, '0');
-                const newHours = String(newDate.getHours()).padStart(2, '0');
-                const newMinutes = String(newDate.getMinutes()).padStart(2, '0');
-                const newSeconds = String(newDate.getSeconds()).padStart(2, '0');
-                const newIsoString = `${newYear}-${newMonth}-${newDay}T${newHours}:${newMinutes}:${newSeconds}`;
-
-                // *** DELAYED UPDATE using setTimeout ***
-                // This pushes the store update to the next event loop tick,
-                // allowing the browser to finish processing the input's @change event first.
-                setTimeout(() => {
-                    console.log(`--- [DEBUG] updateDateTime (Delayed): ${fieldName} = ${newIsoString}`);
-                    // Update the GLOBAL store.form value
-                    store.form[fieldName] = newIsoString;
-                    // Mark the form as dirty
-                    store.markDirty();
-                }, 0); // Delay of 0 milliseconds
-
-            } catch (error) {
-                 console.error(`updateDateTime: CRITICAL ERROR processing ${fieldName}`, error);
+        /**
+         * (ИСПРАВЛЕНО) Сбрасывает поле, ОБНОВЛЯЯ ЛОКАЛЬНЫЙ 'this.form'
+         */
+        resetField(fieldName) {
+            console.log(`--- [DEBUG] settingsForm: Сброс поля ${fieldName}...`);
+            const store = Alpine.store('app');
+            if (!store.defaults) {
+                 console.error("!!! resetField: $store.app.defaults не загружен!");
+                 return;
             }
+
+            // 1. Получаем дефолтное значение (может быть вложенным)
+            const defaultValue = getDescendantProp(store.defaults, fieldName);
+            if (defaultValue === undefined) {
+                 console.warn(`!!! resetField: Дефолтное значение для ${fieldName} не найдено.`);
+                 return;
+            }
+
+            // 2. ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ 'this.form'
+            // Нам нужно обновить *все* связанные части (например, date и time для даты)
+
+            if (fieldName.startsWith('date_')) {
+                // Это поле даты
+                this.form[`${fieldName}_date`] = this._getDatePart(defaultValue);
+                this.form[`${fieldName}_time`] = this._getTimePart(defaultValue);
+            } else if (fieldName.startsWith('timers.')) {
+                // Это поле таймера (timers.limit_text_length)
+                const parts = fieldName.split('.'); // ['timers', 'limit_text_length']
+                const key = parts[1];
+                if (this.form.timers && key) {
+                    this.form.timers[key] = JSON.parse(JSON.stringify(defaultValue));
+                }
+            } else {
+                // Это простое поле (language, ...)
+                this.form[fieldName] = JSON.parse(JSON.stringify(defaultValue));
+            }
+
+            // $watch() поймает это изменение.
+            console.log(`--- [DEBUG] settingsForm: Локальное поле ${fieldName} сброшено.`);
+        },
+        save() {
+            Alpine.store('app').saveSettings(Alpine.store('app').form);
+        },
+        revert() {
+             Alpine.store('app').revertSettings();
+             // Alpine.effect() поймает это и перезагрузит this.form
+        },
+        addTimer() {
+            console.log("--- [DEBUG] settingsForm: Добавление нового таймера...");
+            // Создаем новый таймер с дефолтными значениями
+            const newTimer = {
+                id: crypto.randomUUID(), // Генерируем UUID на клиенте
+                enabled: true,
+                label: "Новый таймер",
+                date: new Date().toISOString().split('.')[0] // Текущее время (без мс)
+            };
+            this.form.timers.custom_timers.push(newTimer);
+            // $watch() поймает это изменение и вызовет markDirty()
+        },
+        removeTimer(timerId) {
+            console.log(`--- [DEBUG] settingsForm: Удаление таймера ${timerId}...`);
+            this.form.timers.custom_timers = this.form.timers.custom_timers.filter(
+                t => t.id !== timerId
+            );
+            // $watch() поймает это изменение и вызовет markDirty()
         }
     }
 }
