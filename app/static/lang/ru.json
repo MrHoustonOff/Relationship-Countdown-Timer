@@ -91,5 +91,18 @@
     "settings_preview_arrival_desc": "Как будет выглядеть ячейка дня приезда.",
     "settings_calendar_subtitle_appearance": "Внешний Вид",
     "settings_calendar_empty_bg_label": "Цвет Пустой Ячейки",
-    "settings_calendar_empty_bg_desc": "Фон для дней, которые не входят в диапазон (например, 1-30 Сентября)."
+    "settings_calendar_empty_bg_desc": "Фон для дней, которые не входят в диапазон (например, 1-30 Сентября).",
+
+    "settings_blur_strength_label": "Сила Блюра",
+    "settings_blur_strength_desc": "Насколько сильно размывается фон при наведении (в пикселях). 0 = выключить.",
+
+    "settings_section_colors": "Настройки Цветов",
+    "settings_desc_colors": "Полная настройка цветовой схемы приложения. Изменения отображаются в превью справа.",
+    "settings_section_danger": "Опасная Зона",
+    "settings_desc_danger": "Действия в этой зоне нельзя отменить.",
+    "settings_danger_reset_calendar_label": "Сбросить Календарь",
+    "settings_danger_reset_calendar_desc": "Удаляет <strong>все</strong> отметки (X) с календаря. Сами даты не затрагиваются.",
+    "settings_danger_reset_calendar_btn": "Сбросить",
+    "settings_danger_reset_calendar_confirm": "Ты уверен, что хочешь сбросить календарь? Это удалит все отметки.",
+    "settings_danger_reset_calendar_success": "Календарь сброшен!"
 }

@@ -1,5 +1,36 @@
 /* /mrhoustontimer/app/static/css/page_settings.css (Базовый) */
+/* ==========================================================================
+   НОВОЕ: Сетка-Водопад для Модулей Настроек (.settings-grid)
+   ========================================================================== */
 
+.settings-grid {
+    width: 100%;
+    /* 1. Задаем отступ между колонками */
+    column-gap: 1.5rem; /* 24px (как у .calendar-grid) */
+
+    /* 2. По умолчанию (мобильные) - 1 колонка */
+    column-count: 1;
+
+    /* 3. Адаптивность:
+       Мы не используем min-width модуля, а просто говорим,
+       сколько колонок мы хотим на разных размерах экрана.
+    */
+
+    /* Планшеты (и узкие окна) */
+    @media (min-width: 900px) {
+        column-count: 2;
+    }
+
+    /* Большие десктопы */
+    @media (min-width: 1500px) {
+        column-count: 3;
+    }
+
+    /* Очень большие экраны */
+    @media (min-width: 2100px) {
+        column-count: 4;
+    }
+}
 #page-settings {
     /* Отступ сверху, чтобы было место для будущей кнопки "Сохранить" */
     align-items: center; /* Центрируем модули */
@@ -52,11 +83,13 @@ body.form-dirty .settings-save-bar-top {
 /* --- Общий стиль Модуля Настроек --- */
 .settings-module {
     width: 100%;
-    max-width: 800px; /* Ограничиваем ширину для читаемости */
+    min-width: 612px; /* Ограничиваем минимальную ширину для того чтобы стиль календаря не ломал настройки */
     padding: 25px;
     margin-bottom: 20px;
     background-color: var(--color-accent-secondary); /* Фон модуля */
     border-radius: var(--border-radius-medium);
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 .settings-module h2 {
     font-size: 1.4rem;
@@ -479,4 +512,249 @@ body.form-dirty .settings-save-bar-top {
    так как 'gap' у родителя .settings-grid-2-col уже управляет отступами */
 .settings-grid-2-col > .setting-row {
     margin-bottom: 0;
+}
+
+.range-input-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 44px; /* Такая же высота, как у других инпутов */
+}
+
+.range-input-container input[type="range"] {
+    flex-grow: 1; /* Слайдер занимает основное место */
+    accent-color: var(--color-accent-primary); /* Розовый цвет */
+    cursor: pointer;
+}
+
+.range-input-container .range-value {
+    font-family: var(--font-timer); /* Моноширинный */
+    font-size: 0.95rem;
+    color: var(--color-text-emphasis);
+    background-color: rgba(0,0,0,0.25);
+    padding: 5px 10px;
+    border-radius: 4px;
+    width: 70px; /* Фикс. ширина для значения */
+    text-align: center;
+}
+
+.color-editor-container {
+    display: flex;
+    flex-wrap: wrap; /* Перенос на мобилках */
+    gap: 25px;
+}
+.color-preview-column {
+    flex: 1; /* Растет */
+    min-width: 300px; /* Мин. ширина превью */
+}
+.color-inputs-column {
+    flex: 1; /* Растет */
+    min-width: 300px; /* Мин. ширина инпутов */
+}
+.preview-header {
+    /* Это не .sub-header, а просто h3 */
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+.color-grid {
+    display: grid;
+    /* [Лейбл] [Инпут] [Сброс] */
+    grid-template-columns: 1fr auto auto;
+    gap: 12px 10px; /* Отступы */
+    align-items: center;
+}
+.setting-row-color {
+    display: contents; /* Делаем дочерние элементы прямыми потомками grid */
+}
+.setting-row-color label {
+    font-size: 0.9rem;
+    font-family: var(--font-timer);
+    text-transform: capitalize; /* "color_background" -> "Color Background" (почти) */
+    opacity: 0.8;
+}
+.setting-row-color .color-input-container {
+    height: 40px; /* Чуть меньше */
+}
+.setting-row-color .hex-input {
+    /* Добавляем текстовый инпут для HEX/RGBA */
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-family: var(--font-timer);
+    font-size: 0.9rem;
+    width: 100%;
+}
+.setting-row-color .hex-input:focus {
+    outline: none;
+    background: rgba(0,0,0,0.2);
+}
+.setting-row-color .reset-default-btn.small {
+    font-size: 20px; /* Кнопки сброса поменьше */
+    width: 25px; height: 25px;
+    line-height: 1;
+    margin-top: 0; padding-top: 0;
+}
+
+/* --- 6. Модуль Опасной Зоны --- */
+.settings-module.danger-zone {
+    background-color: rgba(var(--color-accent-primary-rgb), 0.05); /* Легкий красный фон */
+    border: 1px solid var(--color-divider);
+}
+.settings-module.danger-zone h2 {
+    color: #FF8A80; /* Красный заголовок */
+    border-color: rgba(255, 138, 128, 0.3);
+}
+.setting-row.danger-row {
+    grid-template-columns: 1fr auto; /* [Текст] [Кнопка] */
+}
+.setting-row.danger-row .input-group label {
+    font-size: 1.1rem;
+    color: #FFCDD2; /* Светло-красный */
+}
+.form-description.danger {
+    color: #FFCDD2;
+    opacity: 0.7;
+    font-style: normal;
+}
+.reset-button-placeholder.danger {
+    align-self: center; /* Центрируем кнопку */
+    padding-top: 0; margin-top: 0;
+}
+.danger-zone-btn {
+    padding: 10px 15px;
+    background-color: #E91E63; /* Ярко-розовый/красный */
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+}
+.danger-zone-btn:hover {
+    background-color: #AD1457; /* Темнее */
+    transform: scale(1.03);
+}
+
+/* --- 7. Стили для Превью (Эмулятора) --- */
+.pv-emulator-wrapper {
+    width: 100%;
+    border: 2px solid; /* Цвет (divider) из :style */
+    border-radius: var(--border-radius-medium);
+    background-clip: padding-box;
+    overflow: hidden;
+    font-family: var(--font-main); /* Используем основной шрифт */
+    /* background-color и color из :style */
+}
+
+/* --- Превью Хедера --- */
+.pv-header {
+    padding: 8px 0;
+    border-bottom: 1px solid; /* Цвет (divider) из :style */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.pv-nav-button {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.7;
+    position: relative;
+    padding: 5px;
+    background: none; border: none; /* Сброс */
+    /* color из :style */
+}
+.pv-nav-button.active {
+    opacity: 1;
+}
+.pv-dot {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    /* backgroundColor из :style */
+}
+
+/* --- Превью Main --- */
+.pv-main {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.pv-timer-module {
+    padding: 15px;
+    border-radius: var(--border-radius-medium);
+    text-align: center;
+    /* backgroundColor из :style */
+}
+.pv-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    /* color из :style */
+}
+.pv-timer-display {
+    font-family: var(--font-timer);
+    font-size: 1.8rem;
+    font-weight: 700;
+    /* color из :style */
+}
+/* Кастомный таймер */
+.pv-custom-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    /* color из :style */
+}
+.pv-custom-display {
+    font-family: var(--font-timer);
+    font-size: 1.2rem;
+    font-weight: 700;
+    /* color из :style */
+}
+
+/* --- Превью Календаря --- */
+.pv-calendar-module {
+    padding: 10px;
+    border-radius: var(--border-radius-medium);
+    /* backgroundColor из :style */
+}
+.pv-week-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-size: 0.7rem;
+    text-align: center;
+    margin-bottom: 5px;
+    /* color/opacity из :style */
+}
+.pv-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.pv-day-cell {
+    position: relative;
+    border-radius: 4px;
+    aspect-ratio: 1;
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    overflow: hidden; /* Важно, чтобы стикеры не вылезали (как в оригинале) */
+    /* backgroundColor, color из :style */
+}
+.pv-sticker {
+    position: absolute;
+    z-index: 1; /* Под номером */
+    font-size: 1.5rem; /* Базовый размер */
+    opacity: 0.9;
+    /* color, transform из :style */
+}
+.pv-day-cell .pv-sticker.arrival {
+    opacity: 1;
 }

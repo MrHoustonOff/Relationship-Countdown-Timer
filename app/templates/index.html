@@ -69,12 +69,14 @@
 
                     <form id="settings-form" x-data="settingsForm()">
                         <template x-if="$store.app.form">
-                            <div>
+                            <div class="settings-grid">
                                 {% include '_settings_module_global.html' %}
-                                {% include '_settings_module_dates.html' %}
                                 {% include '_settings_module_timers.html' %}
+                                {% include '_settings_module_dates.html' %}
+                                {% include '_settings_module_colors.html' %}
                                 {% include '_settings_module_calendar.html' %}
-                                </div>
+                                {% include '_settings_module_danger.html' %}
+                            </div>
                         </template>
                     </form>
                     </section>

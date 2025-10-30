@@ -3,6 +3,37 @@
  * Реактивное ядро.
  * Шаг 3: Добавлен alpineTicker для страницы таймеров.
  */
+
+/* === ГЛОБАЛЬНЫЙ ХЕЛПЕР: Конвертер HEX -> RGB === */
+function hexToRgb(hex) {
+    if (!hex) return '0, 0, 0'; // Дефолт (черный)
+
+    // Обрабатываем RGBA строки (e.g., "rgba(0,0,0,0.4)")
+    if (hex.startsWith('rgba')) {
+        try {
+            return hex.split('(')[1].split(')')[0].split(',').slice(0, 3).join(','); // "0,0,0"
+        } catch (e) {
+            return '0, 0, 0';
+        }
+    }
+
+    // Обрабатываем HEX строки
+    // Убираем #
+    let hexValue = hex.replace('#', '');
+
+    // Обрабатываем короткий формат (e.g., #F0C)
+    if (hexValue.length === 3) {
+        hexValue = hexValue.split('').map(char => char + char).join('');
+    }
+
+    // Парсим r, g, b
+    const r = parseInt(hexValue.substring(0, 2), 16) || 0;
+    const g = parseInt(hexValue.substring(2, 4), 16) || 0;
+    const b = parseInt(hexValue.substring(4, 6), 16) || 0;
+
+    return `${r}, ${g}, ${b}`;
+}
+
 const getDescendantProp = (obj, path) => {
     if (!obj || !path) return undefined;
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
@@ -112,6 +143,8 @@ function settingsForm() {
                 // 5. "Calendar" (Вложенный объект)
                 store.form.arrival_day = JSON.parse(JSON.stringify(newFormData.arrival_day));
 
+                store.form.colors = JSON.parse(JSON.stringify(newFormData.colors));
+
                 // 6. Помечаем форму как "грязную" (вызываем ГЛОБАЛЬНЫЙ метод)
                 store.markDirty();
             }, { deep: true }); // {deep: true} следит за ВСЕМИ изменениями
@@ -220,6 +253,10 @@ function settingsForm() {
                  if (this.form.arrival_day && key !== undefined) {
                      this.form.arrival_day[key] = clonedDefault;
                  }
+            } else if (fieldName.startsWith('colors.')) {
+                 // *** НОВОЕ: "Colors" ***
+                 const key = fieldName.split('.')[1];
+                 if (this.form.colors && key !== undefined) this.form.colors[key] = clonedDefault;
             } else {
                 // Простое поле (language, blur_strength, ...)
                 this.form[fieldName] = clonedDefault;
@@ -253,7 +290,10 @@ function settingsForm() {
                 t => t.id !== timerId
             );
             // $watch() поймает это.
-        }
+        },
+        resetCalendarLog() {
+                Alpine.store('app').resetCalendarLog();
+            }
     }
 }
 // --- Утилита Ticker (x-init) ---
@@ -470,6 +510,29 @@ document.addEventListener('alpine:init', () => {
 
         // --- 3. Методы (ACTIONS) ---
         // ... (v2.1 navigateTo() и applyDynamicStyles() остаются без изменений) ...
+        async resetCalendarLog() {
+            // Запрашиваем подтверждение
+            const confirmText = this.lang['settings_danger_reset_calendar_confirm'] || "Ты уверен, что хочешь сбросить календарь? Это удалит все отметки.";
+            if (!confirm(confirmText)) {
+                return; // Пользователь отменил
+            }
+
+            console.log("--- [DEBUG] Сброс лога календаря...");
+            try {
+                const response = await fetch('/api/calendar/reset', { method: 'POST' });
+                if (!response.ok) throw new Error('Ошибка API при сбросе календаря');
+
+                // Обновляем наш локальный $store.app.log
+                this.log = await response.json();
+
+                const successText = this.lang['settings_danger_reset_calendar_success'] || "Календарь сброшен!";
+                alert(successText); // Сообщаем об успехе
+
+            } catch (error) {
+                console.error("!!! Ошибка при сбросе календаря:", error);
+                alert(`Ошибка: ${error.message}`);
+            }
+        },
         navigateTo(pageId) {
             if (this.ui.currentPage === pageId) return;
             this.ui.currentPage = pageId;
@@ -483,10 +546,19 @@ document.addEventListener('alpine:init', () => {
             console.log("--- [DEBUG] Store: Применение CSS-переменных...");
             const root = document.documentElement;
             try {
-                Object.keys(this.config.colors).forEach(key => {
-                    const cssVar = `--${key.replace(/_/g, '-')}`;
-                    root.style.setProperty(cssVar, this.config.colors[key]);
-                });
+                if (this.config.colors) {
+                    for (const [key, value] of Object.entries(this.config.colors)) {
+                        const cssVar = `--${key.replace(/_/g, '-')}`;    // --color-background
+                        const cssVarRgb = `${cssVar}-rgb`; // --color-background-rgb
+
+                        // Устанавливаем HEX/RGBA (e.g., "#141414" or "rgba(0,0,0,0.4)")
+                        root.style.setProperty(cssVar, value);
+
+                        // Устанавливаем RGB (e.g., "20, 20, 20")
+                        root.style.setProperty(cssVarRgb, hexToRgb(value));
+                    }
+                    console.log("--- [DEBUG] Store: Динамические цвета и RGB применены.");
+                }
                 root.style.setProperty('--calendar-empty-cell-color', this.config.calendar_empty_cell_color);
                 root.style.setProperty('--calendar-marked-day-color', this.config.calendar_marked_day_color);
                 root.style.setProperty('--sticker-color', this.config.sticker_color);

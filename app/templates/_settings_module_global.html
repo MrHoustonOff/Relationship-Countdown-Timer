@@ -57,5 +57,21 @@
             <p class="form-description" x-html="$store.app.lang['settings_effects_desc'] || 'Эффекты частиц...'"></p>
         </div>
 
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-blur-strength" x-text="$store.app.lang['settings_blur_strength_label'] || 'Сила Блюра'"></label>
+                <div class="range-input-container">
+                    <input type="range" id="setting-blur-strength"
+                           x-model.number="form.blur_strength"
+                           min="0" max="20" step="0.5"> <span class="range-value" x-text="form.blur_strength + 'px'"></span>
+                </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('blur_strength')">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_blur_strength_desc'] || 'Сила размытия фона (в px).'"></p>
+        </div>
+
     </div>
 </template>

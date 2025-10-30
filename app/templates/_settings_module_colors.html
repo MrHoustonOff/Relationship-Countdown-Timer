@@ -1,0 +1,31 @@
+<template x-if="form && form.colors">
+    <div class="settings-module">
+        <h2 x-text="$store.app.lang['settings_section_colors'] || 'Настройки Цветов'"></h2>
+        <p class="form-description module-description" x-html="$store.app.lang['settings_desc_colors'] || 'Настройте цветовую схему...'"></p>
+
+        <div class="color-editor-container">
+
+            <div class="color-preview-column">
+                <h3 class="preview-header" x-text="$store.app.lang['settings_preview_label'] || 'Превью'"></h3>
+                {% include '_settings_preview_ui.html' %}
+            </div>
+
+            <div class="color-inputs-column">
+                <div class="color-grid">
+
+                    <template x-for="colorKey in Object.keys(form.colors)" :key="colorKey">
+                        <div class="setting-row-color">
+                            <label :for="'setting-color-' + colorKey" x-text="colorKey.replace('color_', '').replace(/_/g, ' ')"></label>
+                            <div class="color-input-container">
+                                <input type="color" :id="'setting-color-' + colorKey"
+                                       x-model="form.colors[colorKey]">
+                                <input type="text" class="hex-input"
+                                       x-model="form.colors[colorKey]">
+                            </div>
+                            <button type="button" class="reset-default-btn small" title="Сбросить"
+                                    @click="resetField('colors.' + colorKey)">↺</button>
+                        </div>
+                    </template>
+
+                </div> </div> </div> </div>
+</template>

@@ -1,0 +1,54 @@
+<div class="pv-emulator-wrapper" :style="{
+    backgroundColor: form.colors.color_background,
+    borderColor: form.colors.color_divider,
+    color: form.colors.color_text
+}">
+    <header class="pv-header" :style="{ borderColor: form.colors.color_divider }">
+        <button class="pv-nav-button" :style="{ color: form.colors.color_text_emphasis }">Главная</button>
+        <button class="pv-nav-button active" :style="{ color: form.colors.color_text_emphasis }">
+            Календарик
+            <span class="pv-dot" :style="{ backgroundColor: form.colors.color_nav_active_indicator }"></span>
+        </button>
+        <button class="pv-nav-button" :style="{ color: form.colors.color_text_emphasis }">Настроечки</button>
+    </header>
+
+    <main class="pv-main">
+
+        <div class="pv-timer-module" :style="{ backgroundColor: form.colors.color_timer_arrival_bg }">
+            <h2 class="pv-title" :style="{ color: form.colors.color_text_emphasis }">До нашей встречи</h2>
+            <div class="pv-timer-display" :style="{ color: form.colors.color_timer_countdown }">
+                12:34:56
+            </div>
+        </div>
+
+        <div class="pv-timer-module" :style="{ backgroundColor: form.colors.color_timer_custom_bg }">
+            <h3 class="pv-custom-label" :style="{ color: form.colors.color_text_emphasis }">Кастомный Таймер</h3>
+            <div class="pv-custom-display" :style="{ color: form.colors.color_timer_elapsed }">
+                123:01:45
+            </div>
+        </div>
+
+        <div class="pv-calendar-module" :style="{ backgroundColor: form.colors.color_accent_secondary }">
+            <div class="pv-week-header">
+                <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+            </div>
+            <div class="pv-days-grid">
+                <div class="pv-day-cell" :style="{ backgroundColor: form.calendar_empty_cell_color }"></div>
+                <div class="pv-day-cell" :style="{ backgroundColor: form.colors.color_calendar_day_bg }">1</div>
+                <div class="pv-day-cell" :style="{ backgroundColor: form.calendar_marked_day_color }">
+                    2
+                    <span class="pv-sticker" :style="{ color: form.sticker_color, transform: `scale(${form.sticker_scale})` }"
+                          x-text="form.sticker_emoji"></span>
+                </div>
+                <div class="pv-day-cell" :style="{ backgroundColor: form.arrival_day.use_bg ? form.arrival_day.bg_color : form.colors.color_calendar_day_bg }">
+                    3
+                    <template x-if="form.arrival_day.use_sticker">
+                         <span class="pv-sticker arrival"
+                               :style="{ color: form.colors.color_arrival_highlight_sticker, transform: `scale(${form.arrival_day.sticker_scale})` }"
+                               x-text="form.arrival_day.sticker_emoji"></span>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
