@@ -386,3 +386,97 @@ body.form-dirty .settings-save-bar-top {
     color: var(--color-background);
     transform: scale(1.03);
 }
+.color-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Размеры (такие же, как у text input) */
+    height: 44px;
+    padding: 0 10px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+}
+.color-input-container:focus-within { /* Подсветка при фокусе */
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 5px rgba(244, 143, 177, 0.5);
+}
+.color-input-container input[type="color"] {
+    /* Сбрасываем стили браузера */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 28px; /* Ширина квадратика */
+    height: 28px; /* Высота квадратика */
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: 4px; /* Скругление */
+    cursor: pointer;
+}
+/* Стили для "глазка" color picker */
+.color-input-container input[type="color"]::-webkit-color-swatch {
+    border-radius: 4px;
+    border: 1px solid var(--color-divider);
+}
+.color-input-container input[type="color"]::-moz-color-swatch {
+    border-radius: 4px;
+    border: 1px solid var(--color-divider);
+}
+.color-input-container span { /* HEX-код */
+    font-family: var(--font-timer); /* Моноширинный */
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* --- Стили для Блока Превью --- */
+.preview-container {
+    display: flex;
+    gap: 10px; /* Отступ между ячейками */
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--color-divider);
+}
+/* Ячейка для превью (берем стили из page_calendar.css) */
+.preview-cell {
+    /* Убедимся, что .day-cell и .sticker определены (в page_calendar.css) */
+    /* Здесь мы просто используем эти классы, применяя к ним динамические :style */
+    /* Задаем базовый размер, т.к. нет грида */
+    width: 70px;
+    height: 70px;
+    background-color: var(--color-calendar-day-bg); /* Дефолтный фон */
+    flex-shrink: 0; /* Не сжиматься */
+    overflow: visible; /* РАЗРЕШАЕМ стикеру вылезать (Баг 2/3) */
+}
+/* Стили стикера (дублируем из page_calendar.css для надежности) */
+.preview-cell .sticker {
+    position: absolute;
+    z-index: 3; /* Под номером */
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: calc(2rem * var(--sticker-scale-factor, 1.0)); /* 32px база */
+    pointer-events: none;
+    opacity: 0.9;
+}
+.preview-cell .day-number {
+    position: relative;
+    z-index: 2; /* Над стикером */
+}
+
+.settings-grid-2-col {
+    display: grid;
+    /* Создаем 2 колонки, каждая занимает мин. 0, макс. 1 долю (равные колонки) */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Отступ между рядами (25px, как у .setting-row)
+       Отступ между колонками (25px)
+    */
+    gap: 25px 25px;
+    margin-bottom: 25px; /* Отступ *после* всей сетки, перед следующим элементом (Превью) */
+}
+
+/* Убираем стандартный отступ у .setting-row *внутри* этой сетки,
+   так как 'gap' у родителя .settings-grid-2-col уже управляет отступами */
+.settings-grid-2-col > .setting-row {
+    margin-bottom: 0;
+}

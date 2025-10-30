@@ -11,157 +11,166 @@ const getDescendantProp = (obj, path) => {
 function settingsForm() {
     return {
         // --- 1. Локальное Состояние ---
-        form: {
-            language: 'ru',
-            animations_enabled: true,
-            effects_enabled: true,
-            date_vova_departure_date: '',
-            date_vova_departure_time: '',
-            date_vova_arrival_date: '',
-            date_vova_arrival_time: '',
-            date_relationship_start_date: '',
-            date_relationship_start_time: '',
+        // Инициализируется как null.
+        // <template x-if="form"> будет ждать, пока init() его не заполнит.
+        form: null,
 
-            timers: {
-                limit_text_length: true,
-                timer_completed_message: '',
-                arrival_timer_enabled: true,
-                arrival_timer_text: '',
-                relationship_timer_enabled: true,
-                relationship_timer_text: '',
-                custom_timers: [] // (Пока пустой, реализуем на Шаге 2)
-            }
-            // (Сюда будем добавлять поля из будущих модулей)
-        },
-
-        // --- Хелперы для парсинга (внутренние) ---
+        // --- Хелперы парсинга (внутренние) ---
         _getDatePart(isoString) {
             if (!isoString) return '';
             try {
+                // Пытаемся создать Date (справится с 'Z', смещениями, микросекундами)
                 const date = new Date(isoString);
-                if (isNaN(date.getTime())) return '';
+                if (isNaN(date.getTime())) return ''; // Проверка на невалидную дату
+                // Используем геттеры ЛОКАЛЬНОГО времени (т.к. input type="date" работает с ним)
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
-            } catch (e) { return ''; }
+            } catch (e) {
+                console.error(`_getDatePart: Ошибка парсинга '${isoString}':`, e);
+                return '';
+            }
         },
         _getTimePart(isoString) {
-            if (!isoString || !isoString.includes('T')) return '00:00:00';
+            if (!isoString) return '00:00:00';
             try {
                 const date = new Date(isoString);
                 if (isNaN(date.getTime())) return '00:00:00';
+                // Используем геттеры ЛОКАЛЬНОГО времени
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 const seconds = String(date.getSeconds()).padStart(2, '0');
                 return `${hours}:${minutes}:${seconds}`;
-            } catch (e) { return '00:00:00'; }
+            } catch (e) {
+                console.error(`_getTimePart: Ошибка парсинга '${isoString}':`, e);
+                return '00:00:00';
+            }
         },
 
         // --- 2. Инициализация Компонента ---
         init() {
-console.log("--- [DEBUG] settingsForm() v3.7: Инициализация...");
+            console.log("--- [DEBUG] settingsForm() v3.9 (Финал): Инициализация...");
 
             // *** СЛУШАТЕЛЬ (Revert/Save/Load) ***
+            // Этот effect() - сердце 'settingsForm'.
+            // Он следит за ДВУМЯ вещами в $store:
+            // 1. $store.app.form (чтобы загрузить данные при первом запуске)
+            // 2. $store.app.ui.isDirty (чтобы перезагрузить данные при 'revert' или 'save')
             Alpine.effect(() => {
                 const storeForm = Alpine.store('app').form;
+                const storeConfig = Alpine.store('app').config; // На случай, если form еще null
                 const isDirty = Alpine.store('app').ui.isDirty;
-                if (storeForm && !isDirty) {
-                     console.log("--- [DEBUG] settingsForm (effect): Загрузка данных из $store.app.form...");
-                     this.loadFormFromStore(storeForm);
+
+                // Источник данных: storeForm (если он есть) или storeConfig (для самого первого init)
+                const sourceData = storeForm || storeConfig;
+
+                // Загружаем данные, ТОЛЬКО если они есть И форма НЕ "грязная"
+                if (sourceData && !isDirty) {
+                     console.log("--- [DEBUG] settingsForm (effect): Загрузка данных из $store...");
+                     this.loadFormFromStore(sourceData);
                 }
             });
 
-            // *** СИНХРОНИЗАТОР (Local -> Store) ***
+            // *** СИНХРОНИЗАТОР (Local 'form' -> Global '$store.app.form') ***
+            // Следит за ЛЮБЫМИ изменениями в this.form...
             let firstRun = true;
             Alpine.watch(() => this.form, (newFormData) => {
+                // ...пропускаем первый запуск (когда init() заполняет this.form)
                 if (firstRun || !newFormData) {
-                    firstRun = false; return;
+                    firstRun = false;
+                    return;
                 }
+
                 console.log("--- [DEBUG] settingsForm (watch): Локальная форма изменилась. Синхронизация с $store...");
-
                 const store = Alpine.store('app');
-                if (!store.form) return;
+                if (!store.form) return; // $store.app.form еще не готов (маловероятно)
 
-                // 1. Синхронизируем "Global"
+                // 1. "Global" поля
                 store.form.language = newFormData.language;
                 store.form.animations_enabled = newFormData.animations_enabled;
                 store.form.effects_enabled = newFormData.effects_enabled;
+                store.form.blur_strength = newFormData.blur_strength;
 
-                // 2. Собираем ISO строки
+                // 2. "Dates" (Собираем ISO строки)
                 this.updateStoreFromLocalForm('date_vova_departure');
                 this.updateStoreFromLocalForm('date_vova_arrival');
                 this.updateStoreFromLocalForm('date_relationship_start');
 
-                // *** НОВОЕ: Синхронизируем "Timers" (глубокое копирование) ***
-                // Простое присваивание (store.form.timers = newFormData.timers)
-                // НЕ сработает, если this.form - это proxy.
-                // Вместо этого, копируем каждое свойство.
-                store.form.timers.limit_text_length = newFormData.timers.limit_text_length;
-                store.form.timers.timer_completed_message = newFormData.timers.timer_completed_message;
-                store.form.timers.arrival_timer_enabled = newFormData.timers.arrival_timer_enabled;
-                store.form.timers.arrival_timer_text = newFormData.timers.arrival_timer_text;
-                store.form.timers.relationship_timer_enabled = newFormData.timers.relationship_timer_enabled;
-                store.form.timers.relationship_timer_text = newFormData.timers.relationship_timer_text;
-                store.form.timers.custom_timers = newFormData.timers.custom_timers;
-                // 3. Помечаем форму как "грязную"
+                // 3. "Timers" (Глубокое копирование вложенного объекта)
+                store.form.timers = JSON.parse(JSON.stringify(newFormData.timers));
+
+                // 4. "Calendar" (Простые поля)
+                store.form.calendar_save_zoom = newFormData.calendar_save_zoom;
+                store.form.sticker_emoji = newFormData.sticker_emoji;
+                store.form.sticker_color = newFormData.sticker_color;
+                store.form.sticker_scale = newFormData.sticker_scale;
+                store.form.sticker_random_rotation_max = newFormData.sticker_random_rotation_max;
+                store.form.calendar_marked_day_color = newFormData.calendar_marked_day_color;
+                store.form.calendar_empty_cell_color = newFormData.calendar_empty_cell_color;
+
+                // 5. "Calendar" (Вложенный объект)
+                store.form.arrival_day = JSON.parse(JSON.stringify(newFormData.arrival_day));
+
+                // 6. Помечаем форму как "грязную" (вызываем ГЛОБАЛЬНЫЙ метод)
                 store.markDirty();
-            }, { deep: true });
+            }, { deep: true }); // {deep: true} следит за ВСЕМИ изменениями
         },
 
         // --- 3. Методы-Хелперы (Внутренние) ---
-        loadFormFromStore(sourceForm) {
-            if (!sourceForm) {
-                 console.warn("--- [DEBUG] loadFormFromStore: sourceForm пуст.");
-                 return;
-            }
-            // "Global" поля
-            this.form.language = sourceForm.language;
-            this.form.animations_enabled = sourceForm.animations_enabled;
-            this.form.effects_enabled = sourceForm.effects_enabled;
-            // "Dates" поля
-            this.form.date_vova_departure_date = this._getDatePart(sourceForm.date_vova_departure);
-            this.form.date_vova_departure_time = this._getTimePart(sourceForm.date_vova_departure);
-            this.form.date_vova_arrival_date = this._getDatePart(sourceForm.date_vova_arrival);
-            this.form.date_vova_arrival_time = this._getTimePart(sourceForm.date_vova_arrival);
-            this.form.date_relationship_start_date = this._getDatePart(sourceForm.date_relationship_start);
-            this.form.date_relationship_start_time = this._getTimePart(sourceForm.date_relationship_start);
 
-            // *** НОВОЕ: "Timers" (глубокое копирование) ***
-            // Мы должны скопировать объект timers целиком, чтобы x-model="form.timers.X" работал
-            if (sourceForm.timers) {
-                // Используем JSON-копирование для вложенного объекта 'timers'
-                this.form.timers = JSON.parse(JSON.stringify(sourceForm.timers));
-            } else {
-                 console.warn("--- [DEBUG] loadFormFromStore: sourceForm.timers не найден!");
-            }
+        // Загружает данные ИЗ $store В this.form
+        loadFormFromStore(sourceForm) {
+            if (!sourceForm) { console.warn("loadFormFromStore: sourceForm пуст."); return; }
+
+            // Создаем полную копию, чтобы this.form был реактивным
+            const configCopy = JSON.parse(JSON.stringify(sourceForm));
+
+            // "Dates" (разбираем на запчасти)
+            configCopy.date_vova_departure_date = this._getDatePart(configCopy.date_vova_departure);
+            configCopy.date_vova_departure_time = this._getTimePart(configCopy.date_vova_departure);
+            configCopy.date_vova_arrival_date = this._getDatePart(configCopy.date_vova_arrival);
+            configCopy.date_vova_arrival_time = this._getTimePart(configCopy.date_vova_arrival);
+            configCopy.date_relationship_start_date = this._getDatePart(configCopy.date_relationship_start);
+            configCopy.date_relationship_start_time = this._getTimePart(configCopy.date_relationship_start);
+
+            // Устанавливаем this.form (Alpine сделает его реактивным)
+            // <template x-if="form"> теперь сработает
+            this.form = configCopy;
+            console.log("--- [DEBUG] loadFormFromStore: this.form успешно обновлен.");
         },
+
+        // Обновляет $store.app.form[fieldName] ИЗ this.form
         updateStoreFromLocalForm(fieldName) {
             const store = Alpine.store('app');
             if (!this.form || !store.form) return;
+
             const datePart = this.form[`${fieldName}_date`];
             const timePart = this.form[`${fieldName}_time`];
+
             if (datePart && timePart) {
                  const fullTimePart = timePart.length === 5 ? timePart + ':00' : timePart;
+                 // Обновляем ГЛОБАЛЬНЫЙ store.form
                  store.form[fieldName] = `${datePart}T${fullTimePart}`;
             }
         },
+
+        // --- Хелперы для Кастомных Таймеров (x-for) ---
         getCustomTimerDatePart(timerId) {
-            if (!this.form.timers.custom_timers) return '';
+            if (!this.form?.timers?.custom_timers) return '';
             const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
             return timer ? this._getDatePart(timer.date) : '';
         },
         getCustomTimerTimePart(timerId) {
-            if (!this.form.timers.custom_timers) return '00:00:00';
+            if (!this.form?.timers?.custom_timers) return '00:00:00';
             const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
             return timer ? this._getTimePart(timer.date) : '00:00:00';
         },
         updateCustomTimerDateTime(timerId, part, value) {
-            if (!this.form.timers.custom_timers) return;
+            if (!this.form?.timers?.custom_timers) return;
             const timer = this.form.timers.custom_timers.find(t => t.id === timerId);
             if (!timer) return;
 
-            // Используем _getDatePart и _getTimePart для получения текущих значений
             let currentDate = this._getDatePart(timer.date);
             let currentTime = this._getTimePart(timer.date);
 
@@ -171,15 +180,14 @@ console.log("--- [DEBUG] settingsForm() v3.7: Инициализация...");
                 currentTime = value.length === 5 ? value + ':00' : value;
             }
 
-            // Обновляем ISO строку ПРЯМО В 'this.form'
-            // $watch() поймает это изменение и вызовет markDirty()
+            // Обновляем ISO строку ПРЯМО В 'this.form.timers.custom_timers'
+            // $watch() поймает это изменение.
             timer.date = `${currentDate}T${currentTime}`;
         },
-        // --- 4. Методы-Прокси (для кнопок) ---
 
-        /**
-         * (ИСПРАВЛЕНО) Сбрасывает поле, ОБНОВЛЯЯ ЛОКАЛЬНЫЙ 'this.form'
-         */
+        // --- 4. Методы-Прокси (для кнопок HTML) ---
+
+        // Сбрасывает поле, ОБНОВЛЯЯ ЛОКАЛЬНЫЙ 'this.form'
         resetField(fieldName) {
             console.log(`--- [DEBUG] settingsForm: Сброс поля ${fieldName}...`);
             const store = Alpine.store('app');
@@ -188,36 +196,40 @@ console.log("--- [DEBUG] settingsForm() v3.7: Инициализация...");
                  return;
             }
 
-            // 1. Получаем дефолтное значение (может быть вложенным)
             const defaultValue = getDescendantProp(store.defaults, fieldName);
             if (defaultValue === undefined) {
                  console.warn(`!!! resetField: Дефолтное значение для ${fieldName} не найдено.`);
                  return;
             }
 
-            // 2. ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ 'this.form'
-            // Нам нужно обновить *все* связанные части (например, date и time для даты)
+            const clonedDefault = JSON.parse(JSON.stringify(defaultValue));
 
             if (fieldName.startsWith('date_')) {
-                // Это поле даты
-                this.form[`${fieldName}_date`] = this._getDatePart(defaultValue);
-                this.form[`${fieldName}_time`] = this._getTimePart(defaultValue);
+                // Это поле даты, обновляем 'запчасти'
+                this.form[`${fieldName}_date`] = this._getDatePart(clonedDefault);
+                this.form[`${fieldName}_time`] = this._getTimePart(clonedDefault);
             } else if (fieldName.startsWith('timers.')) {
-                // Это поле таймера (timers.limit_text_length)
-                const parts = fieldName.split('.'); // ['timers', 'limit_text_length']
-                const key = parts[1];
-                if (this.form.timers && key) {
-                    this.form.timers[key] = JSON.parse(JSON.stringify(defaultValue));
+                // Вложенное поле в 'timers'
+                const key = fieldName.split('.')[1];
+                if (this.form.timers && key !== undefined) {
+                    this.form.timers[key] = clonedDefault;
                 }
+            } else if (fieldName.startsWith('arrival_day.')) {
+                 // Вложенное поле в 'arrival_day'
+                 const key = fieldName.split('.')[1];
+                 if (this.form.arrival_day && key !== undefined) {
+                     this.form.arrival_day[key] = clonedDefault;
+                 }
             } else {
-                // Это простое поле (language, ...)
-                this.form[fieldName] = JSON.parse(JSON.stringify(defaultValue));
+                // Простое поле (language, blur_strength, ...)
+                this.form[fieldName] = clonedDefault;
             }
 
-            // $watch() поймает это изменение.
+            // $watch() поймает это изменение 'this.form' и вызовет markDirty().
             console.log(`--- [DEBUG] settingsForm: Локальное поле ${fieldName} сброшено.`);
         },
         save() {
+            // $watch уже синхронизировал this.form -> $store.app.form
             Alpine.store('app').saveSettings(Alpine.store('app').form);
         },
         revert() {
@@ -226,22 +238,21 @@ console.log("--- [DEBUG] settingsForm() v3.7: Инициализация...");
         },
         addTimer() {
             console.log("--- [DEBUG] settingsForm: Добавление нового таймера...");
-            // Создаем новый таймер с дефолтными значениями
             const newTimer = {
-                id: crypto.randomUUID(), // Генерируем UUID на клиенте
+                id: crypto.randomUUID(),
                 enabled: true,
                 label: "Новый таймер",
-                date: new Date().toISOString().split('.')[0] // Текущее время (без мс)
+                date: new Date().toISOString().split('.')[0].replace('Z', '') // Текущее локальное время
             };
             this.form.timers.custom_timers.push(newTimer);
-            // $watch() поймает это изменение и вызовет markDirty()
+            // $watch() поймает это.
         },
         removeTimer(timerId) {
             console.log(`--- [DEBUG] settingsForm: Удаление таймера ${timerId}...`);
             this.form.timers.custom_timers = this.form.timers.custom_timers.filter(
                 t => t.id !== timerId
             );
-            // $watch() поймает это изменение и вызовет markDirty()
+            // $watch() поймает это.
         }
     }
 }

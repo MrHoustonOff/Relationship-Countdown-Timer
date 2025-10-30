@@ -112,6 +112,8 @@
     transition: transform var(--transition-fast), filter var(--transition-fast), background-color var(--transition-fast);
     will-change: transform, filter, background-color;
     cursor: default; /* По умолчанию нельзя кликнуть */
+
+    overflow: visible; /* ВАЖНО ЕБАТЬ! */
 }
 
 /* --- 4.1 Состояния Ячейки --- */
