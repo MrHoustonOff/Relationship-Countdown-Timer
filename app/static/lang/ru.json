@@ -104,5 +104,7 @@
     "settings_danger_reset_calendar_desc": "Удаляет <strong>все</strong> отметки (X) с календаря. Сами даты не затрагиваются.",
     "settings_danger_reset_calendar_btn": "Сбросить",
     "settings_danger_reset_calendar_confirm": "Ты уверен, что хочешь сбросить календарь? Это удалит все отметки.",
-    "settings_danger_reset_calendar_success": "Календарь сброшен!"
+    "settings_danger_reset_calendar_success": "Календарь сброшен!",
+
+    "settings_timers_limit_warning": "Лимит: 20 символов включен!"
 }

@@ -758,3 +758,11 @@ body.form-dirty .settings-save-bar-top {
 .pv-day-cell .pv-sticker.arrival {
     opacity: 1;
 }
+
+.form-warning-hint {
+    font-size: 0.8rem; /* Маленький шрифт (~13px) */
+    color: var(--color-accent-primary); /* Акцентный розовый */
+    font-style: italic;
+    margin-top: 5px; /* Небольшой отступ от инпута */
+    padding-left: 2px; /* Легкое выравнивание */
+}

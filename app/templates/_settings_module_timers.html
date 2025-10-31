@@ -24,7 +24,12 @@
             <div class="input-group">
                 <label for="setting-timers-completed" x-text="$store.app.lang['settings_timers_completed_label'] || 'Сообщение о завершении'"></label>
                 <input type="text" id="setting-timers-completed"
-                       x-model="form.timers.timer_completed_message">
+                       x-model="form.timers.timer_completed_message"
+                        :maxlength="form.timers.limit_text_length ? 20 : 500">
+                <p class="form-warning-hint"
+                   x-show="form.timers.limit_text_length"
+                   x-text="$store.app.lang['settings_timers_limit_warning'] || 'Лимит: 20 символов'"
+                   x-transition> </p>
             </div>
             <div class="reset-button-placeholder">
                 <button type="button" class="reset-default-btn" title="Сбросить"
@@ -55,7 +60,12 @@
                 <label for="setting-timers-arrival-text" x-text="$store.app.lang['settings_timers_arrival_text_label'] || 'Текст таймера'"></label>
                 <input type="text" id="setting-timers-arrival-text"
                        x-model="form.timers.arrival_timer_text"
-                       :disabled="!form.timers.arrival_timer_enabled">
+                       :disabled="!form.timers.arrival_timer_enabled"
+                        :maxlength="form.timers.limit_text_length ? 20 : 500">
+                <p class="form-warning-hint"
+                   x-show="form.timers.limit_text_length"
+                   x-text="$store.app.lang['settings_timers_limit_warning'] || 'Лимит: 20 символов'"
+                   x-transition> </p>
             </div>
             <div class="reset-button-placeholder">
                 <button type="button" class="reset-default-btn" title="Сбросить"
@@ -87,7 +97,12 @@
                 <label for="setting-timers-relationship-text" x-text="$store.app.lang['settings_timers_relationship_text_label'] || 'Текст таймера'"></label>
                 <input type="text" id="setting-timers-relationship-text"
                        x-model="form.timers.relationship_timer_text"
-                       :disabled="!form.timers.relationship_timer_enabled">
+                       :disabled="!form.timers.relationship_timer_enabled"
+                        :maxlength="form.timers.limit_text_length ? 20 : 500">
+                <p class="form-warning-hint"
+                   x-show="form.timers.limit_text_length"
+                   x-text="$store.app.lang['settings_timers_limit_warning'] || 'Лимит: 20 символов'"
+                   x-transition> </p>
             </div>
             <div class="reset-button-placeholder">
                 <button type="button" class="reset-default-btn" title="Сбросить"
@@ -115,7 +130,12 @@
                         <div class="input-group custom-timer-col-label">
                              <input type="text" :id="'custom-timer-label-' + timer.id"
                                     x-model="timer.label"
-                                    placeholder="Название таймера">
+                                    placeholder="Название таймера"
+                                    :maxlength="form.timers.limit_text_length ? 20 : 500">
+                            <p class="form-warning-hint"
+                               x-show="form.timers.limit_text_length"
+                               x-text="$store.app.lang['settings_timers_limit_warning'] || 'Лимит: 20 символов'"
+                               x-transition> </p>
                         </div>
 
                         <div class="input-group custom-timer-col-datetime">
