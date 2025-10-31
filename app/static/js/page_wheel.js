@@ -152,63 +152,82 @@ function wheelController() {
         },
 
         generateWheelVisuals() {
-        console.log("--- [DEBUG] wheel: generateWheelVisuals() v2.4");
+            console.log("--- [DEBUG] wheel: generateWheelVisuals() v2.4 (JS-Матан)");
 
-        const currentSectors = this.sectors;
-        const total = currentSectors.length;
+            const currentSectors = this.sectors;
+            const total = currentSectors.length;
 
-        // --- [ НОВЫЕ ЦВЕТА v2.4 ] ---
-        const colorDefault = getComputedStyle(document.documentElement).getPropertyValue('--color-accent-secondary').trim() || '#2A2A2A';
-        const colorDarker = changeColorBrightness(colorDefault, 20); // 20% темнее
-        // 20% СВЕТЛЕЕ (для нечетного)
-        const colorLighter = changeColorBrightness(colorDefault, -15);
-        // const colorBorder = '#FFFFFF'; // УБИРАЕМ ГРАНИЦЫ
-        // --- [ КОНЕЦ ] ---
+            const colorDefault = getComputedStyle(document.documentElement).getPropertyValue('--color-accent-secondary').trim() || '#2A2A2A';
+            const colorDarker = changeColorBrightness(colorDefault, 20);
+            const colorLighter = changeColorBrightness(colorDefault, -15);
 
-        const segmentAngle = 360 / total;
-        // const borderWidth = 0; // УБИРАЕМ ГРАНИЦЫ
+            const segmentAngle = 360 / total;
+            let gradientString = 'conic-gradient(';
+            let textSectors = [];
 
-        let gradientString = 'conic-gradient(';
-        let textSectors = [];
+            // --- МАТАН ---
+            // Радиус текста (в % от полу-ширины колеса)
+            // 0% = центр, 100% = край.
+            // 50% = середина радиуса (идеально для "по центру сектора")
+            const textRadiusPercent = 25;
 
-        for (let i = 0; i < total; i++) {
-            let color;
+            // Угол 0 в JS - это 3 часа. Угол 0 у нас - 12 часов.
+            // Смещение = -90 градусов
+            const angleOffsetRad = -Math.PI / 2; // -90 градусов в радианах
+            // --- КОНЕЦ МАТАНА ---
 
-            // *** [ НОВАЯ ЛОГИКА ЦВЕТА ] ***
-            if (total > 1 && total % 2 !== 0 && i === total - 1) {
-                // Если секторов НЕЧЕТНОЕ кол-во И это ПОСЛЕДНИЙ сектор...
-                color = colorLighter; // ...делаем его СВЕТЛЫМ.
-            } else {
-                // Иначе, стандартная "мозаика"
-                color = (i % 2 === 0) ? colorDefault : colorDarker;
+            for (let i = 0; i < total; i++) {
+                // ... (Логика цвета 'color' - без изменений) ...
+                let color;
+                if (total > 1 && total % 2 !== 0 && i === total - 1) {
+                    color = colorLighter;
+                } else {
+                    color = (i % 2 === 0) ? colorDefault : colorDarker;
+                }
+
+                const startAngle = segmentAngle * i;
+                const endAngle = segmentAngle * (i + 1);
+
+                // 1. Градиент (БЕЗ ГРАНИЦ)
+                gradientString += `${color} ${startAngle}deg ${endAngle}deg`;
+                if (i < total - 1) gradientString += ', ';
+
+                // 2. Данные для текста
+
+                // Угол ЦЕНТРА сектора (в градусах)
+                const textAngleDeg = startAngle + (segmentAngle / 2);
+                // Угол ЦЕНТРА сектора (в радианах) + смещение
+                const textAngleRad = (textAngleDeg * Math.PI / 180) + angleOffsetRad;
+
+                // Координаты X и Y (в %)
+                // 50% (центр) + (смещение по радиусу)
+                const x = 50 + (textRadiusPercent * Math.cos(textAngleRad));
+                const y = 50 + (textRadiusPercent * Math.sin(textAngleRad));
+
+                // Поворот текста (в градусах)
+                // (textAngleDeg + 90) = чтобы текст "лежал" на радиусе
+                // (Ты просил "text on the radius" (vertical-rl), так что 90)
+                // (Если хочешь горизонтально, как в 701dde, ставь 'textAngleDeg')
+                const rotation = textAngleDeg + 90 + 180; // <-- 90 = вдоль радиуса
+                // const rotation = textAngleDeg; // <-- 0 = горизонтально
+
+                textSectors.push({
+                    id: currentSectors[i].id,
+                    label: currentSectors[i].label,
+                    // Передаем CSS-строки
+                    left: `${x}%`,
+                    top: `${y}%`,п
+                    transform: `translate(-50%, -50%) rotate(${rotation}deg)`
+                });
             }
-            // *** [ КОНЕЦ ] ***
 
-            const startAngle = segmentAngle * i;
-            const endAngle = segmentAngle * (i + 1); // <--- [ ИЗМЕНЕНО ]
-            const textAngle = startAngle + (segmentAngle / 2);
+            gradientString += ')';
 
-            // 1. Добавляем сектор (БЕЗ границы)
-            gradientString += `${color} ${startAngle}deg ${endAngle}deg`;
-
-            if (i < total - 1) {
-                gradientString += ', ';
-            }
-
-            // 3. Данные для текста
-            textSectors.push({
-                id: currentSectors[i].id,
-                label: currentSectors[i].label,
-                angleDeg: textAngle
-            });
+            // Обновляем реактивные данные
+            this.wheelData = {
+                gradient: gradientString,
+                textSectors: textSectors
+            };
         }
-
-        gradientString += ')';
-
-        this.wheelData = {
-            gradient: gradientString,
-            textSectors: textSectors
-        };
-    }
     };
 } // <-- Конец функции wheelController

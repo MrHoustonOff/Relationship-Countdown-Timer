@@ -12,18 +12,19 @@
 
             <div class="wheel-spinner"
                  :style="{ backgroundImage: wheelData.gradient }">
+            </div>
 
-                </div>
+            <div class="wheel-text-container-js">
 
-            <div class="wheel-text-container" style="transform: rotate(0deg)">
                 <template x-for="sector in wheelData.textSectors" :key="sector.id">
-                    <div class="wheel-text-item"
-                         :style="{
-                             /* Устанавливаем угол для каждого текста (середина сектора) */
-                             '--sector-angle': `${sector.angleDeg}deg`
-                         }">
-                         <span x-text="sector.label"></span>
-                    </div>
+                    <span class="wheel-text-item-js"
+                          x-text="sector.label"
+                          :style="{
+                              top: sector.top,
+                              left: sector.left,
+                              transform: sector.transform
+                          }">
+                    </span>
                 </template>
             </div>
             <button type="button" class="wheel-spin-button" @click="spin()"></button>
