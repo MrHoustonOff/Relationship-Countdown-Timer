@@ -13,6 +13,7 @@
 
     <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script src="{{ url_for('static', filename='js/page_calendar_zoom.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/page_wheel.js') }}"></script>
 
 </head>
 
@@ -42,6 +43,12 @@
                     </button>
                     <button
                         class="nav-button"
+                        @click="$store.app.navigateTo('page-wheel')"
+                        :class="{ 'active': $store.app.ui.currentPage === 'page-wheel' }"
+                        x-text="$store.app.lang['header_wheel'] || 'Колесо'">
+                    </button>
+                    <button
+                        class="nav-button"
                         @click="$store.app.navigateTo('page-settings')"
                         :class="{ 'active': $store.app.ui.currentPage === 'page-settings' }"
                         x-text="$store.app.lang['header_settings'] || '...'">
@@ -52,6 +59,7 @@
             <main class="app-main">
                 {% include '_page_main.html' %}
                 {% include '_page_calendar.html' %}
+                {% include '_page_wheel.html' %}
                 <section
                     id="page-settings"
                     class="page-content"

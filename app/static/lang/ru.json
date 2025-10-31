@@ -110,5 +110,11 @@
     "settings_danger_reset_all_label": "Сбросить ВСЕ Настройки",
     "settings_danger_reset_all_desc": "Возвращает <strong>весь конфиг</strong> к заводским настройкам (включая цвета, даты, таймеры). Будет создан бэкап.",
     "settings_danger_reset_all_btn": "Сбросить Всё",
-    "settings_danger_reset_all_confirm": "!!! ТЫ УВЕРЕН, ЧТО ХОЧЕШЬ СБРОСИТЬ ВСЕ НАСТРОЙКИ? !!!\nЭто действие нельзя отменить. Ты удалишь ДАЖЕ ТАЙМЕРЫ!\n(Будет создан бэкап 'config.backup...json' в папке данных)"
+    "settings_danger_reset_all_confirm": "!!! ТЫ УВЕРЕН, ЧТО ХОЧЕШЬ СБРОСИТЬ ВСЕ НАСТРОЙКИ? !!!\nЭто действие нельзя отменить. Ты удалишь ДАЖЕ ТАЙМЕРЫ!\n(Будет создан бэкап 'config.backup...json' в папке данных)",
+
+    "header_wheel": "Колесо",
+    "wheel_placeholder": "Колесо Фортуны",
+    "wheel_options_title": "Опции Колеса",
+    "wheel_add_option_btn": "+ Добавить опцию",
+    "wheel_save_options_btn": "Сохранить в дефолтные"
 }

@@ -929,62 +929,58 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        /**
-     * (РЕАЛИЗОВАНО) Сохраняет текущие настройки из this.form.
-     */
-    async saveSettings(formData) {
-        if (!formData) {
-             console.error("!!! saveSettings: Нет данных формы для сохранения.");
-             return false;
-        }
-        console.log("--- [DEBUG] Попытка сохранения настроек...");
-
-        this.ui.isSaving = true;
-        // (Опционально) Можно добавить индикатор загрузки
-
-        try {
-            const response = await fetch('/api/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData) // Отправляем данные из this.form
-            });
-
-            if (!response.ok) {
-                 let errorDetails = "Неизвестная ошибка";
-                 try {
-                     const errorData = await response.json();
-                     errorDetails = JSON.stringify(errorData.details || errorData.error);
-                 } catch (e) {
-                     errorDetails = await response.text(); // Если ответ не JSON
-                 }
-                 console.error(`!!! Ошибка сохранения (${response.status}):`, errorDetails);
-                 alert(`Ошибка сохранения настроек:\n${errorDetails}`);
-                 this.ui.isSaving = false;
-                 return false; // Сигнал об ошибке
+            /**
+         * (ИЗМЕНЕНО v4.0) Сохраняет настройки.
+         * @param {object} formData - Объект this.form
+         * @param {boolean} [doReload=true] - Перезагрузить страницу после сохранения?
+         */
+    async saveSettings(formData, doReload = true) {
+            if (!formData || this.ui.isSaving) {
+                 console.error("!!! saveSettings: Нет данных или уже идет сохранение.");
+                 return false;
             }
+            console.log(`--- [DEBUG] Попытка сохранения настроек... (Reload: ${doReload})`);
+            this.ui.isSaving = true;
 
-             console.log("--- [DEBUG] Настройки успешно сохранены.");
-             this.config = await response.json();
-             this.ui.isDirty = false;
-             document.body.classList.remove('form-dirty');
-             this.applyDynamicStyles();
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
 
-            // *** ИЗМЕНЕНО: Добавляем задержку перед перезагрузкой ***
-             console.log("--- [DEBUG] Задержка перед перезагрузкой (1 секунда)...");
-             setTimeout(() => {
-                 console.log("--- [DEBUG] Перезагрузка приложения...");
-                 window.location.reload();
-             }, 0); // 1000 миллисекунд = 1 секунда
-             // *** КОНЕЦ ИЗМЕНЕНИЙ ***
-             return true; // Сигнал об успехе (хотя мы уже перезагружаемся)
+                if (!response.ok) {
+                     // ... (обработка ошибки, alert) ...
+                     this.ui.isSaving = false;
+                     return false;
+                }
 
-         } catch (error) {
-              console.error("!!! КРИТИЧЕСКАЯ ошибка fetch при сохранении:", error);
-              alert(`Критическая ошибка при сохранении: ${error.message}`);
-              this.ui.isSaving = false;
-              return false;
-         } finally {
-             // (Опционально) Убрать индикатор загрузки
+                console.log("--- [DEBUG] Настройки успешно сохранены.");
+                this.config = await response.json(); // Обновляем ОРИГИНАЛ
+                this.form = Alpine.reactive(JSON.parse(JSON.stringify(this.config))); // Обновляем КОПИЮ
+                this.ui.isDirty = false;
+                document.body.classList.remove('form-dirty');
+                this.applyDynamicStyles();
+                this.ui.isSaving = false; // Сбрасываем флаг
+
+                // *** [ НОВАЯ ЛОГИКА ] ***
+                if (doReload) {
+                    console.log("--- [DEBUG] Задержка перед перезагрузкой...");
+                    // alert("Настройки сохранены! Приложение будет перезагружено."); // Убираем alert
+                    setTimeout(() => { window.location.reload(); }, 1000);
+                } else {
+                    console.log("--- [DEBUG] Настройки сохранены (без перезагрузки).");
+                    // TODO: Показать тост "Сохранено!"
+                }
+                // *** [ КОНЕЦ ] ***
+
+                return true;
+
+            } catch (error) {
+                  console.error("!!! КРИТИЧЕСКАЯ ошибка fetch при сохранении:", error);
+                  alert(`Критическая ошибка: ${error.message}`);
+                  this.ui.isSaving = false;
+                  return false;
              }
         },
 

@@ -10,6 +10,7 @@
 @import url('page_calendar.css'); /* Стили для страницы "Календарчик" */
 @import url('effects.css');
 @import url('page_settings.css');
+@import url('page_wheel.css');
 
 .modal-overlay {
     position: fixed; /* Поверх всего */

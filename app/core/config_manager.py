@@ -85,6 +85,11 @@ class CustomTimer(BaseModel):
     label: str = Field(default="Новый таймер", max_length=50) # Дефолтное название и лимит
     date: datetime = Field(default_factory=_now_factory)
 
+class WheelOption(BaseModel):
+    """Схема для одной опции (сектора) Колеса Фортуны."""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    label: str = Field(default="Новая опция", max_length=100)
+
 class TimerConfig(BaseModel):
     """Настройки для всех таймеров на главной странице."""
     limit_text_length: bool = True
@@ -117,6 +122,9 @@ class AppConfig(BaseModel):
 
     # Настройки таймеров (вложенная модель)
     timers: TimerConfig = Field(default_factory=TimerConfig)
+
+    # Настройки колеса
+    wheel_options: List[WheelOption] = Field(default_factory=list)
 
     # Настройки календаря
     sticker_emoji: str = Field(default="X", max_length=2) # Лимит на 1-2 символа

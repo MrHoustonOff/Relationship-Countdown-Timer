@@ -1,0 +1,127 @@
+/* /mrhoustontimer/app/static/css/page_wheel.css (v1.0 - Каркас) */
+
+/* --- 1. Адаптивная Сетка Страницы --- */
+.wheel-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+    width: 100%;
+}
+@media (min-width: 900px) {
+    .wheel-layout-grid { grid-template-columns: 1.5fr 1fr; }
+}
+
+/* --- 2. Модуль Колеса (Плейсхолдер) --- */
+.wheel-container-module {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wheel-placeholder {
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+    border: 5px dashed var(--color-divider);
+    background-color: var(--color-accent-secondary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.wheel-placeholder:hover {
+    opacity: 1;
+    border-color: var(--color-accent-primary);
+}
+.wheel-placeholder h3 {
+    color: var(--color-accent-primary);
+}
+
+
+/* --- 3. Модуль Списка Опций --- */
+.wheel-options-module {
+    /* (Стили .settings-module) */
+    width: 100%;
+    /* max-width: 800px; */ /* Убираем, т.к. грид уже управляет */
+    margin: 0;
+    padding: 25px;
+    background-color: var(--color-accent-secondary);
+    border-radius: var(--border-radius-medium);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Занимаем всю высоту колонки грида */
+}
+.wheel-options-module h2 {
+    /* (Стили .settings-module h2) */
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--color-accent-primary);
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    flex-shrink: 0; /* Заголовок не сжимается */
+}
+
+/* --- 3.1 Контейнер Списка со Скроллом --- */
+.options-list-container {
+    flex-grow: 1; /* <-- Занимает ВСЕ доступное место */
+    max-height: 400px; /* (Опционально) Ограничиваем высоту */
+    overflow-y: auto; /* Добавляем скролл */
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.option-item-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.option-input {
+    flex-grow: 1;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+.option-input:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+}
+.option-delete-btn {
+    flex-shrink: 0;
+    background: rgba(255, 100, 100, 0.2);
+    color: #FFCDD2;
+    font-size: 28px;
+    font-weight: 300;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    line-height: 32px;
+    transition: all var(--transition-fast);
+}
+.option-delete-btn:hover {
+    background: #E91E63;
+    color: white;
+}
+
+/* --- 3.2 Кнопки Управления --- */
+.options-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    flex-shrink: 0; /* Кнопки не сжимаются */
+}
+/* (Стили кнопок наследуются из page_settings.css) */
