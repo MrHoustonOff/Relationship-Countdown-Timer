@@ -5,15 +5,31 @@
     x-data="wheelController()">
 
     <div class="wheel-layout-grid">
-        
+
         <div class="wheel-container-module">
 
-            <div class="wheel-placeholder" @click="spin()">
-                <h3 x-text="$store.app.lang['wheel_placeholder'] || 'Колесо Фортуны'"></h3>
-                <p>(В разработке)</p>
-            </div>
+            <div class="wheel-pointer"></div>
 
-        </div> <div class="wheel-options-module">
+            <div class="wheel-spinner"
+                 :style="{ backgroundImage: wheelData.gradient }">
+
+                </div>
+
+            <div class="wheel-text-container" style="transform: rotate(0deg)">
+                <template x-for="sector in wheelData.textSectors" :key="sector.id">
+                    <div class="wheel-text-item"
+                         :style="{
+                             /* Устанавливаем угол для каждого текста (середина сектора) */
+                             '--sector-angle': `${sector.angleDeg}deg`
+                         }">
+                         <span x-text="sector.label"></span>
+                    </div>
+                </template>
+            </div>
+            <button type="button" class="wheel-spin-button" @click="spin()"></button>
+
+        </div>
+        <div class="wheel-options-module">
             <h2 x-text="$store.app.lang['wheel_options_title'] || 'Опции Колеса'"></h2>
 
             <div class="options-list-container">
@@ -34,5 +50,10 @@
                         x-ref="saveButton">
                         </button>
             </div>
-            
+            <p class="form-warning-hint"
+               x-show="options.length >= 30"
+               x-text="$store.app.lang['wheel_limit_warning'] || 'Максимальное кол-во секторов (30)'"
+               x-transition>
+            </p>
+
         </div> </div> </section>

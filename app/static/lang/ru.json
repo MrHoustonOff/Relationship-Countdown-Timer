@@ -116,5 +116,6 @@
     "wheel_placeholder": "Колесо Фортуны",
     "wheel_options_title": "Опции Колеса",
     "wheel_add_option_btn": "+ Добавить опцию",
-    "wheel_save_options_btn": "Сохранить в дефолтные"
+    "wheel_save_options_btn": "Сохранить в дефолтные",
+    "wheel_limit_warning": "Максимальное кол-во секторов (30) достигнуто!"
 }

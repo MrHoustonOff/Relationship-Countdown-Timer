@@ -1,4 +1,4 @@
-/* /mrhoustontimer/app/static/css/page_wheel.css (v1.0 - Каркас) */
+/* /mrhoustontimer/app/static/css/page_wheel.css (v2.1 - Визуал) */
 
 /* --- 1. Адаптивная Сетка Страницы --- */
 .wheel-layout-grid {
@@ -12,7 +12,7 @@
     .wheel-layout-grid { grid-template-columns: 1.5fr 1fr; }
 }
 
-/* --- 2. Модуль Колеса (Плейсхолдер) --- */
+/* --- 2. Модуль Колеса --- */
 .wheel-container-module {
     position: relative;
     width: 100%;
@@ -24,29 +24,97 @@
     align-items: center;
 }
 
-.wheel-placeholder {
+/* --- 2.1 Указатель (Стрелка) --- */
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid var(--color-accent-primary);
+    z-index: 10;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+}
+
+/* --- 2.2 Вращающееся Колесо (Conic Gradient) --- */
+.wheel-spinner {
+    position: relative;
     width: 95%;
     height: 95%;
     border-radius: 50%;
-    border: 5px dashed var(--color-divider);
-    background-color: var(--color-accent-secondary);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-text);
-    opacity: 0.5;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-.wheel-placeholder:hover {
-    opacity: 1;
-    border-color: var(--color-accent-primary);
-}
-.wheel-placeholder h3 {
-    color: var(--color-accent-primary);
+    border: 5px solid var(--color-divider);
+    background-color: var(--color-accent-secondary); /* Фон, если 1 сектор */
+    overflow: hidden;
+
+    /* background-image: conic-gradient(...) будет применен из JS */
+    background-size: cover;
+
+    /* (Пока нет transition, т.к. нет физики) */
 }
 
+/* --- 2.3 Текст Сектора (Новый) --- */
+.wheel-text-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2; /* Поверх секторов (background-image) */
+    pointer-events: none; /* Не мешает кнопке */
+    transform: rotate(0deg); /* (Будет анимироваться) */
+}
+.wheel-text-item {
+    position: absolute;
+    top: 50%;  /* Центр Y */
+    left: 50%; /* Центр X */
+    /* Смещаем текст к краю колеса */
+    height: 1px; /* Точка-якорь */
+    width: 40%;  /* 40% радиуса (оставляем 10% отступа от края) */
+
+    transform-origin: 0 0; /* Вращаем вокруг центра колеса (left: 50%, top: 50%) */
+
+    /* --sector-angle (угол) задается из JS */
+    transform: rotate(var(--sector-angle));
+}
+.wheel-text-item span {
+    display: block;
+    /* Поворачиваем текст, чтобы он "стоял" на линии радиуса */
+    /* (Если хочешь "вверх ногами", как на эталоне, используй -90deg) */
+    /* transform: rotate(-90deg); */
+
+    color: var(--color-text-emphasis);
+    font-size: 0.9rem;
+    font-weight: 500;
+
+    /* Обрезка длинного текста */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 5px;
+    text-align: center; /* Центрируем текст на линии */
+}
+
+
+/* --- 2.5 Кнопка "Крутить" --- */
+.wheel-spin-button {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--color-accent-primary);
+    border: 5px solid var(--color-background);
+    z-index: 5; /* Поверх текста */
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.1s ease-out;
+}
+.wheel-spin-button:hover {
+    filter: brightness(1.1);
+}
+.wheel-spin-button:active {
+    transform: scale(0.95);
+}
 
 /* --- 3. Модуль Списка Опций --- */
 .wheel-options-module {
