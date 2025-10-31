@@ -3,7 +3,157 @@
  * Реактивное ядро.
  * Шаг 3: Добавлен alpineTicker для страницы таймеров.
  */
+const AudioManager = {
 
+    sounds: {}, // Хранилище для { soundId: new Howl(...) }
+    soundsCache: {},
+
+    // --- [ КОНСТАНТА, как ты просил ] ---
+    // Громкость (0.0 до 1.0)
+    SOUND_MAX_VOLUME: 0.8, // 50%
+    MAX_SOUND_DURATION_MS: 3000, // 3 секунды "кастрации"
+    PITCH_RANGE: 0.2, // (0.9 до 1.1)
+    CLICK_FADE_IN_MS: 10,  // <-- [ФИКС 1] "0.001 сек" (10мс - чтобы убрать щелчок)
+    CLICK_FADE_OUT_MS: 50, // <-- [ФИКС 1] Плавная "кастрация"
+
+    /**
+     * Инициализация. Вызывается из app.js ПОСЛЕ загрузки audioManifest.
+     * @param {object} manifest - Объект из $store.app.audioManifest
+     */
+    init(manifest) {
+        console.log("--- [AUDIO] AudioManager: Инициализация...");
+
+        // 1. Проверяем, загружен ли Howler.js
+        if (typeof Howl === 'undefined') {
+            console.error("!!! [AUDIO] Howler.js не загружен! Звуковая система отключена.");
+            return;
+        }
+        // 2. Проверяем, загружен ли манифест
+        if (!manifest || Object.keys(manifest).length === 0) {
+             console.warn("--- [AUDIO] Аудио-манифест пуст. Звуков не будет.");
+             return;
+        }
+
+        // 3. Создаем объекты Howl для КАЖДОГО файла
+        try {
+            for (const category in manifest) {
+            if (!manifest[category] || manifest[category].length === 0) {
+                console.log(`--- [AUDIO] Категория '${category}' пуста.`);
+                continue; // Пропускаем пустые
+            }
+
+            manifest[category].forEach((filePath, index) => {
+                const soundId = `${category}_${index}`;
+                this.sounds[soundId] = new Howl({
+                    src: [filePath],
+                    // html5: true, (УБРАЛИ)
+                    volume: 0,
+                    loop: (category === 'Heartbeat')
+                });
+            });
+        }
+
+            console.log("--- [AUDIO] Кэширование категорий...");
+            this.soundsCache = {}; // Очищаем кэш
+            for (const soundId in this.sounds) {
+                const category = soundId.split('_')[0];
+                if (!this.soundsCache[category]) {
+                    this.soundsCache[category] = [];
+                }
+                this.soundsCache[category].push(this.sounds[soundId]);
+            }
+            console.log("--- [AUDIO] Кэширование категорий завершено:", this.soundsCache);
+            // *** [ КОНЕЦ ФИКСА ] ***
+
+        } catch (error) {
+            console.error("!!! [AUDIO] КРИТИЧЕСКАЯ ОШИБКА при загрузке звуков:", error);
+        }
+    },
+
+    /**
+     * Запускает и плавно включает Heartbeat.
+     * @param {number} duration - Время (ms) для fade in (e.g., 2000)
+     */
+    playHeartbeat(duration) {
+        // (Предполагаем, что в папке Heartbeat лежит ОДИН файл)
+        const sound = this.sounds['Heartbeat_0'];
+        if (!sound) return; // Звука нет - ничего не делаем
+
+        // Если уже играет (например, был fade-out), просто делаем fade-in обратно
+        if (sound.playing()) {
+            sound.fade(sound.volume(), this.SOUND_MAX_VOLUME*2, duration);
+        } else {
+            // Если не играет, запускаем с 0
+            sound.volume(0);
+            sound.play();
+            sound.fade(0, this.SOUND_MAX_VOLUME*2, duration);
+        }
+    },
+
+    /**
+     * Плавно выключает и останавливает Heartbeat.
+     * @param {number} duration - Время (ms) для fade out (e.g., 1000)
+     */
+    stopHeartbeat(duration) {
+        const sound = this.sounds['Heartbeat_0'];
+        if (!sound || !sound.playing()) return; // Нечего останавливать
+
+
+        // Отменяем предыдущие fade (если были)
+        sound.off('fade');
+
+        // Плавно уводим громкость в 0
+        sound.fade(sound.volume(), 0, duration);
+
+        // Когда fade-out завершится, ОСТАНАВЛИВАЕМ звук
+        sound.once('fade', (soundId) => {
+            // Howler вызывает 'fade' и в начале, и в конце,
+            // поэтому проверяем, что громкость 0.
+            if (sound.volume() === 0) {
+                sound.stop();
+            }
+        });
+    },
+    /**
+     * Проигрывает случайный звук из категории с питчем.
+     * @param {string} category - (e.g., 'switchPage')
+     * @param {boolean} usePitch - Применять ли случайный питч
+     */
+    playRandom(category, usePitch = false) {
+        if (!Alpine.store('app').config.effects_enabled) return;
+
+        const soundList = this.soundsCache[category];
+        if (!soundList || soundList.length === 0) return;
+
+        const sound = soundList[Math.floor(Math.random() * soundList.length)];
+
+        if (usePitch) {
+            const pitch = 1.0 + (Math.random() * this.PITCH_RANGE) - (this.PITCH_RANGE / 2);
+            sound.rate(pitch);
+        } else {
+            sound.rate(1.0);
+        }
+
+        // *** [ ФИКС 1: Добавляем Фейды ] ***
+        sound.volume(0); // Начинаем с 0
+        const playId = sound.play();
+
+        // 1. Плавный ВХОД (10мс)
+        sound.fade(0, this.SOUND_MAX_VOLUME, this.CLICK_FADE_IN_MS, playId);
+
+        // 2. "Кастрация" (через 3 сек)
+        setTimeout(() => {
+            // 3. Плавный ВЫХОД (50мс)
+            sound.fade(this.SOUND_MAX_VOLUME, 0, this.CLICK_FADE_OUT_MS, playId);
+
+            // (Howler сам остановит звук, когда fade-out дойдет до 0,
+            // но мы можем добавить .once('fade', ...) для надежности, если понадобится)
+
+        }, this.MAX_SOUND_DURATION_MS - this.CLICK_FADE_OUT_MS); // Начинаем fade-out чуть раньше
+        // *** [ КОНЕЦ ФИКСА ] ***
+
+    }
+};
 /* === ГЛОБАЛЬНЫЙ ХЕЛПЕР: Конвертер HEX -> RGB === */
 function hexToRgb(hex) {
     if (!hex) return '0, 0, 0'; // Дефолт (черный)
@@ -113,7 +263,6 @@ function settingsForm() {
                     return;
                 }
 
-                console.log("--- [DEBUG] settingsForm (watch): Локальная форма изменилась. Синхронизация с $store...");
                 const store = Alpine.store('app');
                 if (!store.form) return; // $store.app.form еще не готов (маловероятно)
 
@@ -222,7 +371,6 @@ function settingsForm() {
 
         // Сбрасывает поле, ОБНОВЛЯЯ ЛОКАЛЬНЫЙ 'this.form'
         resetField(fieldName) {
-            console.log(`--- [DEBUG] settingsForm: Сброс поля ${fieldName}...`);
             const store = Alpine.store('app');
             if (!store.defaults) {
                  console.error("!!! resetField: $store.app.defaults не загружен!");
@@ -263,7 +411,6 @@ function settingsForm() {
             }
 
             // $watch() поймает это изменение 'this.form' и вызовет markDirty().
-            console.log(`--- [DEBUG] settingsForm: Локальное поле ${fieldName} сброшено.`);
         },
         save() {
             // $watch уже синхронизировал this.form -> $store.app.form
@@ -274,7 +421,8 @@ function settingsForm() {
              // Alpine.effect() поймает это и перезагрузит this.form
         },
         addTimer() {
-            console.log("--- [DEBUG] settingsForm: Добавление нового таймера...");
+            AudioManager.playRandom('PlusButtons', true);
+
             const newTimer = {
                 id: crypto.randomUUID(),
                 enabled: true,
@@ -285,7 +433,7 @@ function settingsForm() {
             // $watch() поймает это.
         },
         removeTimer(timerId) {
-            console.log(`--- [DEBUG] settingsForm: Удаление таймера ${timerId}...`);
+            AudioManager.playRandom('DeleteButtons', true);
             this.form.timers.custom_timers = this.form.timers.custom_timers.filter(
                 t => t.id !== timerId
             );
@@ -299,6 +447,387 @@ function settingsForm() {
         }
     }
 }
+
+function changeColorBrightness(hex, percent) {
+    if (!hex) return '#333';
+    let hexValue = hex.replace('#', '');
+    if (hexValue.length === 3) {
+        hexValue = hexValue.split('').map(char => char + char).join('');
+    }
+    if (hexValue.length !== 6) { return '#333'; }
+
+    // 1. Конвертируем в RGB
+    let r = parseInt(hexValue.substring(0, 2), 16);
+    let g = parseInt(hexValue.substring(2, 4), 16);
+    let b = parseInt(hexValue.substring(4, 6), 16);
+
+    // 2. Применяем % (percent > 0 = темнее, percent < 0 = светлее)
+    const factor = (100 - percent) / 100;
+    r = Math.min(255, Math.max(0, Math.floor(r * factor)));
+    g = Math.min(255, Math.max(0, Math.floor(g * factor)));
+    b = Math.min(255, Math.max(0, Math.floor(b * factor)));
+
+    // 3. Конвертируем обратно в HEX
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+}
+
+
+/**
+ * Глобальная функция-компонент для Alpine (x-data="wheelController()")
+ */
+function wheelController() {
+    const store = Alpine.store('app');
+    return {
+        // --- 1. Локальное Состояние ---
+        options: [],
+        isSpinning: false,
+        wheelData: {
+            gradient: 'background-color: var(--color-accent-secondary)',
+            textSectors: []
+        },
+
+        // *** [ НОВОЕ: Состояние Физики ] ***
+        angle: 0,          // Текущий угол поворота (в градусах)
+        velocity: 0,       // Текущая скорость (градусов/кадр)
+        friction: 0.998,   // Трение (0.998 = медленно, 0.99 = быстро)
+        isSpinning: false, // Флаг, что идет кручение
+        animationFrameId: null, // ID для requestAnimationFrame
+
+        // Константы Физики (можем вынести в настройки)
+        MIN_VELOCITY: 0.01,   // Скорость, на которой колесо "останавливается"
+        MAX_VELOCITY: 70,    // Максимальный "кламп" скорости
+        FRICTION_FAST: 0.998, // Самое быстрое (твое "сейчас")
+        FRICTION_SLOW: 0.99, // Самое медленное ("повесомее")
+
+        particleList: [
+            '👉','👈', '🌚', '💕','❤️','🫦','😶‍🌫️','😍','👍','🤦‍♂️',
+            '🥲','🤬','🤡','💩','👺','👽','👿','🐽','🐒','🐳',
+            '🦉','👁️','👀','🧌','🤷‍♂️','🙆‍♂️','🕺','💃','👃','🤌'
+        ],
+
+        previousAngle: 0,    // Угол в прошлом кадре
+        boundaryAngles: [],  // Массив углов границ [0, 90, 180, 270]
+
+        // --- 2. Инициализация ---
+        init() {
+            console.log("--- [DEBUG] wheelController v2.3 (Фикс): Инициализация...");
+
+            // *** [ ИСПРАВЛЕНО ] ***
+            // УБИРАЕМ Alpine.effect().
+            // Просто загружаем 'options' ОДИН РАЗ из $store.app.config.
+
+            // Ждем, пока $store загрузится (на всякий случай)
+            Alpine.nextTick(() => {
+                const storeConfig = Alpine.store('app').config;
+                if (storeConfig && storeConfig.wheel_options && storeConfig.wheel_options.length > 0) {
+                    this.options = JSON.parse(JSON.stringify(storeConfig.wheel_options));
+                    console.log(`--- [DEBUG] wheel: Загружено ${this.options.length} опций.`);
+                } else {
+                    // Дефолтные опции для первого раза
+                    this.options = [
+                        { id: crypto.randomUUID(), label: "Опция 1" },
+                        { id: crypto.randomUUID(), label: "Опция 2" },
+                        { id: crypto.randomUUID(), label: "Опция 3" },
+                    ];
+                }
+
+                // *** Первая отрисовка колеса ***
+                this.generateWheelVisuals();
+            });
+
+            // *** [ ИСПРАВЛЕНО ] ***
+            // Этот $watch следит ТОЛЬКО за 'options'
+            // и ТОЛЬКО перерисовывает колесо.
+            Alpine.watch(() => this.options, () => {
+                this.generateWheelVisuals();
+            }, { deep: true });
+
+            // *** [ НОВОЕ ] ***
+            // Отдельный $watch для 'revert'.
+            // Он следит за $store.app.config (а не .form),
+            // потому что 'revert' копирует 'config' в 'form'.
+            Alpine.watch(() => Alpine.store('app').config, (newConfig) => {
+                 if (newConfig && !Alpine.store('app').ui.isDirty) {
+                     this.options = JSON.parse(JSON.stringify(newConfig.wheel_options || []));
+                 }
+            }, { deep: true });
+            this.update = this.update.bind(this); // Привязываем 'this'
+            this.update(); // Запускаем цикл
+        },
+
+        // --- 3. Методы Управления Списком ---
+        addOption() {
+        // *** [ НОВОЕ: Лимит 30 ] ***
+        if (this.options.length >= 30) {
+            return;
+        }
+        AudioManager.playRandom('PlusButtons', true);
+        // *** [ КОНЕЦ ] ***
+
+        this.options.push({ id: crypto.randomUUID(), label: "Новая опция" });
+    },
+        removeOption(id) {
+            AudioManager.playRandom('DeleteButtons', true);
+            this.options = this.options.filter(opt => opt.id !== id);
+            // $watch() поймает это
+        },
+        async saveToDefaults() {
+            const store = Alpine.store('app');
+            if (!store.form) { /* ... (обработка ошибки) ... */ return; }
+
+            // 1. Обновляем $store.app.form
+            store.form.wheel_options = JSON.parse(JSON.stringify(this.options));
+            // 2. Помечаем 'dirty'
+            store.markDirty();
+            // 3. Сохраняем БЕЗ перезагрузки
+            const success = await store.saveSettings(store.form, false);
+
+            // 4. Запускаем частицы
+            if (success) {
+                if (typeof spawnParticles === 'function' && this.$refs.saveButton) {
+                    AudioManager.playRandom('PlusButtons', true)
+                    spawnParticles({
+                        originElement: this.$refs.saveButton,
+                        symbol: '✅', count: 40, spread: 180, distance: 300, duration: 1200
+                    });
+                }
+            } else {
+                if (typeof spawnParticles === 'function' && this.$refs.saveButton) {
+                    spawnParticles({
+                        originElement: this.$refs.saveButton,
+                        symbol: '❌', count: 40, spread: 180, distance: 300, duration: 1200
+                    });
+                }
+            }
+        },
+
+        // --- 4. Заглушка для Физики ---
+        spin() {
+            // Игнорируем, если уже крутится (пока нет "докрутки")
+            if (this.isSpinning) {
+                // --- СТУЛ 2: "ДОКРУЧИВАНИЕ" ---
+                this.friction = Math.random() * (this.FRICTION_FAST - this.FRICTION_SLOW) + this.FRICTION_SLOW;
+
+                let boost;
+                // (Твоя логика: "чем быстрее, тем меньше сила")
+                if (this.velocity > 30) {
+                    boost = (Math.random() * 2.5) + 2.5; // (5-10)
+                } else if (this.velocity > 15) {
+                    boost = (Math.random() * 5) + 5; // (10-20)
+                } else {
+                    boost = (Math.random() * 7.5) + 10; // (20-35)
+                }
+
+                this.velocity += boost;
+
+                let particleCount = 0;
+                // Проверяем НОВУЮ скорость
+                if (this.velocity > 30) {
+                    particleCount = 6;
+                } else if (this.velocity > 20) {
+                    particleCount = 4;
+                } else if (this.velocity > 10) {
+                    particleCount = 2;
+                } else if (this.velocity > 0) {
+                    particleCount = 1;
+                }
+
+                AudioManager.playRandom('WheelBoost', true)
+                if (particleCount > 0 && typeof spawnParticles === 'function' && this.$refs.spinButton) {
+                    spawnParticles({
+                        originElement: this.$refs.spinButton, // Наша кнопка
+                        symbol: '🔥', // Огонь!
+                        count: particleCount,
+                        spread: 360, // Во все стороны
+                        distance: 250, // Не слишком далеко
+                        duration: 5000 // Быстро
+                    });
+                }
+            } else {
+
+                // 1. Рандомное Трение (Твоя идея)
+                this.friction = Math.random() * (this.FRICTION_FAST - this.FRICTION_SLOW) + this.FRICTION_SLOW;
+
+                // 2. Рандомный Сильный Импульс
+                this.velocity = (Math.random() * 50) + 30; // (50-100)
+
+                this.isSpinning = true;
+            }
+            if (this.velocity > this.MAX_VELOCITY) {
+                this.velocity = this.MAX_VELOCITY;
+            }
+        },
+        /**
+         * "Игровой Цикл" - вызывается 60 раз/сек
+         */
+        update() {
+            // (Этот код мы уже писали в Этапе 3, просто убедись, что он есть)
+            if (this.velocity > this.MIN_VELOCITY) {
+                this.isSpinning = true;
+
+                // 1. Применяем трение (замедление)
+                this.velocity *= this.friction;
+
+                // 2. Обновляем угол
+                this.angle += this.velocity;
+                this.angle %= 360; // Держим угол 0-360
+
+                // Проверяем, "перепрыгнули" ли мы через 0 (360)
+                // (e.g., previousAngle = 359.8, angle = 0.5)
+                if (this.angle < this.previousAngle) {
+                    // Мы пересекли ГЛАВНУЮ границу (0/360)
+                    this.triggerSectorCross();
+                }
+
+                // Проверяем остальные границы (90, 180, 270...)
+                for (const boundary of this.boundaryAngles) {
+                    // Если граница была МЕЖДУ прошлым углом и текущим
+                    if (this.previousAngle < boundary && this.angle >= boundary) {
+                        this.triggerSectorCross();
+                    }
+                }
+
+            } else if (this.isSpinning) {
+                // Колесо остановилось
+                this.isSpinning = false;
+                this.velocity = 0;
+                this.triggerStopEffect();
+            }
+
+            this.previousAngle = this.angle;
+
+            // 3. Запрашиваем следующий кадр
+            this.animationFrameId = requestAnimationFrame(this.update);
+        },
+
+        stopSpin() {
+            if (!this.isSpinning) return; // Нечего останавливать
+
+            AudioManager.playRandom('WheelStop', true)
+            // (Твоя "минимальная прокрутка")
+            this.velocity = Math.min(this.velocity, 1); // Еле-еле
+            this.friction = 0.95; // Огромное трение, остановится за ~3-4 кадра
+        },
+        triggerSectorCross() {
+            AudioManager.playRandom('Wheel', true);
+
+            // Выпускаем "галочку" из стрелки
+            if (typeof spawnParticles === 'function' && this.$refs.wheelPointer && store.ui.currentPage === 'page-wheel') {
+                 spawnParticles({
+                    originElement: this.$refs.wheelPointer,
+                    symbol: '✨', // Огонек (пока что)
+                    count: 1,
+                    spread: 45, // Вниз
+                    distance: 600, // Близко
+                    duration: 500,
+                    aim: -1,
+                    deg_aim: 45
+                });
+            }
+            // (Здесь будет `AudioManager.playRandom('wheel_tick')`)
+        },
+        // --- 5. Хелперы Визуализации ---
+        get sectors() {
+            const activeOptions = this.options.filter(opt => opt.label && opt.label.trim() !== '');
+            if (activeOptions.length === 0) {
+                return [{ id: 'placeholder', label: '?' }];
+            }
+            return activeOptions;
+        },
+        triggerStopEffect() {
+            AudioManager.playRandom('WheelEnd', true)
+
+            // Проверяем, что эффекты включены в ГЛОБАЛЬНОМ конфиге
+            if (!Alpine.store('app').config.effects_enabled) return;
+
+            if (typeof spawnParticles !== 'function' || !this.$refs.wheelSpinner) {
+                 return;
+            }
+
+            // 1. Выбираем случайный символ из списка
+            const randomSymbol = this.particleList[Math.floor(Math.random() * this.particleList.length)];
+
+            // 2. Запускаем "взрыв"
+            if (store.ui.currentPage === 'page-wheel') {
+                spawnParticles({
+                    originElement: this.$refs.wheelSpinner, // Центр колеса
+                    symbol: randomSymbol, // Твой случайный символ
+                    count: 100,        // Много!
+                    spread: 360,      // Во все стороны
+                    distance: 500,    // Далеко
+                    duration: 5000,   // Долго
+                    particleClass: 'wheel-stop-particle' // (Для кастомного CSS)
+                });
+            }
+        },
+        generateWheelVisuals() {
+
+            const currentSectors = this.sectors;
+            const total = currentSectors.length;
+
+            const colorDefault = getComputedStyle(document.documentElement).getPropertyValue('--color-accent-secondary').trim() || '#2A2A2A';
+            const colorDarker = changeColorBrightness(colorDefault, 20);
+            const colorLighter = changeColorBrightness(colorDefault, -15);
+
+            const segmentAngle = 360 / total;
+            let gradientString = 'conic-gradient(';
+            let textSectors = [];
+            let newBoundaryAngles = [];
+
+            const textRadiusPercent = 25;
+
+            const angleOffsetRad = -Math.PI / 2; // -90 градусов в радианах
+
+            for (let i = 0; i < total; i++) {
+                // ... (Логика цвета 'color' - без изменений) ...
+                let color;
+                if (total > 1 && total % 2 !== 0 && i === total - 1) {
+                    color = colorLighter;
+                } else {
+                    color = (i % 2 === 0) ? colorDefault : colorDarker;
+                }
+
+                const startAngle = segmentAngle * i;
+                const endAngle = segmentAngle * (i + 1);
+
+                gradientString += `${color} ${startAngle}deg ${endAngle}deg`;
+                if (i < total - 1) gradientString += ', ';
+
+                if (startAngle > 0) {
+                    newBoundaryAngles.push(startAngle);
+                }
+
+                const textAngleDeg = startAngle + (segmentAngle / 2);
+                const textAngleRad = (textAngleDeg * Math.PI / 180) + angleOffsetRad;
+
+                const x = 50 + (textRadiusPercent * Math.cos(textAngleRad));
+                const y = 50 + (textRadiusPercent * Math.sin(textAngleRad));
+
+                const rotation = textAngleDeg + 90 + 180; // <-- 90 = вдоль радиуса
+
+                textSectors.push({
+                    id: currentSectors[i].id,
+                    label: currentSectors[i].label,
+                    // Передаем CSS-строки
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: `translate(-50%, -50%) rotate(${rotation}deg)`
+                });
+            }
+
+            gradientString += ')';
+
+            // Обновляем реактивные данные
+            this.wheelData = {
+                gradient: gradientString,
+                textSectors: textSectors
+            };
+
+            this.boundaryAngles = newBoundaryAngles;
+        }
+    };
+} // <-- Конец функции wheelController
+
 // --- Утилита Ticker (x-init) ---
 function alpineTicker(elementId, getTargetDate, getMode, getCompletedMsg) {
     return {
@@ -331,7 +860,6 @@ function alpineTicker(elementId, getTargetDate, getMode, getCompletedMsg) {
 
                 // $watch следит за изменениями
                 Alpine.watch(() => [this.targetDate, this.mode, this.completedMessage], () => {
-                    console.log(`[Ticker] ${elementId}: Обнаружено изменение. (Пере)Запуск...`);
                     this.stop();
                     if (this.targetDate && !isNaN(this.targetDate.getTime())) {
                        this.start();
@@ -493,6 +1021,12 @@ document.addEventListener('alpine:init', () => {
                     initCalendarZoom();
                 } else { console.warn("[App.init] initCalendarZoom не найдена"); }
 
+                if (AudioManager) {
+                    AudioManager.init(this.audioManifest);
+                } else {
+                    console.warn("!!! [AUDIO] AudioManager не найден (audio_manager.js не загружен?)");
+                }
+
                 if (this.config.is_first_launch) {
                      console.log("--- [DEBUG] ПЕРВЫЙ ЗАПУСК: Показываем модальное окно...");
                      // Используем Alpine.deferLoading = false и nextTick для гарантии
@@ -543,6 +1077,9 @@ document.addEventListener('alpine:init', () => {
         },
         navigateTo(pageId) {
             if (this.ui.currentPage === pageId) return;
+
+            AudioManager.playRandom('switchPage', true);
+
             this.ui.currentPage = pageId;
             console.log(`--- [DEBUG-REACTIVE] UI: Текущая страница изменилась на ${pageId}`);
         },
@@ -594,6 +1131,7 @@ document.addEventListener('alpine:init', () => {
             if (!dateString || !cell || !this.log) return; // Добавлена проверка this.log
             console.log(`--- [DEBUG] Store.toggleDate: ${dateString}`);
 
+            AudioManager.playRandom('calendarDay', true);
             cell.style.pointerEvents = 'none';
             cell.style.opacity = '0.5';
 
@@ -868,6 +1406,8 @@ document.addEventListener('alpine:init', () => {
                 }
             });
 
+            AudioManager.playRandom('CalendarMonth', true);
+
             // 2. Частицы месяца из центра модуля (если символ задан)
             if (this.config.effect_particle_month && typeof spawnParticles === 'function') {
                  spawnParticles({
@@ -881,7 +1421,27 @@ document.addEventListener('alpine:init', () => {
             }
         },
         setHoverTarget(type) {
+            if (type === this.ui.hoverTargetType) return;
+
             this.ui.hoverTargetType = type;
+
+            if (!this.config.animations_enabled) return;
+
+            // 2. Определяем, *должен* ли звук играть
+            // (Это наша "умная" система: 'arrival' И 'relationship' - главные)
+            const shouldPlayHeartbeat = (type === 'arrival' || type === 'relationship');
+
+            if (shouldPlayHeartbeat) {
+                // Наведение на главный таймер (или кастомный, который триггерит 'relationship')
+                if (AudioManager) {
+                    AudioManager.playHeartbeat(2000); // 2 сек fade-in
+                }
+            } else {
+                // Увод мыши (type is null) ИЛИ наведение на хедер (type is 'header')
+                if (AudioManager) {
+                    AudioManager.stopHeartbeat(1000); // 1 сек fade-out
+                }
+            }
         },
         handleFirstLaunchOK() {
             console.log("--- [DEBUG] handleFirstLaunchOK: Переход на страницу настроек.");

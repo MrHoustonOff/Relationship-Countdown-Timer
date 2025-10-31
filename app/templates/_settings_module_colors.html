@@ -23,7 +23,7 @@
                                        x-model="form.colors[colorKey]">
                             </div>
                             <button type="button" class="reset-default-btn small" title="Сбросить"
-                                    @click="resetField('colors.' + colorKey)">↺</button>
+                                    @click="resetField('colors.' + colorKey); AudioManager.playRandom('DeleteButtons', true)">↺</button>
                         </div>
                     </template>
 

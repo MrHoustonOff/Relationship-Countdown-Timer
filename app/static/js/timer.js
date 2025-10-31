@@ -130,14 +130,12 @@ class Ticker {
     start() {
         if (!this.element) return;
         if (this.intervalId !== null) return;
-        console.debug("[Ticker] Запуск таймера:", this.elementId || this.element.tagName);
         this._update();
         this.intervalId = window.setInterval(this._update, 1000);
     }
 
     stop() {
         if (this.intervalId !== null) {
-            console.debug("[Ticker] Остановка таймера:", this.elementId || this.element?.tagName);
             window.clearInterval(this.intervalId);
             this.intervalId = null;
             this.previousTimeString = null; // Сбрасываем для корректного старта

@@ -20,7 +20,7 @@
             :class="{ 'hover-active': $store.app.ui.hoverTargetType === 'arrival' }"
             :style="{ /* Анимация пульсации */
                 animation: ($store.app.config.animations_enabled && $store.app.ui.hoverTargetType === 'arrival')
-                           ? 'heartbeat 1s infinite ease-in-out' : 'none'
+                           ? 'heartbeat 0.72s infinite ease-in-out' : 'none'
             }"
             >
             <h2 class="timer-module-title" x-text="$store.app.config.timers.arrival_timer_text"></h2>
@@ -45,7 +45,7 @@
              :class="{ 'hover-active': $store.app.ui.hoverTargetType === 'relationship' }"
              :style="{ /* Анимация пульсации */
                 animation: ($store.app.config.animations_enabled && $store.app.ui.hoverTargetType === 'relationship')
-                           ? 'heartbeat 1s infinite ease-in-out' : 'none'
+                           ? 'heartbeat 0.72s infinite ease-in-out' : 'none'
              }"
              >
             <h2 class="timer-module-title" x-text="$store.app.config.timers.relationship_timer_text"></h2>
@@ -71,6 +71,9 @@
                         </div>
                     </template>
                 </template>
-            </div> </div> </template>
+            </div>
+        </div>
+    </template>
+
 
 </section>

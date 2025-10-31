@@ -29,7 +29,10 @@ SOUND_FOLDERS: List[str] = [
     'CalendarMonth',
     'Wheel',
     'PlusButtons',
-    'DeleteButtons'
+    'DeleteButtons',
+    'WheelBoost',
+    'WheelEnd',
+    'WheelStop'
 ]
 
 def create_app(save_dir_path: str) -> Flask:
@@ -74,6 +77,8 @@ def create_app(save_dir_path: str) -> Flask:
         print("--- [АУДИО] Проверка/создание папок для звуков...")
         sounds_root_path = save_dir / "sounds"
         sounds_root_path.mkdir(exist_ok=True)  # Создаем /sounds
+
+        app.config['SOUNDS_FOLDER'] = sounds_root_path
 
         for folder_name in SOUND_FOLDERS:
             (sounds_root_path / folder_name).mkdir(exist_ok=True)  # Создаем /sounds/Heartbeat и т.д.

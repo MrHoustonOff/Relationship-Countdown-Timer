@@ -5,7 +5,7 @@ from datetime import date, datetime # <-- ДОБАВЬ ИМПОРТ datetime
 from typing import Tuple, Dict, Any, Optional, List  # <-- ДОБАВЬ Optional
 from pathlib import Path
 
-from flask import Blueprint, jsonify, request, Response, current_app
+from flask import Blueprint, jsonify, request, Response, current_app, send_from_directory
 from pydantic import ValidationError
 
 # Импортируем синглтоны менеджеров конфигурации и лога календаря
@@ -178,41 +178,77 @@ def toggle_calendar_date() -> ResponseType:
 @api_bp.route('/audio_manifest', methods=['GET'])
 def get_audio_manifest() -> ResponseType:
     """
-    Сканирует файловую систему в AppData/sounds
-    и возвращает JSON-манифест всех найденных .mp3 файлов.
+    Сканирует файловую систему и возвращает JSON-манифест
+    с ОТНОСИТЕЛЬНЫМИ HTTP-путями к .mp3 файлам.
     """
     current_app.logger.info("--- [АУДИО] Запрос /api/audio_manifest...")
     manifest: Dict[str, List[str]] = {}
 
     try:
-        # Находим папку /sounds, используя config_manager
-        # (config_manager.config_path = .../AppData/.../config.json)
-        sounds_dir = config_manager.config_path.parent / "sounds"
+        # Используем путь, который мы сохранили в app.config
+        sounds_dir = current_app.config.get('SOUNDS_FOLDER') # <-- ИЗМЕНЕНО
 
-        if not sounds_dir.exists():
-            current_app.logger.warning(f"--- [АУДИО] Папка {sounds_dir} не найдена. Возвращаем пустой манифест.")
+        if not sounds_dir or not sounds_dir.exists():
+            current_app.logger.warning(f"--- [АУДИО] Папка {sounds_dir} не найдена.")
             return jsonify({})
 
-        # Сканируем каждую папку из нашего списка
         for folder_name in SOUND_FOLDERS:
             folder_path = sounds_dir / folder_name
             if not folder_path.exists():
-                manifest[folder_name] = [] # Папки нет, возвращаем пустой список
+                manifest[folder_name] = []
                 continue
 
-            # Ищем ВСЕ .mp3 файлы
-            # (Мы используем .as_uri() (e.g., 'file:///C:/...')
-            # чтобы JS (pywebview) мог их загрузить)
-            file_paths = [p.as_uri() for p in folder_path.glob('*.mp3')]
+            # *** [ ИЗМЕНЕНО: Создаем HTTP-пути ] ***
+            file_paths = []
+            for p in folder_path.glob('*.mp3'):
+                # p.name = "HeartBeatOne.mp3"
+                # folder_name = "Heartbeat"
+                # Результат: "/audio/Heartbeat/HeartBeatOne.mp3"
+                http_path = f"/api/audio/{folder_name}/{p.name}"
+                file_paths.append(http_path)
+            # *** [ КОНЕЦ ИЗМЕНЕНИЙ ] ***
 
             manifest[folder_name] = file_paths
 
-        current_app.logger.info(f"--- [АУДИО] Манифест успешно создан, найдено {sum(len(v) for v in manifest.values())} файлов.")
+        current_app.logger.info(f"--- [АУДИО] Манифест успешно создан (HTTP-пути).")
         return jsonify(manifest)
 
     except Exception as e:
         current_app.logger.error(f"!!! [АУДИО] Ошибка при сканировании папок звуков: {e}", exc_info=True)
         return jsonify({"error": "Internal server error scanning audio"}), 500
+
+
+@api_bp.route('/audio/<path:category>/<path:filename>')
+def serve_audio_file(category: str, filename: str) -> ResponseType:
+    """
+    Безопасно отдает .mp3 файл из папки AppData/sounds/<category>.
+    """
+    try:
+        sounds_dir = current_app.config.get('SOUNDS_FOLDER')
+        if not sounds_dir:
+            raise ValueError("Путь к папке 'sounds' не сконфигурирован.")
+
+        if category not in SOUND_FOLDERS:
+            current_app.logger.warning(f"[АУДИО] Попытка доступа к неразрешенной папке: {category}")
+            return "Forbidden", 403
+
+        directory_path = Path(sounds_dir) / category
+
+        current_app.logger.info(f"--- [АУДИО] Попытка отдать файл: {filename}")
+        current_app.logger.info(f"--- [АУДИО] ...из директории: {directory_path}")
+
+        return send_from_directory(
+            directory_path,
+            filename,
+            as_attachment=False
+        )
+
+    except FileNotFoundError:
+        current_app.logger.error(f"!!! [АУДИО] Файл НЕ НАЙДЕН (404): {category}/{filename}")
+        return "File Not Found", 404
+    except Exception as e:
+        current_app.logger.error(f"!!! [АУДИО] Ошибка при раздаче файла: {e}", exc_info=True)
+        return "Server Error", 500
 
 @api_bp.route('/calendar/reset', methods=['POST'])
 def reset_calendar() -> ResponseType:

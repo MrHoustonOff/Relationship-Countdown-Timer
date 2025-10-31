@@ -9,7 +9,7 @@
         </div>
         <div class="reset-button-placeholder danger">
              <button type="button" class="danger-zone-btn"
-                     @click="resetCalendarLog()"
+                     @click="resetCalendarLog(); AudioManager.playRandom('DeleteButtons', true)"
                      x-text="$store.app.lang['settings_danger_reset_calendar_btn'] || 'Сбросить'">
              </button>
         </div>
@@ -24,7 +24,7 @@
         </div>
         <div class="reset-button-placeholder danger">
              <button type="button" class="danger-zone-btn"
-                     @click="resetAllSettings()"
+                     @click="resetAllSettings(); AudioManager.playRandom('DeleteButtons', true)"
                      x-text="$store.app.lang['settings_danger_reset_all_btn'] || 'Сбросить Всё'">
              </button>
         </div>

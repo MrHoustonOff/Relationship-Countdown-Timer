@@ -171,9 +171,12 @@ button {
 }
 
 @keyframes heartbeat {
-    0%   { transform: scale(1.0); }
-    50%  { transform: scale(1.01); }
-    100% { transform: scale(1.0); }
+    0%   { transform: scale(1.01); }   /* Покой */
+    20%  { transform: scale(1.03); } /* БУМ! (Резкий удар) */
+    30%  { transform: scale(1.01); }   /* (Быстрое сжатие) */
+    50%  { transform: scale(1.02); } /* бум (Второй, слабый удар) */
+    80%  { transform: scale(1.01); }   /* (Возврат в покой) */
+    100% { transform: scale(1.01); }   /* (Покой до конца цикла) */
 }
 
 @keyframes particle-fly-out {
