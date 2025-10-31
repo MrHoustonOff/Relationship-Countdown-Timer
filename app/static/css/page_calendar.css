@@ -175,7 +175,7 @@
     align-items: center;
 
     /* --- Внешний вид (из переменных base.css / inline стилей) --- */
-    font-size: calc(2rem * var(--sticker-scale-factor, 1.0)); /* База 32px * масштаб */
+    font-size: 2rem; /* База 32px * масштаб */
     color: var(--sticker-color);
     opacity: 0.9;
 

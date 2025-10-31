@@ -562,7 +562,6 @@ document.addEventListener('alpine:init', () => {
                 root.style.setProperty('--calendar-empty-cell-color', this.config.calendar_empty_cell_color);
                 root.style.setProperty('--calendar-marked-day-color', this.config.calendar_marked_day_color);
                 root.style.setProperty('--sticker-color', this.config.sticker_color);
-                root.style.setProperty('--sticker-scale-factor', this.config.sticker_scale);
                 const blurValue = parseInt(this.config.blur_strength, 10);
                 if (!isNaN(blurValue) && blurValue >= 0) {
                      root.style.setProperty('--blur-strength', `${blurValue}px`);
