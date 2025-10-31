@@ -54,6 +54,11 @@ function wheelController() {
         FRICTION_FAST: 0.998, // Самое быстрое (твое "сейчас")
         FRICTION_SLOW: 0.99, // Самое медленное ("повесомее")
 
+        particleList: [
+            '👉','👈', '🌚', '💕','❤️','🫦','😶‍🌫️','😍','👍','🤦‍♂️',
+            '🥲','🤬','🤡','💩','👺','👽','👿','🐽','🐒','🐳',
+            '🦉','👁️','👀','🧌','🤷‍♂️','🙆‍♂️','🕺','💃','👃','🤌'
+        ],
 
         previousAngle: 0,    // Угол в прошлом кадре
         boundaryAngles: [],  // Массив углов границ [0, 90, 180, 270]
@@ -251,6 +256,7 @@ function wheelController() {
                 // Колесо остановилось
                 this.isSpinning = false;
                 this.velocity = 0;
+                this.triggerStopEffect();
                 console.log("--- [DEBUG] wheel: Остановка.");
             }
 
@@ -295,7 +301,31 @@ function wheelController() {
             }
             return activeOptions;
         },
+        triggerStopEffect() {
+            console.log("--- [ЭФФЕКТ] Колесо остановилось, запускаем ВЗРЫВ!");
 
+            // Проверяем, что эффекты включены в ГЛОБАЛЬНОМ конфиге
+            if (!Alpine.store('app').config.effects_enabled) return;
+
+            if (typeof spawnParticles !== 'function' || !this.$refs.wheelSpinner) {
+                 console.warn("--- [ЭФФЕКТ] spawnParticles или wheelSpinner не найден!");
+                 return;
+            }
+
+            // 1. Выбираем случайный символ из списка
+            const randomSymbol = this.particleList[Math.floor(Math.random() * this.particleList.length)];
+
+            // 2. Запускаем "взрыв"
+            spawnParticles({
+                originElement: this.$refs.wheelSpinner, // Центр колеса
+                symbol: randomSymbol, // Твой случайный символ
+                count: 100,        // Много!
+                spread: 360,      // Во все стороны
+                distance: 500,    // Далеко
+                duration: 5000,   // Долго
+                particleClass: 'wheel-stop-particle' // (Для кастомного CSS)
+            });
+        },
         generateWheelVisuals() {
             console.log("--- [DEBUG] wheel: generateWheelVisuals() v2.4 (JS-Матан)");
 

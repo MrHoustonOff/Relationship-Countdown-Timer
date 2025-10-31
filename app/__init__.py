@@ -3,7 +3,7 @@
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from flask import Flask
 
@@ -22,6 +22,15 @@ APP_ROOT: str = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER: str = os.path.join(APP_ROOT, 'static')
 TEMPLATE_FOLDER: str = os.path.join(APP_ROOT, 'templates')
 
+SOUND_FOLDERS: List[str] = [
+    'Heartbeat',
+    'switchPage',
+    'calendarDay',
+    'CalendarMonth',
+    'Wheel',
+    'PlusButtons',
+    'DeleteButtons'
+]
 
 def create_app(save_dir_path: str) -> Flask:
     """Фабрика для создания и конфигурации экземпляра Flask-приложения.
@@ -60,6 +69,18 @@ def create_app(save_dir_path: str) -> Flask:
         print(f"!!! КРИТИЧЕСКАЯ ОШИБКА: Не удалось загрузить/создать файлы сохранения: {e}")
         # В реальном приложении здесь можно показать страницу ошибки или выйти
         # exit(1) # Раскомментируй, если нужно прерывать запуск при ошибке
+
+    try:
+        print("--- [АУДИО] Проверка/создание папок для звуков...")
+        sounds_root_path = save_dir / "sounds"
+        sounds_root_path.mkdir(exist_ok=True)  # Создаем /sounds
+
+        for folder_name in SOUND_FOLDERS:
+            (sounds_root_path / folder_name).mkdir(exist_ok=True)  # Создаем /sounds/Heartbeat и т.д.
+
+        print(f"--- [АУДИО] Файловая структура звуков в {sounds_root_path} проверена.")
+    except (IOError, OSError) as e:
+        print(f"!!! [АУДИО] НЕКРИТИЧНАЯ ОШИБКА: Не удалось создать папки звуков: {e}")
 
     # --- Регистрация Blueprints (маршрутов) ---
     try:

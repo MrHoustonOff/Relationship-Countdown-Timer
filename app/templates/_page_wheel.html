@@ -14,7 +14,8 @@
                  :style="{
                      backgroundImage: wheelData.gradient,
                      transform: `rotate(${angle}deg)`
-                 }">
+                 }"
+                x-ref="wheelSpinner">>
 
                 <template x-for="sector in wheelData.textSectors" :key="sector.id">
                     <span class="wheel-text-item-js"

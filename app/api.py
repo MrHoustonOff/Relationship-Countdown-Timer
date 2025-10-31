@@ -2,14 +2,16 @@
 """Blueprint для обработки API-запросов приложения."""
 
 from datetime import date, datetime # <-- ДОБАВЬ ИМПОРТ datetime
-from typing import Tuple, Dict, Any, Optional # <-- ДОБАВЬ Optional
+from typing import Tuple, Dict, Any, Optional, List  # <-- ДОБАВЬ Optional
+from pathlib import Path
 
 from flask import Blueprint, jsonify, request, Response, current_app
 from pydantic import ValidationError
 
 # Импортируем синглтоны менеджеров конфигурации и лога календаря
 from . import config_manager, calendar_log
-from .core.config_manager import CustomTimer, AppConfig
+from .core.config_manager import CustomTimer, AppConfig, WheelOption
+from . import config_manager, calendar_log, SOUND_FOLDERS
 
 # Создаем Blueprint 'api' с префиксом '/api'
 api_bp = Blueprint('api', __name__)
@@ -173,6 +175,44 @@ def toggle_calendar_date() -> ResponseType:
         current_app.logger.error(f"Ошибка при переключении отметки для {date_str}: {e}", exc_info=True)
         return jsonify({"error": "Internal server error updating calendar log"}), 500
 
+@api_bp.route('/audio_manifest', methods=['GET'])
+def get_audio_manifest() -> ResponseType:
+    """
+    Сканирует файловую систему в AppData/sounds
+    и возвращает JSON-манифест всех найденных .mp3 файлов.
+    """
+    current_app.logger.info("--- [АУДИО] Запрос /api/audio_manifest...")
+    manifest: Dict[str, List[str]] = {}
+
+    try:
+        # Находим папку /sounds, используя config_manager
+        # (config_manager.config_path = .../AppData/.../config.json)
+        sounds_dir = config_manager.config_path.parent / "sounds"
+
+        if not sounds_dir.exists():
+            current_app.logger.warning(f"--- [АУДИО] Папка {sounds_dir} не найдена. Возвращаем пустой манифест.")
+            return jsonify({})
+
+        # Сканируем каждую папку из нашего списка
+        for folder_name in SOUND_FOLDERS:
+            folder_path = sounds_dir / folder_name
+            if not folder_path.exists():
+                manifest[folder_name] = [] # Папки нет, возвращаем пустой список
+                continue
+
+            # Ищем ВСЕ .mp3 файлы
+            # (Мы используем .as_uri() (e.g., 'file:///C:/...')
+            # чтобы JS (pywebview) мог их загрузить)
+            file_paths = [p.as_uri() for p in folder_path.glob('*.mp3')]
+
+            manifest[folder_name] = file_paths
+
+        current_app.logger.info(f"--- [АУДИО] Манифест успешно создан, найдено {sum(len(v) for v in manifest.values())} файлов.")
+        return jsonify(manifest)
+
+    except Exception as e:
+        current_app.logger.error(f"!!! [АУДИО] Ошибка при сканировании папок звуков: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error scanning audio"}), 500
 
 @api_bp.route('/calendar/reset', methods=['POST'])
 def reset_calendar() -> ResponseType:

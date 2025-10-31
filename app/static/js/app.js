@@ -429,6 +429,7 @@ document.addEventListener('alpine:init', () => {
         lang: {},
         form: null,
         defaults: null,
+        audioManifest: {},
         ui: {
             currentPage: 'page-main',
             isLoaded: false,
@@ -445,21 +446,25 @@ document.addEventListener('alpine:init', () => {
             try {
                 console.log("--- [DEBUG] Store.init(): Запрос config, log и defaults...");
 
-                const [configRes, logRes, defaultsRes] = await Promise.all([
+                const [configRes, logRes, defaultsRes, audioRes] = await Promise.all([
                     fetch('/api/config'),
                     fetch('/api/calendar_log'),
-                    fetch('/api/config/defaults') // <-- НОВЫЙ ЗАПРОС
+                    fetch('/api/config/defaults'), // <-- НОВЫЙ ЗАПРОС
+                    fetch('/api/audio_manifest')
                 ]);
 
                 if (!configRes.ok) throw new Error(`Ошибка API /api/config: ${configRes.status}`);
                 if (!logRes.ok) throw new Error(`Ошибка API /api/calendar_log: ${logRes.status}`);
                 if (!defaultsRes.ok) throw new Error(`API /api/config/defaults: ${defaultsRes.status}`);
+                if (!audioRes.ok) throw new Error(`API /api/audio_manifest: ${audioRes.status}`);
 
                 this.config = await configRes.json();
                 this.log = await logRes.json();
                 this.defaults = await defaultsRes.json();
+                this.audioManifest = await audioRes.json();
 
                 console.log("--- [DEBUG] Store.init(): Config, Log, Defaults получены.");
+                console.log("--- [DEBUG] Store.init(): Аудио-манифест загружен:", this.audioManifest);
 
                 if (!this.config || !this.log || !this.config.language) {
                     throw new Error("Структура config или log некорректна.");
