@@ -216,7 +216,7 @@ function wheelController() {
                     label: currentSectors[i].label,
                     // Передаем CSS-строки
                     left: `${x}%`,
-                    top: `${y}%`,п
+                    top: `${y}%`,
                     transform: `translate(-50%, -50%) rotate(${rotation}deg)`
                 });
             }
