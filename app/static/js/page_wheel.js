@@ -48,6 +48,12 @@ function wheelController() {
         isSpinning: false, // Флаг, что идет кручение
         animationFrameId: null, // ID для requestAnimationFrame
 
+        // Константы Физики (можем вынести в настройки)
+        MIN_VELOCITY: 0.01,   // Скорость, на которой колесо "останавливается"
+        MAX_VELOCITY: 70,    // Максимальный "кламп" скорости
+        FRICTION_FAST: 0.998, // Самое быстрое (твое "сейчас")
+        FRICTION_SLOW: 0.99, // Самое медленное ("повесомее")
+
         // --- 2. Инициализация ---
         init() {
             console.log("--- [DEBUG] wheelController v2.3 (Фикс): Инициализация...");
@@ -150,26 +156,69 @@ function wheelController() {
         spin() {
             // Игнорируем, если уже крутится (пока нет "докрутки")
             if (this.isSpinning) {
-                console.log("--- [DEBUG] wheel: Уже крутится! (Докрутка - TODO)");
-                // (Здесь будет Этап 4: this.velocity += ...)
-                return;
+                // --- СТУЛ 2: "ДОКРУЧИВАНИЕ" ---
+                this.friction = Math.random() * (this.FRICTION_FAST - this.FRICTION_SLOW) + this.FRICTION_SLOW;
+                console.log("--- [DEBUG] wheel: Докручиваем (Текущая v и f: " + this.velocity.toFixed(2) + ")" + this.friction.toFixed(3));
+
+                let boost;
+                // (Твоя логика: "чем быстрее, тем меньше сила")
+                if (this.velocity > 30) {
+                    boost = (Math.random() * 2.5) + 2.5; // (5-10)
+                } else if (this.velocity > 15) {
+                    boost = (Math.random() * 5) + 5; // (10-20)
+                } else {
+                    boost = (Math.random() * 7.5) + 10; // (20-35)
+                }
+
+                console.log("--- [DEBUG] wheel: +++ Boost: " + boost.toFixed(2));
+                this.velocity += boost;
+
+                let particleCount = 0;
+                // Проверяем НОВУЮ скорость
+                if (this.velocity > 30) {
+                    particleCount = 6;
+                } else if (this.velocity > 20) {
+                    particleCount = 4;
+                } else if (this.velocity > 10) {
+                    particleCount = 2;
+                } else if (this.velocity > 0) {
+                    particleCount = 1;
+                }
+
+                if (particleCount > 0 && typeof spawnParticles === 'function' && this.$refs.spinButton) {
+                    console.log(`--- [DEBUG] wheel: Запуск ${particleCount} частиц докрутки!`);
+                    spawnParticles({
+                        originElement: this.$refs.spinButton, // Наша кнопка
+                        symbol: '🔥', // Огонь!
+                        count: particleCount,
+                        spread: 360, // Во все стороны
+                        distance: 250, // Не слишком далеко
+                        duration: 5000 // Быстро
+                    });
+                }
+            } else {
+                console.log("--- [DEBUG] wheel: Начальный спин!");
+
+                // 1. Рандомное Трение (Твоя идея)
+                this.friction = Math.random() * (this.FRICTION_FAST - this.FRICTION_SLOW) + this.FRICTION_SLOW;
+                console.log("--- [DEBUG] wheel: Новое трение: " + this.friction.toFixed(4));
+
+                // 2. Рандомный Сильный Импульс
+                this.velocity = (Math.random() * 50) + 30; // (50-100)
+
+                this.isSpinning = true;
             }
-
-            console.log("--- [DEBUG] wheel: SPIN! (v1 - Базовый спин)...");
-
-            // 1. Даем СИЛЬНЫЙ, СЛУЧАЙНЫЙ импульс
-            // (Math.random() * 50) + 50 = от 50 до 100
-            this.velocity = (Math.random() * 50) + 50;
-
-            this.isSpinning = true;
-            // 'update()' (который уже запущен) поймает эту velocity
+            if (this.velocity > this.MAX_VELOCITY) {
+                console.warn("--- [DEBUG] wheel: СКОРОСТЬ МАКСИМАЛЬНА! (Clamped)");
+                this.velocity = this.MAX_VELOCITY;
+            }
         },
         /**
          * "Игровой Цикл" - вызывается 60 раз/сек
          */
         update() {
-            // Крутим, только если есть скорость
-            if (this.velocity > 0.01) {
+            // (Этот код мы уже писали в Этапе 3, просто убедись, что он есть)
+            if (this.velocity > this.MIN_VELOCITY) {
                 this.isSpinning = true;
 
                 // 1. Применяем трение (замедление)
@@ -186,14 +235,21 @@ function wheelController() {
                 this.isSpinning = false;
                 this.velocity = 0;
                 console.log("--- [DEBUG] wheel: Остановка.");
-                // (TODO: Здесь будет вызов 'onFinished')
             }
 
             // 3. Запрашиваем следующий кадр
-            // (Мы не обновляем CSS-переменную, Alpine сам следит за 'this.angle')
             this.animationFrameId = requestAnimationFrame(this.update);
         },
 
+        stopSpin() {
+            if (!this.isSpinning) return; // Нечего останавливать
+
+            console.log("--- [DEBUG] wheel: STOP! (Клик по стрелке)");
+
+            // (Твоя "минимальная прокрутка")
+            this.velocity = Math.min(this.velocity, 1); // Еле-еле
+            this.friction = 0.95; // Огромное трение, остановится за ~3-4 кадра
+        },
         // --- 5. Хелперы Визуализации ---
         get sectors() {
             const activeOptions = this.options.filter(opt => opt.label && opt.label.trim() !== '');

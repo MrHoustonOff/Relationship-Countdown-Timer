@@ -8,7 +8,7 @@
 
         <div class="wheel-container-module">
 
-            <div class="wheel-pointer"></div>
+            <div class="wheel-pointer" @click="stopSpin()"></div>
 
             <div class="wheel-spinner"
                  :style="{
@@ -28,7 +28,12 @@
                 </template>
                 </div>
 
-            <button type="button" class="wheel-spin-button" @click="spin()"></button>
+            <button
+                    type="button"
+                    class="wheel-spin-button"
+                    @click="spin()"
+                    x-ref="spinButton">
+            </button>
 
         </div>
         <div class="wheel-options-module">
