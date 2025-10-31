@@ -11,10 +11,10 @@
             <div class="wheel-pointer"></div>
 
             <div class="wheel-spinner"
-                 :style="{ backgroundImage: wheelData.gradient }">
-            </div>
-
-            <div class="wheel-text-container-js">
+                 :style="{
+                     backgroundImage: wheelData.gradient,
+                     transform: `rotate(${angle}deg)`
+                 }">
 
                 <template x-for="sector in wheelData.textSectors" :key="sector.id">
                     <span class="wheel-text-item-js"
@@ -26,7 +26,8 @@
                           }">
                     </span>
                 </template>
-            </div>
+                </div>
+
             <button type="button" class="wheel-spin-button" @click="spin()"></button>
 
         </div>

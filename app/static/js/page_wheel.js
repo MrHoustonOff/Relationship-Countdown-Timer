@@ -41,6 +41,13 @@ function wheelController() {
             textSectors: []
         },
 
+        // *** [ НОВОЕ: Состояние Физики ] ***
+        angle: 0,          // Текущий угол поворота (в градусах)
+        velocity: 0,       // Текущая скорость (градусов/кадр)
+        friction: 0.998,   // Трение (0.998 = медленно, 0.99 = быстро)
+        isSpinning: false, // Флаг, что идет кручение
+        animationFrameId: null, // ID для requestAnimationFrame
+
         // --- 2. Инициализация ---
         init() {
             console.log("--- [DEBUG] wheelController v2.3 (Фикс): Инициализация...");
@@ -86,6 +93,8 @@ function wheelController() {
                      this.options = JSON.parse(JSON.stringify(newConfig.wheel_options || []));
                  }
             }, { deep: true });
+            this.update = this.update.bind(this); // Привязываем 'this'
+            this.update(); // Запускаем цикл
         },
 
         // --- 3. Методы Управления Списком ---
@@ -139,7 +148,50 @@ function wheelController() {
 
         // --- 4. Заглушка для Физики ---
         spin() {
-            console.log("--- [DEBUG] wheel: SPIN! (Заглушка)...");
+            // Игнорируем, если уже крутится (пока нет "докрутки")
+            if (this.isSpinning) {
+                console.log("--- [DEBUG] wheel: Уже крутится! (Докрутка - TODO)");
+                // (Здесь будет Этап 4: this.velocity += ...)
+                return;
+            }
+
+            console.log("--- [DEBUG] wheel: SPIN! (v1 - Базовый спин)...");
+
+            // 1. Даем СИЛЬНЫЙ, СЛУЧАЙНЫЙ импульс
+            // (Math.random() * 50) + 50 = от 50 до 100
+            this.velocity = (Math.random() * 50) + 50;
+
+            this.isSpinning = true;
+            // 'update()' (который уже запущен) поймает эту velocity
+        },
+        /**
+         * "Игровой Цикл" - вызывается 60 раз/сек
+         */
+        update() {
+            // Крутим, только если есть скорость
+            if (this.velocity > 0.01) {
+                this.isSpinning = true;
+
+                // 1. Применяем трение (замедление)
+                this.velocity *= this.friction;
+
+                // 2. Обновляем угол
+                this.angle += this.velocity;
+                this.angle %= 360; // Держим угол 0-360
+
+                // (TODO: Здесь будет проверка пересечения границы)
+
+            } else if (this.isSpinning) {
+                // Колесо остановилось
+                this.isSpinning = false;
+                this.velocity = 0;
+                console.log("--- [DEBUG] wheel: Остановка.");
+                // (TODO: Здесь будет вызов 'onFinished')
+            }
+
+            // 3. Запрашиваем следующий кадр
+            // (Мы не обновляем CSS-переменную, Alpine сам следит за 'this.angle')
+            this.animationFrameId = requestAnimationFrame(this.update);
         },
 
         // --- 5. Хелперы Визуализации ---
