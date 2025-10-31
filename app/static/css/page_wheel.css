@@ -29,7 +29,6 @@
     position: absolute;
     top: -10px;
     left: 50%;
-    transform: translateX(-50%);
     width: 0;
     height: 0;
     border-left: 15px solid transparent;
@@ -173,3 +172,29 @@
     flex-shrink: 0; /* Кнопки не сжимаются */
 }
 /* (Стили кнопок наследуются из page_settings.css) */
+
+
+@keyframes anim-pointer-push {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to   { transform: translateX(-50%) rotate(-50deg); } /* Твой угол N */
+}
+
+/* 4.2. "Возврат" (Цикл 2) */
+@keyframes anim-pointer-snap {
+    from { transform: translateX(-50%) rotate(-50deg); }
+    to   { transform: translateX(-50%) rotate(0deg); }
+}
+
+.wheel-pointer.is-pushing {
+    /* Имя: anim-pointer-push
+       Длительность: берется из CSS-переменной
+       Режим: ease-out (быстро вначале, медленно в конце)
+       Сохранение: forwards (остается в 'to' состоянии)
+    */
+    animation: anim-pointer-push var(--push-duration, 0.2s) ease-out forwards;
+}
+
+/* (Класс-триггер для Цикла 2) */
+.wheel-pointer.is-snapping {
+    animation: anim-pointer-snap var(--snap-duration, 0.1s) ease-in forwards;
+}

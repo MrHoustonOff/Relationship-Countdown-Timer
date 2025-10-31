@@ -25,7 +25,9 @@ function spawnParticles({
     spread = 180,
     duration = 1200,
     distance = 300,
-    particleClass = ''
+    particleClass = '',
+    aim = 1,
+    deg_aim = 0
 }) {
     // Проверка наличия элемента-источника
     if (!originElement || !(originElement instanceof Element)) {
@@ -61,7 +63,7 @@ function spawnParticles({
 
             // Рассчитываем случайный угол разлета
             // Смещение -90 градусов для направления "вверх" при spread=180 но я его поменял
-            const angleOffset = 90;
+            const angleOffset = 90 * aim + deg_aim;
             const randomAngleDeg = (Math.random() * spread - (spread / 2)) + angleOffset;
             const angleRad = randomAngleDeg * (Math.PI / 180);
 

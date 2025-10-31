@@ -54,6 +54,10 @@ function wheelController() {
         FRICTION_FAST: 0.998, // Самое быстрое (твое "сейчас")
         FRICTION_SLOW: 0.99, // Самое медленное ("повесомее")
 
+
+        previousAngle: 0,    // Угол в прошлом кадре
+        boundaryAngles: [],  // Массив углов границ [0, 90, 180, 270]
+
         // --- 2. Инициализация ---
         init() {
             console.log("--- [DEBUG] wheelController v2.3 (Фикс): Инициализация...");
@@ -228,7 +232,20 @@ function wheelController() {
                 this.angle += this.velocity;
                 this.angle %= 360; // Держим угол 0-360
 
-                // (TODO: Здесь будет проверка пересечения границы)
+                // Проверяем, "перепрыгнули" ли мы через 0 (360)
+                // (e.g., previousAngle = 359.8, angle = 0.5)
+                if (this.angle < this.previousAngle) {
+                    // Мы пересекли ГЛАВНУЮ границу (0/360)
+                    this.triggerSectorCross();
+                }
+
+                // Проверяем остальные границы (90, 180, 270...)
+                for (const boundary of this.boundaryAngles) {
+                    // Если граница была МЕЖДУ прошлым углом и текущим
+                    if (this.previousAngle < boundary && this.angle >= boundary) {
+                        this.triggerSectorCross();
+                    }
+                }
 
             } else if (this.isSpinning) {
                 // Колесо остановилось
@@ -236,6 +253,8 @@ function wheelController() {
                 this.velocity = 0;
                 console.log("--- [DEBUG] wheel: Остановка.");
             }
+
+            this.previousAngle = this.angle;
 
             // 3. Запрашиваем следующий кадр
             this.animationFrameId = requestAnimationFrame(this.update);
@@ -249,6 +268,24 @@ function wheelController() {
             // (Твоя "минимальная прокрутка")
             this.velocity = Math.min(this.velocity, 1); // Еле-еле
             this.friction = 0.95; // Огромное трение, остановится за ~3-4 кадра
+        },
+        triggerSectorCross() {
+            console.log("--- [ЗВУК] ПЕРЕСЕКЛА!");
+
+            // Выпускаем "галочку" из стрелки
+            if (typeof spawnParticles === 'function' && this.$refs.wheelPointer) {
+                 spawnParticles({
+                    originElement: this.$refs.wheelPointer,
+                    symbol: '✨', // Огонек (пока что)
+                    count: 1,
+                    spread: 45, // Вниз
+                    distance: 600, // Близко
+                    duration: 500,
+                    aim: -1,
+                    deg_aim: 45
+                });
+            }
+            // (Здесь будет `AudioManager.playRandom('wheel_tick')`)
         },
         // --- 5. Хелперы Визуализации ---
         get sectors() {
@@ -272,17 +309,11 @@ function wheelController() {
             const segmentAngle = 360 / total;
             let gradientString = 'conic-gradient(';
             let textSectors = [];
+            let newBoundaryAngles = [];
 
-            // --- МАТАН ---
-            // Радиус текста (в % от полу-ширины колеса)
-            // 0% = центр, 100% = край.
-            // 50% = середина радиуса (идеально для "по центру сектора")
             const textRadiusPercent = 25;
 
-            // Угол 0 в JS - это 3 часа. Угол 0 у нас - 12 часов.
-            // Смещение = -90 градусов
             const angleOffsetRad = -Math.PI / 2; // -90 градусов в радианах
-            // --- КОНЕЦ МАТАНА ---
 
             for (let i = 0; i < total; i++) {
                 // ... (Логика цвета 'color' - без изменений) ...
@@ -296,28 +327,20 @@ function wheelController() {
                 const startAngle = segmentAngle * i;
                 const endAngle = segmentAngle * (i + 1);
 
-                // 1. Градиент (БЕЗ ГРАНИЦ)
                 gradientString += `${color} ${startAngle}deg ${endAngle}deg`;
                 if (i < total - 1) gradientString += ', ';
 
-                // 2. Данные для текста
+                if (startAngle > 0) {
+                    newBoundaryAngles.push(startAngle);
+                }
 
-                // Угол ЦЕНТРА сектора (в градусах)
                 const textAngleDeg = startAngle + (segmentAngle / 2);
-                // Угол ЦЕНТРА сектора (в радианах) + смещение
                 const textAngleRad = (textAngleDeg * Math.PI / 180) + angleOffsetRad;
 
-                // Координаты X и Y (в %)
-                // 50% (центр) + (смещение по радиусу)
                 const x = 50 + (textRadiusPercent * Math.cos(textAngleRad));
                 const y = 50 + (textRadiusPercent * Math.sin(textAngleRad));
 
-                // Поворот текста (в градусах)
-                // (textAngleDeg + 90) = чтобы текст "лежал" на радиусе
-                // (Ты просил "text on the radius" (vertical-rl), так что 90)
-                // (Если хочешь горизонтально, как в 701dde, ставь 'textAngleDeg')
                 const rotation = textAngleDeg + 90 + 180; // <-- 90 = вдоль радиуса
-                // const rotation = textAngleDeg; // <-- 0 = горизонтально
 
                 textSectors.push({
                     id: currentSectors[i].id,
@@ -336,6 +359,9 @@ function wheelController() {
                 gradient: gradientString,
                 textSectors: textSectors
             };
+
+            this.boundaryAngles = newBoundaryAngles;
+            console.log("--- [DEBUG] wheel: Границы секторов:", this.boundaryAngles);
         }
     };
 } // <-- Конец функции wheelController
