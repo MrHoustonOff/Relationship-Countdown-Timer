@@ -2,6 +2,7 @@
 """Инициализация Flask-приложения и его компонентов."""
 
 import os
+import sys
 from pathlib import Path
 from typing import Optional, List
 
@@ -16,11 +17,30 @@ from .core.calendar_log import CalendarLog
 config_manager: ConfigManager = ConfigManager(None)
 calendar_log: CalendarLog = CalendarLog(None)
 
+
+def resource_path(relative_path: str) -> str:
+    """
+    Возвращает абсолютный путь к ресурсу, упакованному PyInstaller.
+
+    Когда приложение скомпилировано, PyInstaller создает временную папку
+    (_MEIPASS), где лежат все ресурсы.
+    """
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # При запуске из PyInstaller, базовый путь - это _MEIPASS.
+        # Поскольку в .spec вы указали ('app/static', 'static'),
+        # папки templates и static находятся в корне _MEIPASS.
+        base_path = sys._MEIPASS
+    else:
+        # При запуске в режиме разработки, базовый путь - это корень приложения.
+        # (Вероятно, это A:\05_Coding\00_LOVE_TIMER\app)
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+    return os.path.join(base_path, relative_path)
 # Определяем абсолютный путь к корневой директории приложения ('app')
 APP_ROOT: str = os.path.dirname(os.path.abspath(__file__))
 # Определяем абсолютные пути к папкам 'static' и 'templates'
-STATIC_FOLDER: str = os.path.join(APP_ROOT, 'static')
-TEMPLATE_FOLDER: str = os.path.join(APP_ROOT, 'templates')
+STATIC_FOLDER: str = resource_path('static')
+TEMPLATE_FOLDER: str = resource_path('templates')
 
 SOUND_FOLDERS: List[str] = [
     'Heartbeat',

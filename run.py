@@ -15,7 +15,7 @@ import webview
 from app import create_app
 
 # --- Константы ---
-APP_NAME = "Relationship Countdown Timer"
+APP_NAME = "LoveTimer"
 APP_AUTHOR = "MrHouston"
 SINGLE_INSTANCE_PORT = 47567 # Порт для проверки единственного экземпляра
 MIN_WINDOW_WIDTH = 700
