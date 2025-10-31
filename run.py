@@ -15,7 +15,7 @@ import webview
 from app import create_app
 
 # --- Константы ---
-APP_NAME = "Relationship_Countdown_Timer"
+APP_NAME = "Relationship Countdown Timer"
 APP_AUTHOR = "MrHouston"
 SINGLE_INSTANCE_PORT = 47567 # Порт для проверки единственного экземпляра
 MIN_WINDOW_WIDTH = 700
@@ -84,13 +84,10 @@ if __name__ == '__main__':
     window = webview.create_window(
         APP_NAME,       # Заголовок окна
         flask_app,      # Flask-приложение для загрузки
-        min_size=(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT) # Минимальный размер окна
+        min_size=(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT), # Минимальный размер окна
     )
 
-    # Запускаем основной цикл событий pywebview.
-    # debug=True включает инструменты разработчика (DevTools, обычно F12).
-    # Для релизной сборки установить в False.
-    webview.start(debug=True)
+    webview.start(debug=False, icon="icon.ico")
 
     # Этот код выполнится после закрытия окна
     print(f"--- {APP_NAME} завершен ---")
