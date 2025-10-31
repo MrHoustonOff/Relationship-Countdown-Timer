@@ -15,4 +15,19 @@
         </div>
     </div>
 
+    <hr class="danger-divider">
+
+    <div class="setting-row danger-row">
+        <div class="input-group">
+            <label x-text="$store.app.lang['settings_danger_reset_all_label'] || 'Сбросить ВСЕ Настройки'"></label>
+            <p class="form-description danger" x-html="$store.app.lang['settings_danger_reset_all_desc'] || '...'"></p>
+        </div>
+        <div class="reset-button-placeholder danger">
+             <button type="button" class="danger-zone-btn"
+                     @click="resetAllSettings()"
+                     x-text="$store.app.lang['settings_danger_reset_all_btn'] || 'Сбросить Всё'">
+             </button>
+        </div>
+    </div>
+
 </div>

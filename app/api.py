@@ -93,6 +93,25 @@ def get_default_config() -> ResponseType:
         current_app.logger.error(f"Ошибка при получении дефолтного конфига: {e}", exc_info=True)
         return jsonify({"error": "Internal server error getting default config"}), 500
 
+
+@api_bp.route('/config/reset_all', methods=['POST'])
+def reset_all_config() -> ResponseType:
+    """
+    Создает бэкап и сбрасывает config.json к дефолтным значениям.
+    """
+    try:
+        current_app.logger.warning("!!! ПОЛУЧЕН ЗАПРОС НА ПОЛНЫЙ СБРОС НАСТРОЕК !!!")
+
+        # Вызываем новый метод менеджера из config_manager.py
+        new_default_config = config_manager.backup_and_reset_config()
+
+        current_app.logger.info("Настройки успешно сброшены и создан бэкап.")
+        # Возвращаем новый дефолтный конфиг
+        return jsonify(new_default_config.model_dump(mode="json"))
+
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при полном сбросе конфига: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error resetting config"}), 500
 # --- API для Календаря (/api/calendar_log, /api/calendar/*) ---
 
 @api_bp.route('/calendar_log', methods=['GET'])

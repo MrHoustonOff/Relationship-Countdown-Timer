@@ -106,5 +106,9 @@
     "settings_danger_reset_calendar_confirm": "Ты уверен, что хочешь сбросить календарь? Это удалит все отметки.",
     "settings_danger_reset_calendar_success": "Календарь сброшен!",
 
-    "settings_timers_limit_warning": "Лимит: 20 символов включен!"
+    "settings_timers_limit_warning": "Лимит: 20 символов включен!",
+    "settings_danger_reset_all_label": "Сбросить ВСЕ Настройки",
+    "settings_danger_reset_all_desc": "Возвращает <strong>весь конфиг</strong> к заводским настройкам (включая цвета, даты, таймеры). Будет создан бэкап.",
+    "settings_danger_reset_all_btn": "Сбросить Всё",
+    "settings_danger_reset_all_confirm": "!!! ТЫ УВЕРЕН, ЧТО ХОЧЕШЬ СБРОСИТЬ ВСЕ НАСТРОЙКИ? !!!\nЭто действие нельзя отменить. Ты удалишь ДАЖЕ ТАЙМЕРЫ!\n(Будет создан бэкап 'config.backup...json' в папке данных)"
 }

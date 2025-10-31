@@ -293,7 +293,10 @@ function settingsForm() {
         },
         resetCalendarLog() {
                 Alpine.store('app').resetCalendarLog();
-            }
+            },
+        resetAllSettings() {
+            Alpine.store('app').resetAllSettings();
+        }
     }
 }
 // --- Утилита Ticker (x-init) ---
@@ -1003,6 +1006,28 @@ document.addEventListener('alpine:init', () => {
             this.applyDynamicStyles(); // Восстанавливаем стили
         },
          // Конец triggerMonthCompletionEffect
+        async resetAllSettings() {
+            const confirmText = this.lang['settings_danger_reset_all_confirm'] || "!!! ТЫ УВЕРЕН, ЧТО ХОЧЕШЬ СБРОСИТЬ ВСЕ НАСТРОЙКИ? !!!\nЭто действие нельзя отменить.\n(Будет создан бэкап 'config.backup...json' в папке данных)";
+            if (!confirm(confirmText)) {
+                return;
+            }
 
+            console.log("--- [DEBUG] Сброс ВСЕХ настроек...");
+            this.ui.isSaving = true; // Блокируем кнопку "Сохранить" на всякий случай
+
+            try {
+                const response = await fetch('/api/config/reset_all', { method: 'POST' });
+                if (!response.ok) throw new Error('Ошибка API при полном сбросе настроек');
+
+                console.log("--- [DEBUG] Все настройки сброшены. Перезагрузка...");
+                alert("Все настройки сброшены к дефолтным! Приложение будет перезагружено.");
+                window.location.reload();
+
+            } catch (error) {
+                console.error("!!! Ошибка при полном сбросе настроек:", error);
+                alert(`Ошибка: ${error.message}`);
+                this.ui.isSaving = false; // Разблокируем UI
+            }
+        },
     });
 });

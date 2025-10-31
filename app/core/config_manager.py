@@ -180,6 +180,51 @@ class ConfigManager:
             print(f"!!! [ConfigManager] КРИТИЧЕСКАЯ ОШИБКА сохранения конфига: {e}")
             # В реальном приложении здесь можно предпринять меры (бэкап, уведомление)
 
+    def backup_and_reset_config(self) -> AppConfig:
+        """
+        Создает бэкап текущего конфига и сбрасывает config.json к дефолтным значениям.
+        Returns:
+            Новый (дефолтный) объект AppConfig.
+        Raises:
+            IOError: Если не удалось создать бэкап или удалить старый конфиг.
+            ValueError: Если путь к конфигу не установлен.
+        """
+        if not self.config_path:
+            raise ValueError("Путь к файлу конфига не установлен.")
+
+        # 1. Создаем имя для бэкапа
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        backup_path = self.config_path.parent / f"{self.config_path.stem}.backup.{timestamp}.json"
+
+        try:
+            # 2. Копируем текущий файл (если он существует)
+            if self.config_path.exists():
+                print(f"[ConfigManager] Создание бэкапа: {backup_path.name}")
+                self.config_path.rename(backup_path)
+            else:
+                print("[ConfigManager] Конфиг не найден, бэкап не требуется.")
+
+            # 3. Сбрасываем кэш и создаем новый дефолтный конфиг
+            self._config = None  # Очищаем кэш
+            self.load_or_create_defaults()  # Этот метод создаст и сохранит новый дефолтный
+
+            if self._config is None:
+                raise RuntimeError("Не удалось создать новый дефолтный конфиг после сброса.")
+
+            print("[ConfigManager] Настройки успешно сброшены к дефолтным.")
+            return self._config
+
+        except (IOError, OSError) as e:
+            print(f"!!! [ConfigManager] КРИТИЧЕСКАЯ ОШИБКА при бэкапе/сбросе конфига: {e}")
+            # Пытаемся восстановить бэкап, если он был создан
+            if backup_path.exists():
+                try:
+                    backup_path.rename(self.config_path)
+                    print("[ConfigManager] Восстановлен конфиг из бэкапа.")
+                except Exception as restore_e:
+                    print(f"!!! [ConfigManager] КРИТИЧЕСКАЯ ОШИБКА: Не удалось восстановить бэкап: {restore_e}")
+            raise e
+
     def load_or_create_defaults(self):
         """Загружает конфигурацию из файла или создает дефолтную, если файл отсутствует или невалиден."""
         if not self.config_path:

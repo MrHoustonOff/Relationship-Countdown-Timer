@@ -766,3 +766,11 @@ body.form-dirty .settings-save-bar-top {
     margin-top: 5px; /* Небольшой отступ от инпута */
     padding-left: 2px; /* Легкое выравнивание */
 }
+
+hr.danger-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--color-divider);
+    opacity: 0.5;
+    margin: 20px 0;
+}
