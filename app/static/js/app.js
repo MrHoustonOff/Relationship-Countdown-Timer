@@ -494,7 +494,7 @@ function wheelController() {
         animationFrameId: null, // ID для requestAnimationFrame
 
         // Константы Физики (можем вынести в настройки)
-        MIN_VELOCITY: 0.01,   // Скорость, на которой колесо "останавливается"
+        MIN_VELOCITY: 0.05,   // Скорость, на которой колесо "останавливается"
         MAX_VELOCITY: 70,    // Максимальный "кламп" скорости
         FRICTION_FAST: 0.998, // Самое быстрое (твое "сейчас")
         FRICTION_SLOW: 0.99, // Самое медленное ("повесомее")
