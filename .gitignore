@@ -1,0 +1,13 @@
+# Python bytecode
+*.pyc
+__pycache__/
+
+# Операционная система
+.DS_Store
+Thumbs.db
+
+# Виртуальное окружение (если используете)
+venv/
+.venv/
+
+.idea/

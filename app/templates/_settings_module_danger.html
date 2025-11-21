@@ -1,0 +1,33 @@
+<div class="settings-module danger-zone">
+    <h2 x-text="$store.app.lang['settings_section_danger'] || 'Опасная Зона'"></h2>
+    <p class="form-description module-description" x-html="$store.app.lang['settings_desc_danger'] || 'Действия, которые нельзя отменить.'"></p>
+
+    <div class="setting-row danger-row">
+        <div class="input-group">
+            <label x-text="$store.app.lang['settings_danger_reset_calendar_label'] || 'Сбросить Календарь'"></label>
+            <p class="form-description danger" x-html="$store.app.lang['settings_danger_reset_calendar_desc'] || 'Удаляет <strong>все</strong> отметки (X) с календаря.'"></p>
+        </div>
+        <div class="reset-button-placeholder danger">
+             <button type="button" class="danger-zone-btn"
+                     @click="resetCalendarLog(); AudioManager.playRandom('DeleteButtons', true)"
+                     x-text="$store.app.lang['settings_danger_reset_calendar_btn'] || 'Сбросить'">
+             </button>
+        </div>
+    </div>
+
+    <hr class="danger-divider">
+
+    <div class="setting-row danger-row">
+        <div class="input-group">
+            <label x-text="$store.app.lang['settings_danger_reset_all_label'] || 'Сбросить ВСЕ Настройки'"></label>
+            <p class="form-description danger" x-html="$store.app.lang['settings_danger_reset_all_desc'] || '...'"></p>
+        </div>
+        <div class="reset-button-placeholder danger">
+             <button type="button" class="danger-zone-btn"
+                     @click="resetAllSettings(); AudioManager.playRandom('DeleteButtons', true)"
+                     x-text="$store.app.lang['settings_danger_reset_all_btn'] || 'Сбросить Всё'">
+             </button>
+        </div>
+    </div>
+
+</div>

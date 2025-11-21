@@ -1,0 +1,225 @@
+/* /mrhoustontimer/app/static/css/page_calendar.css */
+
+/* ==========================================================================
+   1. Main Calendar Grid (.calendar-grid)
+   ========================================================================== */
+
+.calendar-grid {
+    /* --- Grid Layout --- */
+    display: grid;
+    padding-bottom: 3rem;
+    /* Adaptive Columns:
+       --calendar-module-min-width controls zoom level (default: 320px).
+       auto-fit ensures columns fill the available row space. */
+    grid-template-columns: repeat(auto-fit, minmax(var(--calendar-module-min-width, 320px), 1fr));
+    gap: 1.5rem;
+    justify-content: center;
+
+    /* --- Layout Stability --- */
+    width: 100%;
+}
+
+/* ==========================================================================
+   2. Month Module (.month-module)
+   ========================================================================== */
+
+.month-module {
+    /* --- Appearance --- */
+    background-color: var(--color-accent-secondary);
+    border-radius: var(--border-radius-medium);
+    padding: 1rem;
+
+    /* --- Layout --- */
+    display: flex;
+    flex-direction: column;
+
+    /* --- Transitions --- */
+    transition: transform 0.5s ease-out, filter 0.5s ease-out;
+    will-change: transform, filter;
+}
+
+/* --- 2.1. Month Title --- */
+.month-title {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid var(--color-divider);
+    letter-spacing: 1px;
+}
+
+/* --- 2.2. Week Days Header --- */
+.week-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 0.5rem;
+}
+
+.week-day {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-text);
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   3. Days Grid (.days-grid)
+   ========================================================================== */
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr); /* Fixed 6 rows for consistent height */
+    gap: 0.3rem;
+    flex-grow: 1; /* Fill remaining vertical space */
+}
+
+/* ==========================================================================
+   4. Day Cell (.day-cell)
+   ========================================================================== */
+
+.day-cell {
+    /* --- Positioning & Dimensions --- */
+    position: relative;
+    aspect-ratio: 1;
+
+    /* Critical: 'visible' allows stickers to slightly overlap cell boundaries */
+    overflow: visible;
+
+    /* --- Appearance --- */
+    background-color: var(--calendar-empty-cell-color);
+    border-radius: 4px;
+
+    /* --- Layout (Centering Content) --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* --- Typography --- */
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+
+    /* --- Transitions --- */
+    transition: transform var(--transition-fast),
+                filter var(--transition-fast),
+                background-color var(--transition-fast);
+    will-change: transform, filter, background-color;
+    cursor: default;
+}
+
+/* --- 4.1. Cell States --- */
+
+/* Empty / Out of Range */
+.day-cell.empty {
+    background-color: var(--calendar-empty-cell-color);
+    color: transparent;
+    user-select: none;
+    cursor: default;
+}
+
+/* Active Range */
+.day-cell.in-range {
+    background-color: var(--color-calendar-day-bg);
+    cursor: pointer;
+}
+
+.day-cell.in-range:hover {
+    transform: scale(1.08);
+    filter: brightness(1.2);
+    z-index: 5; /* Bring to front on hover */
+}
+
+/* Marked Day */
+.day-cell.marked {
+    background-color: var(--color-calendar-marked-day-bg) !important;
+}
+
+.day-cell.marked:hover {
+    filter: brightness(1.3);
+}
+
+/* Arrival Day Highlight */
+.day-cell.arrival-highlight-bg {
+    background-color: var(--color-arrival-highlight-bg) !important;
+}
+
+.day-cell.arrival-highlight-bg:hover {
+    filter: brightness(1.3);
+}
+
+/* --- 4.2. Day Number --- */
+.day-number {
+    position: relative;
+    z-index: 1; /* Above sticker */
+}
+
+/* --- 4.3. Sticker --- */
+.sticker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2; /* Below number */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 2rem;
+    color: var(--sticker-color);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+/* Arrival Sticker Modifier */
+.arrival-sticker {
+    color: var(--color-arrival-highlight-sticker);
+    opacity: 1;
+}
+
+/* ==========================================================================
+   5. Empty State Message
+   ========================================================================== */
+
+.calendar-empty-message {
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+    grid-column: 1 / -1; /* Span full width */
+    text-align: center;
+    background-color: var(--color-accent-secondary);
+    border-radius: var(--border-radius-medium);
+}
+
+.calendar-empty-message h2 {
+    color: var(--color-accent-primary);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.calendar-empty-message p {
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.8;
+    margin-bottom: 0.8rem;
+}
+
+/* ==========================================================================
+   6. Completed Month Styles (.month-completed)
+   ========================================================================== */
+
+.month-module.month-completed {
+    transform: scale(0.95);
+    filter: brightness(0.7);
+    pointer-events: none; /* Disable hover on the module itself */
+}
+
+/* Re-enable interaction for days within a completed month */
+.month-module.month-completed .day-cell.in-range {
+    pointer-events: auto;
+}

@@ -1,0 +1,32 @@
+/* /mrhoustontimer/app/static/css/effects.css */
+
+/* ==========================================================================
+   Particle Effects Styles (effects.js)
+   ========================================================================== */
+
+.particle {
+    /* --- Positioning --- */
+    position: fixed;
+    z-index: 1000;
+
+    /* --- Appearance --- */
+    font-size: 24px;
+
+    /* --- Behavior --- */
+    pointer-events: none; /* Non-interactive */
+    user-select: none;
+
+    /* --- Animation --- */ 
+    /* 'particle-fly-out' is defined in base.css */
+    animation: particle-fly-out 1.2s ease-out 0s 1 forwards;
+    /* forwards ensures the element retains the final state (transparent) */
+
+    /* --- Optimization --- */
+    will-change: transform, opacity;
+}
+
+/* --- Optional Modifier for Month Completion Particles --- */
+.particle.month-particle {
+    font-size: 32px;
+    /* Additional specific styles can be added here */
+}

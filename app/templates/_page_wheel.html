@@ -1,0 +1,67 @@
+<section
+    id="page-wheel"
+    class="page-content"
+    :class="{ 'active': $store.app.ui.currentPage === 'page-wheel' }"
+    x-data="wheelController()">
+
+    <div class="wheel-layout-grid">
+
+        <div class="wheel-container-module">
+
+            <div class="wheel-pointer" @click="stopSpin()" x-ref="wheelPointer"></div>
+
+            <div class="wheel-spinner"
+                 :style="{
+                     backgroundImage: wheelData.gradient,
+                     transform: `rotate(${angle}deg)`
+                 }"
+                x-ref="wheelSpinner">>
+
+                <template x-for="sector in wheelData.textSectors" :key="sector.id">
+                    <span class="wheel-text-item-js"
+                          x-text="sector.label"
+                          :style="{
+                              top: sector.top,
+                              left: sector.left,
+                              transform: sector.transform
+                          }">
+                    </span>
+                </template>
+                </div>
+
+            <button
+                    type="button"
+                    class="wheel-spin-button"
+                    @click="spin()"
+                    x-ref="spinButton">
+            </button>
+
+        </div>
+        <div class="wheel-options-module">
+            <h2 x-text="$store.app.lang['wheel_options_title'] || 'Опции Колеса'"></h2>
+
+            <div class="options-list-container">
+                <template x-for="option in options" :key="option.id">
+                    <div class="option-item-row">
+                        <input type="text" x-model.debounce.250ms="option.label" class="option-input">
+                        <button type="button" @click="removeOption(option.id)" class="option-delete-btn">×</button>
+                    </div>
+                </template>
+            </div>
+
+            <div class="options-controls">
+                <button type="button" @click="addOption()" class="add-timer-btn"
+                        x-text="$store.app.lang['wheel_add_option_btn'] || '+ Добавить опцию'">
+                </button>
+                <button type="button" @click="saveToDefaults()" class="save-button"
+                        x-text="$store.app.lang['wheel_save_options_btn'] || 'Сохранить в дефолтные'"
+                        x-ref="saveButton">
+                        </button>
+            </div>
+            <p class="form-warning-hint"
+               x-show="options.length >= 30"
+               x-text="$store.app.lang['wheel_limit_warning'] || 'Максимальное кол-во секторов (30)'"
+               x-transition>
+            </p>
+
+        </div> </div> </section>

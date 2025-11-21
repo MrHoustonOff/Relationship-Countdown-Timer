@@ -1,0 +1,65 @@
+<div class="settings-module">
+    <h2 x-text="$store.app.lang['settings_section_dates'] || 'Ключевые Даты'"></h2>
+    <p class="form-description module-description" x-html="$store.app.lang['settings_desc_section_dates'] || 'Основные даты...'"></p>
+
+    <div class="setting-row date-time-row">
+        <div class="input-group">
+            <label for="setting-date-departure" x-text="$store.app.lang['settings_date_departure_label'] || 'Дата Отъезда'"></label>
+            <div class="date-time-inputs">
+                <input type="date" id="setting-date-departure"
+                       x-model="form.date_vova_departure_date"
+                       @input="AudioManager.playRandom('PlusButtons', true)">
+                <input type="time" id="setting-time-departure"
+                       step="1"
+                       x-model="form.date_vova_departure_time"
+                       @input="AudioManager.playRandom('PlusButtons', true)">
+            </div>
+        </div>
+        <div class="reset-button-placeholder">
+            <button type="button" class="reset-default-btn" title="Сбросить дату отъезда к значению по умолчанию"
+                    @click="resetField('date_vova_departure'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+        </div>
+        <p class="form-description" x-html="$store.app.lang['settings_date_departure_desc'] || 'Начало календаря.'"></p>
+    </div>
+
+    <div class="setting-row date-time-row">
+        <div class="input-group">
+            <label for="setting-date-arrival" x-text="$store.app.lang['settings_date_arrival_label'] || 'Дата Приезда'"></label>
+            <div class="date-time-inputs">
+                <input type="date" id="setting-date-arrival"
+                       x-model="form.date_vova_arrival_date"
+                       @input="AudioManager.playRandom('PlusButtons', true)">
+                <input type="time" id="setting-time-arrival"
+                       step="1"
+                       x-model="form.date_vova_arrival_time"
+                       @input="AudioManager.playRandom('PlusButtons', true)">
+            </div>
+        </div>
+         <div class="reset-button-placeholder">
+            <button type="button" class="reset-default-btn" title="Сбросить дату приезда к значению по умолчанию"
+                    @click="resetField('date_vova_arrival'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+        </div>
+        <p class="form-description" x-html="$store.app.lang['settings_date_arrival_desc'] || 'Конец календаря...'"></p>
+    </div>
+
+    <div class="setting-row date-time-row">
+        <div class="input-group">
+            <label for="setting-date-relationship" x-text="$store.app.lang['settings_date_relationship_label'] || 'Дата Начала Отношений'"></label>
+            <div class="date-time-inputs">
+                 <input type="date" id="setting-date-relationship"
+                       x-model="form.date_relationship_start_date"
+                        @input="AudioManager.playRandom('PlusButtons', true)">
+                 <input type="time" id="setting-time-relationship"
+                       step="1"
+                       x-model="form.date_relationship_start_time"
+                        @input="AudioManager.playRandom('PlusButtons', true)">
+            </div>
+        </div>
+         <div class="reset-button-placeholder">
+            <button type="button" class="reset-default-btn" title="Сбросить дату отношений к значению по умолчанию"
+                    @click="resetField('date_relationship_start'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+        </div>
+        <p class="form-description" x-html="$store.app.lang['settings_date_relationship_desc'] || 'Цель таймера Мы Вместе.'"></p>
+    </div>
+
+</div>

@@ -1,0 +1,80 @@
+<section
+    id="page-calendar"
+    class="page-content"
+    :class="{ 'active': $store.app.ui.currentPage === 'page-calendar' }"
+    >
+
+    <div class="calendar-grid">
+
+        <template x-if="!$store.app.calendarMonths || $store.app.calendarMonths.length === 0">
+            <div class="calendar-empty-message">
+                <h2 x-text="$store.app.lang['calendar_empty_title'] || 'Упси!'"></h2>
+                <p x-html="$store.app.lang['calendar_empty_p1'] || 'Нам нечего выводить :)'"></p>
+                <p x-html="$store.app.lang['calendar_empty_p2'] || 'Проверьте даты.'"></p>
+                <p x-html="$store.app.lang['calendar_empty_p3'] || ''"></p>
+            </div>
+        </template>
+
+        <template x-for="month in $store.app.calendarMonths" :key="month.key">
+            <div
+                class="month-module"
+                :class="{ 'month-completed': $store.app.isMonthCompleted(month) }"
+                x-data="{ isCompleted: $store.app.isMonthCompleted(month) }"
+                x-init="$watch('$store.app.isMonthCompleted(month)', (newValue, oldValue) => {
+                    if (newValue === true && oldValue === false) {
+                        $store.app.triggerMonthCompletionEffect($el, month);
+                    }
+                })">
+
+                <div class="month-title" x-text="month.title"></div>
+
+                <div class="week-days-header">
+                    <template x-for="dayName in month.weekdays" :key="dayName">
+                        <div class="week-day" x-text="dayName"></div>
+                    </template>
+                </div>
+
+                <div class="days-grid">
+                    <template x-for="day in month.days" :key="day.key">
+                        <div
+                            class="day-cell"
+                            :class="{
+                                'empty': day.isPadding || (!day.isPadding && !day.isInRange),
+                                'in-range': day.isInRange,
+                                // Используем безопасный доступ ?. к log.marked_dates
+                                'marked': day.isInRange && $store.app.log?.marked_dates?.[day.dateString],
+                                'arrival-highlight-bg': day.isArrival && $store.app.config?.arrival_day?.use_bg
+                            }"
+                            :style="{
+                                backgroundColor: day.isInRange && $store.app.log?.marked_dates?.[day.dateString] && (!day.isArrival || !$store.app.config?.arrival_day?.use_bg)
+                                    ? $store.app.config?.calendar_marked_day_color
+                                    : (day.isArrival && $store.app.config?.arrival_day?.use_bg
+                                        ? $store.app.config?.colors?.color_arrival_highlight_bg
+                                        : '')
+                            }"
+                            @click="day.isInRange && $store.app.toggleDate(day.dateString, $el)">
+
+                            <span class="day-number" x-text="day.day" x-show="!day.isPadding"></span>
+
+                            <template x-if="day.isInRange && $store.app.log?.marked_dates?.[day.dateString] && (!day.isArrival || !$store.app.config?.arrival_day?.use_sticker)">
+                                <div class="sticker"
+                                     x-text="$store.app.log.marked_dates[day.dateString].sticker"
+                                     :style="{ transform: $store.app.getStickerTransform(day.dateString), color: $store.app.config?.sticker_color }">
+                                     </div>
+                            </template>
+
+                            <template x-if="day.isArrival && $store.app.config?.arrival_day?.use_sticker">
+                                <div class="sticker arrival-sticker"
+                                     x-text="$store.app.config.arrival_day.sticker_emoji"
+                                     :style="{ transform: $store.app.getArrivalStickerTransform(), color: $store.app.config?.colors?.color_arrival_highlight_sticker }">
+                                     </div>
+                            </template>
+
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</section>

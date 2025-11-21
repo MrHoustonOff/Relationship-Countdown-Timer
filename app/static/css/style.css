@@ -1,0 +1,106 @@
+/* /mrhoustontimer/app/static/css/style.css */
+
+/**
+ * Main CSS Entry Point.
+ * Imports individual modules and defines global modal styles.
+ */
+
+@import url('base.css');          /* Variables, reset, global styles */
+@import url('header.css');        /* Navigation and header */
+@import url('page_main.css');     /* Main page (Timers) */
+@import url('page_calendar.css'); /* Calendar page */
+@import url('effects.css');       /* Particle effects */
+@import url('page_settings.css'); /* Settings page */
+@import url('page_wheel.css');    /* Wheel of Fortune page */
+
+/* ==========================================================================
+   Modal / Popup Styles
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: var(--color-accent-secondary);
+    padding: 1.8rem 2.2rem;
+    border-radius: var(--border-radius-medium);
+    max-width: 500px;
+    width: 95%;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+}
+
+.modal-content.large {
+    max-width: 650px;
+}
+
+.modal-content h2 {
+    color: var(--color-accent-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 0.8rem;
+}
+
+/* --- First Launch Text Content --- */
+#first-launch-text {
+    text-align: left;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    opacity: 0.9;
+}
+
+#first-launch-text p {
+    margin-bottom: 1rem;
+}
+
+#first-launch-text strong {
+    color: var(--color-accent-primary);
+    font-weight: 600;
+}
+
+/* --- Modal Buttons --- */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.modal-buttons.single-button {
+    justify-content: center;
+}
+
+.modal-buttons button {
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform var(--transition-fast), background-color var(--transition-fast), opacity var(--transition-fast);
+    border: none;
+}
+
+.modal-buttons button:hover {
+    transform: scale(1.05);
+}
+
+/* Specific button styles (reuses classes from settings where possible) */
+#modal-btn-ok.save-button {
+    background-color: var(--color-accent-primary);
+    color: var(--color-background);
+}

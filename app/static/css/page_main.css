@@ -1,0 +1,152 @@
+/* /mrhoustontimer/app/static/css/page_main.css */
+
+/* ==========================================================================
+   1. Main Timer Modules (.timer-module)
+   (Containers for "Arrival" and "Relationship" timers)
+   ========================================================================== */
+
+.timer-module {
+    /* --- Dimensions & Positioning --- */
+    width: 75%;
+    min-width: 600px;     /* Prevent excessive shrinking */
+    margin: 0 auto;       /* Center horizontally */
+    padding: 1.8rem 1.5rem;
+
+    /* --- Appearance --- */
+    border-radius: var(--border-radius-large);
+    /* Background colors defined by ID below */
+
+    /* --- Flexbox Layout --- */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    /* --- Effects & Transitions --- */
+    transition: background-color var(--transition-fast),
+                transform var(--transition-fast),
+                filter var(--transition-fast);
+    cursor: default;
+    animation: none; /* Reset default animations */
+}
+
+/* --- 1.1. Module Specific Backgrounds --- */
+#timer-arrival-module {
+    background-color: var(--color-timer-arrival-bg);
+}
+
+#timer-relationship-module {
+    background-color: var(--color-timer-relationship-bg);
+}
+
+/* --- 1.2. Module Title --- */
+.timer-module-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    text-align: center;
+}
+
+/* --- 1.3. Digital Display --- */
+.timer-display {
+    font-family: var(--font-timer);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+/* Individual digits (allows for independent transformations) */
+.timer-display .digit-char {
+    display: inline-block;
+}
+
+/* --- 1.4. Sizes & Colors for Primary Timers --- */
+.timer-display.large { /* #timer-arrival-display */
+    font-size: 4rem;
+    color: var(--color-timer-countdown);
+}
+
+.timer-display.medium { /* #timer-relationship-display */
+    font-size: 3rem;
+    color: var(--color-timer-elapsed);
+}
+
+/* ==========================================================================
+   2. Custom Timers List Container (#custom-timers-container)
+   ========================================================================== */
+
+#custom-timers-container {
+    /* --- Dimensions & Positioning --- */
+    width: 100%;
+    margin-top: 1rem;
+    max-height: 260px;
+    padding: 0.5rem;
+
+    /* --- Grid Layout --- */
+    display: grid;
+    /* Adaptive columns: min 250px, expand to fill space */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+
+    /* --- Scrolling --- */
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* --- Appearance --- */
+    background-color: transparent;
+}
+
+/* ==========================================================================
+   3. Individual Custom Timer Module (.custom-timer-module)
+   ========================================================================== */
+
+.custom-timer-module {
+    /* --- Dimensions --- */
+    padding: 1rem 1.2rem;
+
+    /* --- Appearance --- */
+    background-color: var(--color-timer-custom-bg);
+    border-radius: var(--border-radius-medium);
+
+    /* --- Flexbox Layout --- */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+
+    /* --- Effects & Transitions --- */
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
+    will-change: transform, background-color;
+    animation: none;
+    transform: scale(1);
+}
+
+/* --- 3.1. Hover State --- */
+.custom-timer-module:hover {
+    transform: scale(1.03);
+    background-color: var(--color-timer-custom-bg-hover);
+}
+
+/* --- 3.2. Custom Timer Label --- */
+.custom-timer-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    text-align: center;
+    width: 100%;
+
+    /* Text Truncation */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- 3.3. Custom Timer Digits --- */
+.custom-timer-display {
+    font-family: var(--font-timer);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: center;
+    /* Note: Color is applied via inline styles (JS) based on timer mode */
+}

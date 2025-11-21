@@ -1,0 +1,767 @@
+/* /mrhoustontimer/app/static/css/page_settings.css (Базовый) */
+/* ==========================================================================
+   НОВОЕ: Сетка-Водопад для Модулей Настроек (.settings-grid)
+   ========================================================================== */
+
+.settings-grid {
+    width: 100%;
+    /* 1. Задаем отступ между колонками */
+    column-gap: 1.5rem; /* 24px (как у .calendar-grid) */
+
+    /* 2. По умолчанию (мобильные) - 1 колонка */
+    column-count: 1;
+
+
+
+    @media (min-width: 1300px) { /* Например, 1300px вместо 900px */
+        column-count: 2;
+    }
+
+    @media (min-width: 1900px)
+        column-count: 3;
+    }
+}
+#page-settings {
+    align-items: center; /* Центрируем модули */
+    overflow-x: auto;
+    width: 100%; /* Убедитесь, что ширина контейнера не ломает скролл */
+}
+
+/* --- Кнопка "Сохранить" (Пока просто плейсхолдер) --- */
+.settings-save-bar-top {
+    position: sticky; /* Прилипает к верху при скролле */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Поверх модулей */
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    /* Изначально скрыта */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+/* Показываем кнопку, когда форма "грязная" */
+body.form-dirty .settings-save-bar-top {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.save-button { /* Общий стиль для кнопки */
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background-color: var(--color-accent-primary);
+    color: var(--color-background); /* Контрастный цвет текста */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+.save-button:hover:not(:disabled) {
+    transform: scale(1.03);
+    filter: brightness(1.1);
+}
+.save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* --- Общий стиль Модуля Настроек --- */
+.settings-module {
+    width: 100%;
+    min-width: 612px; /* Ограничиваем минимальную ширину для того чтобы стиль календаря не ломал настройки */
+    padding: 25px;
+    margin-bottom: 20px;
+    background-color: var(--color-accent-secondary); /* Фон модуля */
+    border-radius: var(--border-radius-medium);
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.settings-module h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--color-accent-primary); /* Акцентный цвет заголовка */
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 10px;
+    margin-bottom: 25px; /* Отступ после заголовка */
+}
+
+/* --- Сетка для Строки Настройки --- */
+.setting-row {
+    display: grid;
+    /* [Лейбл+Инпут] [Кнопка сброса] [Описание] */
+    grid-template-columns: minmax(200px, 2fr) 40px minmax(200px, 1fr);
+    gap: 10px 15px; /* Отступы между колонками и рядами */
+    align-items: start; /* Выравниваем по верху */
+    margin-bottom: 25px; /* Отступ между настройками */
+}
+/* Убираем отступ у последней строки в модуле */
+.settings-module .setting-row:last-child {
+    margin-bottom: 0;
+}
+
+
+/* --- Группа Label + Input(s) --- */
+.input-group {
+    grid-column: 1; /* Занимает первую колонку */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Отступ между label и input */
+}
+.input-group label,
+.form-group-checkbox label { /* Общий стиль для всех лейблов */
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--color-text-emphasis);
+    opacity: 0.9;
+    cursor: pointer;
+}
+
+/* --- Стили для Input, Select --- */
+.input-group input[type="text"],
+.input-group input[type="number"],
+.input-group input[type="color"],
+.input-group input[type="date"],
+.input-group input[type="time"],
+.input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(0, 0, 0, 0.25); /* Полупрозрачный темный фон */
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-family: var(--font-main);
+}
+/* Фокус для инпутов */
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 5px rgba(244, 143, 177, 0.5); /* Розовая тень */
+}
+
+/* --- Стили для Checkbox --- */
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px; /* Чтобы по высоте совпадал с обычными инпутами */
+}
+.form-group-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0; /* Не сжиматься */
+    accent-color: var(--color-accent-primary); /* Розовый цвет галочки */
+    cursor: pointer;
+}
+.form-group-checkbox label {
+    margin-bottom: 0; /* Убираем лишний отступ */
+    font-weight: 400; /* Обычный вес */
+    color: var(--color-text); /* Обычный цвет текста */
+}
+/* Модификатор для чекбокса справа от лейбла */
+.form-group-checkbox.checkbox-label-first {
+    flex-direction: row-reverse; /* Меняем порядок: input, label */
+    justify-content: flex-end; /* Прижимаем вправо (если нужно) */
+}
+
+
+/* --- Кнопка Сброса --- */
+.reset-button-placeholder {
+    grid-column: 2; /* Занимает вторую колонку */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 32px; /* Примерный отступ сверху, чтобы кнопка была напротив инпута */
+}
+.reset-default-btn {
+    background: none; border: none;
+    color: var(--color-text);
+    opacity: 0.4;
+    font-size: 24px; /* Размер иконки */
+    cursor: pointer;
+    padding: 0;
+    line-height: 1; /* Убираем лишнюю высоту строки */
+    width: 30px; height: 30px; /* Фикс. размер */
+    transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+.reset-default-btn:hover {
+    opacity: 1;
+    color: var(--color-accent-primary);
+}
+
+/* --- Описание Настройки --- */
+.form-description {
+    grid-column: 3; /* Занимает третью колонку */
+    align-self: start; /* Выравнивание по верху */
+    font-size: 0.85rem;
+    color: var(--color-text);
+    opacity: 0.6;
+    font-style: italic;
+    line-height: 1.5;
+    padding-top: 5px; /* Небольшой отступ сверху */
+}
+.form-description strong { /* Выделение в описании */
+     color: var(--color-accent-primary);
+     font-style: normal;
+}
+
+/* --- Подсказка (например, при первом запуске) --- */
+.form-hint {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: rgba(var(--color-accent-primary-rgb, 244, 143, 177), 0.1); /* Легкий розовый фон */
+    border-left: 3px solid var(--color-accent-primary);
+    border-radius: 4px;
+}
+.form-hint.first-launch-hint { /* Особый стиль для подсказки первого запуска */
+    /* Можно добавить иконку или другие стили */
+}
+/* (Нужно будет добавить --color-accent-primary-rgb в :root, если хочешь rgba) */
+
+/* --- Стили для Отключенных Элементов (Каскад) --- */
+.setting-row.setting-disabled {
+    opacity: 0.4;
+    pointer-events: none; /* Блокируем взаимодействие */
+}
+.setting-row.setting-disabled .input-group label {
+    cursor: default;
+}
+.setting-row.setting-disabled button {
+    cursor: default;
+}
+/* --- Описание Модуля (под заголовком) --- */
+.module-description {
+    grid-column: 1 / -1; /* Занимает все колонки */
+    margin-bottom: 20px; /* Отступ до первой настройки */
+    font-size: 0.95rem;
+    opacity: 0.8;
+    /* Убираем курсив, если не нужно */
+    /* font-style: italic; */
+}
+
+/* --- Группа полей Date + Time --- */
+.date-time-inputs {
+    display: flex;
+    gap: 10px; /* Отступ между date и time */
+}
+.date-time-inputs input[type="date"],
+.date-time-inputs input[type="time"] {
+    flex-grow: 1; /* Растягиваем оба поля */
+    /* Стили (padding, background и т.д.) наследуются от общих стилей input */
+}
+/* Убедимся, что иконка календаря/часов видна на темном фоне */
+.date-time-inputs input[type="date"]::-webkit-calendar-picker-indicator,
+.date-time-inputs input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8); /* Делаем иконку светлее */
+    cursor: pointer;
+}
+
+/* Опционально: Выравниваем кнопку сброса по центру полей date/time */
+.setting-row.date-time-row .reset-button-placeholder {
+     align-items: center; /* Центрируем кнопку по вертикали */
+     padding-top: 0; /* Убираем верхний отступ, т.к. есть label */
+     /* Можно добавить margin-top, чтобы сместить чуть ниже label */
+     margin-top: 32px;
+}
+
+/* --- Стили для Подзаголовков --- */
+.settings-module h3.sub-header {
+    font-size: 1.1rem; /* Чуть меньше h2 */
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    opacity: 0.8;
+    margin-top: 30px; /* Отступ сверху */
+    margin-bottom: 20px; /* Отступ снизу */
+    padding-bottom: 8px; /* Линия снизу */
+    border-bottom: 1px dashed var(--color-divider);
+}
+/* Убираем верхний отступ у первого h3 */
+.settings-module h3.sub-header:first-of-type {
+    margin-top: 0;
+}
+
+/* --- Стили для Каскадных (Зависимых) Блоков --- */
+
+/* Контейнер fieldset для группы */
+.cascading-group {
+    border: none; /* Убираем рамку fieldset */
+    padding: 0;
+    margin: 0;
+    /* Плавный переход для opacity */
+    transition: opacity var(--transition-fast);
+}
+
+/* Когда fieldset отключен ( :disabled ) */
+.cascading-group:disabled {
+    opacity: 0.4;
+    pointer-events: none; /* Блокируем взаимодействие со всем блоком */
+}
+
+/*
+   Alpine будет добавлять .setting-disabled к .setting-row.
+   Мы уже определили этот класс в v2.0 (я надеюсь),
+   но на всякий случай, вот он:
+*/
+.setting-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+.setting-disabled label,
+.setting-disabled button {
+    cursor: default !important;
+}
+
+.custom-timer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Отступ между рядами таймеров */
+    margin-top: 10px;
+}
+
+.custom-timer-list-item.setting-row {
+    /* Переопределяем grid-template-columns из .setting-row */
+    /* [Чекбокс] [Название] [Дата+Время] [Удалить] */
+    grid-template-columns: 40px 1fr 1fr 40px;
+    gap: 10px;
+    align-items: center; /* Центрируем все по вертикали */
+    margin-bottom: 0; /* Убираем отступ снизу, т.к. есть gap у родителя */
+
+    /* Упрощенный стиль для ряда в списке */
+    background-color: rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: var(--border-radius-medium);
+}
+
+/* --- Колонки Кастомного Таймера --- */
+.custom-timer-col-toggle {
+    grid-column: 1;
+    justify-content: center; /* Центрируем чекбокс */
+    align-items: center;
+}
+.custom-timer-col-label {
+    grid-column: 2;
+}
+.custom-timer-col-datetime {
+    grid-column: 3;
+    display: flex; /* Date и Time в ряд */
+    gap: 8px;
+}
+.custom-timer-col-delete {
+    grid-column: 4;
+    padding-top: 0; /* Убираем отступ у .reset-button-placeholder */
+    margin-top: 0;
+}
+
+/* Лейблы для скринридеров (скрываем) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Кнопка "Удалить" */
+.delete-timer-btn {
+    background: rgba(255, 100, 100, 0.2); /* Красный фон */
+    color: #FFCDD2; /* Светло-красный символ */
+    font-size: 28px;
+    font-weight: 300;
+    width: 36px; height: 36px;
+    border-radius: 50%; /* Круглая */
+    line-height: 32px; /* Центрируем "x" */
+    transition: all var(--transition-fast);
+}
+.delete-timer-btn:hover {
+    background: #E91E63; /* Ярко-розовый */
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Кнопка "Добавить" */
+.add-button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+.add-timer-btn {
+    padding: 10px 20px;
+    background-color: rgba(var(--color-accent-primary-rgb), 0.2);
+    border: 1px solid var(--color-accent-primary);
+    color: var(--color-accent-primary);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+.add-timer-btn:hover {
+    background-color: var(--color-accent-primary);
+    color: var(--color-background);
+    transform: scale(1.03);
+}
+.color-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Размеры (такие же, как у text input) */
+    height: 44px;
+    padding: 0 10px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+}
+.color-input-container:focus-within { /* Подсветка при фокусе */
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 5px rgba(244, 143, 177, 0.5);
+}
+.color-input-container input[type="color"] {
+    /* Сбрасываем стили браузера */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 28px; /* Ширина квадратика */
+    height: 28px; /* Высота квадратика */
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: 4px; /* Скругление */
+    cursor: pointer;
+}
+/* Стили для "глазка" color picker */
+.color-input-container input[type="color"]::-webkit-color-swatch {
+    border-radius: 4px;
+    border: 1px solid var(--color-divider);
+}
+.color-input-container input[type="color"]::-moz-color-swatch {
+    border-radius: 4px;
+    border: 1px solid var(--color-divider);
+}
+.color-input-container span { /* HEX-код */
+    font-family: var(--font-timer); /* Моноширинный */
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* --- Стили для Блока Превью --- */
+.preview-container {
+    display: flex;
+    gap: 10px; /* Отступ между ячейками */
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--color-divider);
+}
+/* Ячейка для превью (берем стили из page_calendar.css) */
+.preview-cell {
+    /* Убедимся, что .day-cell и .sticker определены (в page_calendar.css) */
+    /* Здесь мы просто используем эти классы, применяя к ним динамические :style */
+    /* Задаем базовый размер, т.к. нет грида */
+    width: 70px;
+    height: 70px;
+    background-color: var(--color-calendar-day-bg); /* Дефолтный фон */
+    flex-shrink: 0; /* Не сжиматься */
+    overflow: visible; /* РАЗРЕШАЕМ стикеру вылезать (Баг 2/3) */
+}
+/* Стили стикера (дублируем из page_calendar.css для надежности) */
+.preview-cell .sticker {
+    position: absolute;
+    z-index: 3; /* Под номером */
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 2rem; /* 32px база */
+    pointer-events: none;
+    opacity: 0.9;
+}
+.preview-cell .day-number {
+    position: relative;
+    z-index: 2; /* Над стикером */
+}
+
+.settings-grid-2-col {
+    display: grid;
+    /* Создаем 2 колонки, каждая занимает мин. 0, макс. 1 долю (равные колонки) */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Отступ между рядами (25px, как у .setting-row)
+       Отступ между колонками (25px)
+    */
+    gap: 25px 25px;
+    margin-bottom: 25px; /* Отступ *после* всей сетки, перед следующим элементом (Превью) */
+}
+
+/* Убираем стандартный отступ у .setting-row *внутри* этой сетки,
+   так как 'gap' у родителя .settings-grid-2-col уже управляет отступами */
+.settings-grid-2-col > .setting-row {
+    margin-bottom: 0;
+}
+
+.range-input-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 44px; /* Такая же высота, как у других инпутов */
+}
+
+.range-input-container input[type="range"] {
+    flex-grow: 1; /* Слайдер занимает основное место */
+    accent-color: var(--color-accent-primary); /* Розовый цвет */
+    cursor: pointer;
+}
+
+.range-input-container .range-value {
+    font-family: var(--font-timer); /* Моноширинный */
+    font-size: 0.95rem;
+    color: var(--color-text-emphasis);
+    background-color: rgba(0,0,0,0.25);
+    padding: 5px 10px;
+    border-radius: 4px;
+    width: 70px; /* Фикс. ширина для значения */
+    text-align: center;
+}
+
+.color-editor-container {
+    display: flex;
+    flex-wrap: wrap; /* Перенос на мобилках */
+    gap: 25px;
+}
+.color-preview-column {
+    flex: 1; /* Растет */
+    min-width: 300px; /* Мин. ширина превью */
+}
+.color-inputs-column {
+    flex: 1; /* Растет */
+    min-width: 300px; /* Мин. ширина инпутов */
+}
+.preview-header {
+    /* Это не .sub-header, а просто h3 */
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-emphasis);
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+.color-grid {
+    display: grid;
+    /* [Лейбл] [Инпут] [Сброс] */
+    grid-template-columns: 1fr auto auto;
+    gap: 12px 10px; /* Отступы */
+    align-items: center;
+}
+.setting-row-color {
+    display: contents; /* Делаем дочерние элементы прямыми потомками grid */
+}
+.setting-row-color label {
+    font-size: 0.9rem;
+    font-family: var(--font-timer);
+    text-transform: capitalize; /* "color_background" -> "Color Background" (почти) */
+    opacity: 0.8;
+}
+.setting-row-color .color-input-container {
+    height: 40px; /* Чуть меньше */
+}
+.setting-row-color .hex-input {
+    /* Добавляем текстовый инпут для HEX/RGBA */
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-family: var(--font-timer);
+    font-size: 0.9rem;
+    width: 100%;
+}
+.setting-row-color .hex-input:focus {
+    outline: none;
+    background: rgba(0,0,0,0.2);
+}
+.setting-row-color .reset-default-btn.small {
+    font-size: 20px; /* Кнопки сброса поменьше */
+    width: 25px; height: 25px;
+    line-height: 1;
+    margin-top: 0; padding-top: 0;
+}
+
+/* --- 6. Модуль Опасной Зоны --- */
+.settings-module.danger-zone {
+    background-color: rgba(var(--color-accent-primary-rgb), 0.05); /* Легкий красный фон */
+    border: 1px solid var(--color-divider);
+}
+.settings-module.danger-zone h2 {
+    color: #FF8A80; /* Красный заголовок */
+    border-color: rgba(255, 138, 128, 0.3);
+}
+.setting-row.danger-row {
+    grid-template-columns: 1fr auto; /* [Текст] [Кнопка] */
+}
+.setting-row.danger-row .input-group label {
+    font-size: 1.1rem;
+    color: #FFCDD2; /* Светло-красный */
+}
+.form-description.danger {
+    color: #FFCDD2;
+    opacity: 0.7;
+    font-style: normal;
+}
+.reset-button-placeholder.danger {
+    align-self: center; /* Центрируем кнопку */
+    padding-top: 0; margin-top: 0;
+}
+.danger-zone-btn {
+    padding: 10px 15px;
+    background-color: #E91E63; /* Ярко-розовый/красный */
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+}
+.danger-zone-btn:hover {
+    background-color: #AD1457; /* Темнее */
+    transform: scale(1.03);
+}
+
+/* --- 7. Стили для Превью (Эмулятора) --- */
+.pv-emulator-wrapper {
+    width: 100%;
+    border: 2px solid; /* Цвет (divider) из :style */
+    border-radius: var(--border-radius-medium);
+    background-clip: padding-box;
+    overflow: hidden;
+    font-family: var(--font-main); /* Используем основной шрифт */
+    /* background-color и color из :style */
+}
+
+/* --- Превью Хедера --- */
+.pv-header {
+    padding: 8px 0;
+    border-bottom: 1px solid; /* Цвет (divider) из :style */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.pv-nav-button {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.7;
+    position: relative;
+    padding: 5px;
+    background: none; border: none; /* Сброс */
+    /* color из :style */
+}
+.pv-nav-button.active {
+    opacity: 1;
+}
+.pv-dot {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    /* backgroundColor из :style */
+}
+
+/* --- Превью Main --- */
+.pv-main {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.pv-timer-module {
+    padding: 15px;
+    border-radius: var(--border-radius-medium);
+    text-align: center;
+    /* backgroundColor из :style */
+}
+.pv-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    /* color из :style */
+}
+.pv-timer-display {
+    font-family: var(--font-timer);
+    font-size: 1.8rem;
+    font-weight: 700;
+    /* color из :style */
+}
+/* Кастомный таймер */
+.pv-custom-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    /* color из :style */
+}
+.pv-custom-display {
+    font-family: var(--font-timer);
+    font-size: 1.2rem;
+    font-weight: 700;
+    /* color из :style */
+}
+
+/* --- Превью Календаря --- */
+.pv-calendar-module {
+    padding: 10px;
+    border-radius: var(--border-radius-medium);
+    /* backgroundColor из :style */
+}
+.pv-week-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-size: 0.7rem;
+    text-align: center;
+    margin-bottom: 5px;
+    /* color/opacity из :style */
+}
+.pv-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.pv-day-cell {
+    position: relative;
+    border-radius: 4px;
+    aspect-ratio: 1;
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    overflow: hidden; /* Важно, чтобы стикеры не вылезали (как в оригинале) */
+    /* backgroundColor, color из :style */
+}
+.pv-sticker {
+    position: absolute;
+    z-index: 1; /* Под номером */
+    font-size: 1.5rem; /* Базовый размер */
+    opacity: 0.9;
+    /* color, transform из :style */
+}
+.pv-day-cell .pv-sticker.arrival {
+    opacity: 1;
+}
+
+.form-warning-hint {
+    font-size: 0.8rem; /* Маленький шрифт (~13px) */
+    color: var(--color-accent-primary); /* Акцентный розовый */
+    font-style: italic;
+    margin-top: 5px; /* Небольшой отступ от инпута */
+    padding-left: 2px; /* Легкое выравнивание */
+}
+
+hr.danger-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--color-divider);
+    opacity: 0.5;
+    margin: 20px 0;
+}

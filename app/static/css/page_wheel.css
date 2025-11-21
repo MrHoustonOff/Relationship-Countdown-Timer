@@ -1,0 +1,223 @@
+/* /mrhoustontimer/app/static/css/page_wheel.css */
+
+/* ==========================================================================
+   1. Adaptive Page Grid
+   ========================================================================== */
+
+.wheel-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+    width: 100%;
+}
+
+@media (min-width: 900px) {
+    .wheel-layout-grid {
+        grid-template-columns: 1.5fr 1fr; /* Wheel takes more space than controls */
+    }
+}
+
+/* ==========================================================================
+   2. Wheel Component
+   ========================================================================== */
+
+.wheel-container-module {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- 2.1. Pointer Arrow --- */
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    /* Triangle Construction */
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid var(--color-accent-primary);
+    z-index: 10;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* --- 2.2. Rotating Spinner (Conic Gradient) --- */
+.wheel-spinner {
+    position: relative;
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+    border: 5px solid var(--color-divider);
+    background-color: var(--color-accent-secondary);
+    overflow: hidden;
+    background-size: cover;
+    /* transform: rotate(...) is applied via JS */
+}
+
+/* --- 2.3. Sector Text Items --- */
+.wheel-text-item-js {
+    /* Position and Rotation are calculated via JS and applied via inline :style */
+    position: absolute;
+    
+    /* Typography */
+    color: var(--color-text-emphasis);
+    font-size: 0.9rem;
+    font-weight: 500;
+
+    /* Truncation */
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    /* Origin allows rotation around the text's center */
+    transform-origin: center center;
+}
+
+/* --- 2.4. Spin Button (Center) --- */
+.wheel-spin-button {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--color-accent-primary);
+    border: 5px solid var(--color-background);
+    z-index: 5;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease-out;
+}
+
+.wheel-spin-button:hover {
+    filter: brightness(1.1);
+}
+
+.wheel-spin-button:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   3. Options List Module
+   ========================================================================== */
+
+.wheel-options-module {
+    /* Inherits styles from .settings-module structure */
+    width: 100%;
+    margin: 0;
+    padding: 25px;
+    background-color: var(--color-accent-secondary);
+    border-radius: var(--border-radius-medium);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Fill the grid column height */
+}
+
+.wheel-options-module h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--color-accent-primary);
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    flex-shrink: 0;
+}
+
+/* --- 3.1. Scrollable List Container --- */
+.options-list-container {
+    flex-grow: 1; /* Take all available space */
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.option-item-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.option-input {
+    flex-grow: 1;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-divider);
+    border-radius: 6px;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+.option-input:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+}
+
+.option-delete-btn {
+    flex-shrink: 0;
+    background: rgba(255, 100, 100, 0.2);
+    color: #FFCDD2;
+    font-size: 28px;
+    font-weight: 300;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    line-height: 32px;
+    transition: all var(--transition-fast);
+}
+
+.option-delete-btn:hover {
+    background: #E91E63;
+    color: white;
+}
+
+/* --- 3.2. Control Buttons --- */
+.options-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   4. Physics Animations (Pointer Interaction)
+   ========================================================================== */
+
+/* 
+   Phase 1: Pointer Pushing
+   Pointer rotates slightly as the wheel peg hits it.
+*/
+@keyframes anim-pointer-push {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to   { transform: translateX(-50%) rotate(-50deg); }
+}
+
+/* 
+   Phase 2: Pointer Snapping Back
+   Pointer springs back to neutral position.
+*/
+@keyframes anim-pointer-snap {
+    from { transform: translateX(-50%) rotate(-50deg); }
+    to   { transform: translateX(-50%) rotate(0deg); }
+}
+
+.wheel-pointer.is-pushing {
+    /* 
+       Duration is dynamic (CSS var), mode is ease-out.
+       forwards ensures it stays tilted until class is removed.
+    */
+    animation: anim-pointer-push var(--push-duration, 0.2s) ease-out forwards;
+}
+
+.wheel-pointer.is-snapping {
+    animation: anim-pointer-snap var(--snap-duration, 0.1s) ease-in forwards;
+}

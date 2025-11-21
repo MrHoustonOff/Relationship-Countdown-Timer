@@ -1,0 +1,270 @@
+<template x-if="form && form.arrival_day"> <div class="settings-module">
+        <h2 x-text="$store.app.lang['settings_section_calendar'] || 'Настройки Календаря'"></h2>
+        <p class="form-description module-description" x-html="$store.app.lang['settings_desc_section_calendar'] || 'Настройте внешний вид календаря...'"></p>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_calendar_subtitle_general'] || 'Общие'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-calendar-save-zoom"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-calendar-save-zoom"
+                            x-model="form.calendar_save_zoom"
+                            @input="AudioManager.playRandom('PlusButtons', true)">
+                     <label for="setting-calendar-save-zoom" x-text="$store.app.lang['settings_calendar_save_zoom_label'] || 'Сохранять Зум'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('calendar_save_zoom'); AudioManager.playRandom('DeleteButtons', true); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_calendar_save_zoom_desc'] || 'Запоминает масштаб календаря...'"></p>
+        </div>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_calendar_subtitle_sticker'] || 'Стикеры Дней (X)'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-sticker-emoji" x-text="$store.app.lang['settings_sticker_emoji_label'] || 'Символ'"></label>
+                <input type="text" id="setting-sticker-emoji"
+                       x-model="form.sticker_emoji"
+                       @input="AudioManager.playRandom('PlusButtons', true)">
+                       maxlength="2"> </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('sticker_emoji'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_sticker_emoji_desc'] || 'Символ или Emoji (напр., X, ❤️)'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-sticker-color" x-text="$store.app.lang['settings_sticker_color_label'] || 'Цвет Символа'"></label>
+                <div class="color-input-container">
+                    <input type="color" id="setting-sticker-color"
+                           x-model="form.sticker_color">
+                    <span x-text="form.sticker_color"></span> </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('sticker_color'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_sticker_color_desc'] || 'Цвет для символа выше.'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-sticker-scale" x-text="$store.app.lang['settings_sticker_scale_label'] || 'Масштаб Символа'"></label>
+                <input type="number" id="setting-sticker-scale"
+                       x-model.number="form.sticker_scale"
+                       @input="AudioManager.playRandom('PlusButtons', true)"
+                       step="0.1" min="0.1" max="10">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('sticker_scale'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_sticker_scale_desc'] || 'Множитель размера (напр., 1.0, 1.5)'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-sticker-rotation" x-text="$store.app.lang['settings_sticker_rotation_label'] || 'Макс. Случайный Поворот'"></label>
+                <input type="number" id="setting-sticker-rotation"
+                       x-model.number="form.sticker_random_rotation_max"
+                       @input="AudioManager.playRandom('PlusButtons', true)"
+                       step="1" min="0" max="180">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('sticker_random_rotation_max'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_sticker_rotation_desc'] || 'Случайный угол в градусах (±15°)'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-calendar-marked-bg" x-text="$store.app.lang['settings_calendar_marked_bg_label'] || 'Цвет Фона Отметки'"></label>
+                <div class="color-input-container">
+                    <input type="color" id="setting-calendar-marked-bg"
+                           x-model="form.calendar_marked_day_color">
+                    <span x-text="form.calendar_marked_day_color"></span>
+                </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('calendar_marked_day_color'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_calendar_marked_bg_desc'] || 'Фон ячейки при клике.'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label x-text="$store.app.lang['settings_preview_label'] || 'Превью'"></label>
+                <div class="preview-container">
+                    <div class="day-cell preview-cell">
+                        <span class="day-number">1</span>
+                        <div class="sticker"
+                             x-text="form.sticker_emoji"
+                             :style="{
+                                 color: form.sticker_color,
+                                 transform: `rotate(-${form.sticker_random_rotation_max || 0}deg) scale(${form.sticker_scale || 1})`
+                             }">
+                        </div>
+                    </div>
+                    <div class="day-cell preview-cell"
+                         :style="{ backgroundColor: form.calendar_marked_day_color }">
+                        <span class="day-number">2</span>
+                        <div class="sticker"
+                             x-text="form.sticker_emoji"
+                             :style="{
+                                 color: form.sticker_color,
+                                 transform: `scale(${form.sticker_scale || 1})`
+                             }">
+                        </div>
+                    </div>
+                    <div class="day-cell preview-cell">
+                        <span class="day-number">3</span>
+                        <div class="sticker"
+                             x-text="form.sticker_emoji"
+                             :style="{
+                                 color: form.sticker_color,
+                                 transform: `rotate(${form.sticker_random_rotation_max || 0}deg) scale(${form.sticker_scale || 1})`
+                             }">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="reset-button-placeholder"></div>
+            <p class="form-description" x-html="$store.app.lang['settings_preview_sticker_desc'] || 'Как будет выглядеть отметка.'"></p>
+        </div>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_desc_calendar_subtitle_arrival'] || 'День Приезда'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-arrival-use-bg"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-arrival-use-bg"
+                            x-model="form.arrival_day.use_bg"
+                            @input="AudioManager.playRandom('PlusButtons', true)">
+                     <label for="setting-arrival-use-bg" x-text="$store.app.lang['settings_arrival_use_bg_label'] || 'Включить Фон'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('arrival_day.use_bg'); AudioManager.playRandom('DeleteButtons', true); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row" :class="{ 'setting-disabled': !form.arrival_day.use_bg }">
+            <div class="input-group">
+                <label for="setting-arrival-bg-color" x-text="$store.app.lang['settings_arrival_bg_color_label'] || 'Цвет Фона'"></label>
+                <div class="color-input-container">
+                    <input type="color" id="setting-arrival-bg-color"
+                           x-model="form.arrival_day.bg_color"
+                           :disabled="!form.arrival_day.use_bg">
+                    <span x-text="form.arrival_day.bg_color"></span>
+                </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('arrival_day.bg_color')"
+                        :disabled="!form.arrival_day.use_bg; AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_arrival_bg_color_desc'] || 'Особый фон для дня приезда.'"></p>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                 <label for="setting-arrival-use-sticker"></label>
+                 <div class="form-group-checkbox checkbox-label-first">
+                     <input type="checkbox" id="setting-arrival-use-sticker"
+                            x-model="form.arrival_day.use_sticker"
+                            @input="AudioManager.playRandom('PlusButtons', true)">
+                     <label for="setting-arrival-use-sticker" x-text="$store.app.lang['settings_arrival_use_sticker_label'] || 'Включить Стикер'"></label>
+                 </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('arrival_day.use_sticker'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row" :class="{ 'setting-disabled': !form.arrival_day.use_sticker }">
+            <div class="input-group">
+                <label for="setting-arrival-emoji" x-text="$store.app.lang['settings_arrival_emoji_label'] || 'Символ'"></label>
+                <input type="text" id="setting-arrival-emoji"
+                       x-model="form.arrival_day.sticker_emoji"
+                       @input="AudioManager.playRandom('PlusButtons', true)"
+                       :disabled="!form.arrival_day.use_sticker"
+                       maxlength="2">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('arrival_day.sticker_emoji')"
+                        :disabled="!form.arrival_day.use_sticker; AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row" :class="{ 'setting-disabled': !form.arrival_day.use_sticker }">
+            <div class="input-group">
+                <label for="setting-arrival-scale" x-text="$store.app.lang['settings_arrival_scale_label'] || 'Масштаб'"></label>
+                <input type="number" id="setting-arrival-scale"
+                       x-model.number="form.arrival_day.sticker_scale"
+                       @input="AudioManager.playRandom('PlusButtons', true)"
+                       :disabled="!form.arrival_day.use_sticker"
+                       step="0.1" min="0.1" max="10">
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('arrival_day.sticker_scale')"
+                        :disabled="!form.arrival_day.use_sticker; AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label x-text="$store.app.lang['settings_preview_label'] || 'Превью'"></label>
+                <div class="preview-container">
+                    <div class="day-cell preview-cell"
+                         :style="{
+                             backgroundColor: form.arrival_day.use_bg ? form.arrival_day.bg_color : 'var(--color-calendar-day-bg)'
+                         }">
+                        <span class="day-number">💖</span>
+                        <template x-if="form.arrival_day.use_sticker">
+                             <div class="sticker arrival-sticker"
+                                 x-text="form.arrival_day.sticker_emoji"
+                                 :style="{
+                                     color: 'var(--color-arrival-highlight-sticker)',
+                                     transform: `scale(${form.arrival_day.sticker_scale || 1})`
+                                 }">
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <div class="reset-button-placeholder"></div>
+            <p class="form-description" x-html="$store.app.lang['settings_preview_arrival_desc'] || 'Как будет выглядеть день приезда.'"></p>
+        </div>
+
+        <h3 class="sub-header" x-text="$store.app.lang['settings_calendar_subtitle_appearance'] || 'Внешний Вид'"></h3>
+
+        <div class="setting-row">
+            <div class="input-group">
+                <label for="setting-calendar-empty-bg" x-text="$store.app.lang['settings_calendar_empty_bg_label'] || 'Цвет Пустой Ячейки'"></label>
+                <div class="color-input-container">
+                    <input type="color" id="setting-calendar-empty-bg"
+                           x-model="form.calendar_empty_cell_color">
+                    <span x-text="form.calendar_empty_cell_color"></span>
+                </div>
+            </div>
+            <div class="reset-button-placeholder">
+                <button type="button" class="reset-default-btn" title="Сбросить"
+                        @click="resetField('calendar_empty_cell_color'); AudioManager.playRandom('DeleteButtons', true)">↺</button>
+            </div>
+            <p class="form-description" x-html="$store.app.lang['settings_calendar_empty_bg_desc'] || 'Фон неактивных дней (вне диапазона).'"></p>
+        </div>
+
+    </div>
+</template>

@@ -1,0 +1,79 @@
+<section
+    id="page-main"
+    class="page-content"
+    :class="{ 'active': $store.app.ui.currentPage === 'page-main' }">
+
+    <template x-if="$store.app.config.timers.arrival_timer_enabled">
+        <div
+            id="timer-arrival-module"
+            class="timer-module"
+            x-data="alpineTicker(
+                'timer-arrival-display',
+                () => $store.app.config.date_vova_arrival,
+                () => 'countdown',
+                () => $store.app.config.timers.timer_completed_message
+            )"
+            x-init="init()"
+
+            @mouseenter="$store.app.setHoverTarget('arrival')"
+            @mouseleave="$store.app.setHoverTarget(null)"
+            :class="{ 'hover-active': $store.app.ui.hoverTargetType === 'arrival' }"
+            :style="{ /* Анимация пульсации */
+                animation: ($store.app.config.animations_enabled && $store.app.ui.hoverTargetType === 'arrival')
+                           ? 'heartbeat 0.72s infinite ease-in-out' : 'none'
+            }"
+            >
+            <h2 class="timer-module-title" x-text="$store.app.config.timers.arrival_timer_text"></h2>
+            <div class="timer-display large" id="timer-arrival-display"></div>
+        </div>
+    </template>
+
+    <template x-if="$store.app.config.timers.relationship_timer_enabled">
+        <div
+            id="timer-relationship-module"
+            class="timer-module"
+             x-data="alpineTicker(
+                'timer-relationship-display',
+                () => $store.app.config.date_relationship_start,
+                () => 'elapsed',
+                () => $store.app.config.timers.timer_completed_message
+            )"
+            x-init="init()"
+
+             @mouseenter="$store.app.setHoverTarget('relationship')"
+            @mouseleave="$store.app.setHoverTarget(null)"
+             :class="{ 'hover-active': $store.app.ui.hoverTargetType === 'relationship' }"
+             :style="{ /* Анимация пульсации */
+                animation: ($store.app.config.animations_enabled && $store.app.ui.hoverTargetType === 'relationship')
+                           ? 'heartbeat 0.72s infinite ease-in-out' : 'none'
+             }"
+             >
+            <h2 class="timer-module-title" x-text="$store.app.config.timers.relationship_timer_text"></h2>
+            <div class="timer-display medium" id="timer-relationship-display"></div>
+
+            <div id="custom-timers-container" class="custom-timers-list">
+                <template x-for="timer in $store.app.config.timers.custom_timers" :key="timer.id">
+                    <template x-if="timer.enabled">
+                        <div class="custom-timer-module"
+                             x-data="alpineTicker(
+                                `timer-${timer.id}`,
+                                () => timer.date,
+                                () => $store.app.getCustomTimerMode(timer.date),
+                                () => $store.app.config.timers.timer_completed_message
+                             )"
+                             x-init="init()">
+                            <h3 class="custom-timer-label" x-text="timer.label" :title="timer.label"></h3>
+                            <div
+                                class="custom-timer-display"
+                                :id="`timer-${timer.id}`"
+                                :style="{ color: $store.app.getCustomTimerColor(timer.date) }">
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </template>
+
+
+</section>
