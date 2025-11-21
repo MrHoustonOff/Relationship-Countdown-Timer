@@ -44,7 +44,7 @@ An interactive grid system for tracking visits and important dates.
   
 ---
 
-##Wheel of Fortune
+### Wheel of Fortune
 
 A physics-based decision-making tool.
 
@@ -63,7 +63,7 @@ A physics-based decision-making tool.
 
 To enable sound effects, the user must provide their own `.mp3` files. On the first launch, the application creates the necessary directory structure in your OS User Data folder (e.g., `%AppData%/MrHouston/LoveTimer` on Windows).
 
-**Directory Structure / Структура папок:**
+**Directory Structure:**
 
 Place your `.mp3` files inside the corresponding folders:
 
@@ -106,7 +106,7 @@ AppData/Roaming/LoveTimer/sounds/
 1.  Clone the repository:
     ```bash
     git clone https://github.com/MrHoustonOff/Relationship-Countdown-Timer
-    cd LoveTimer
+    cd Relationship-Countdown-Timer
     ```
 
 2.  Install dependencies:
