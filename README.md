@@ -2,6 +2,9 @@
  
 # LoveTimer
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+
 ![icon](https://github.com/user-attachments/assets/950f2762-b6e2-460c-942b-8cf99548eecb)
 
 **LoveTimer** is a customizable desktop dashboard for tracking relationship milestones, managing joint calendars, and decision-making.
