@@ -68,7 +68,7 @@ To enable sound effects, the user must provide their own `.mp3` files. On the fi
 Place your `.mp3` files inside the corresponding folders:
 
 ```text
-AppData/Roaming/LoveTimer/sounds/
+AppData/MrHouston/LoveTimer/sounds/
 ├── calendarDay/      # Toggling a date 
 ├── CalendarMonth/    # Month completion 
 ├── DeleteButtons/    # UI delete actions 
