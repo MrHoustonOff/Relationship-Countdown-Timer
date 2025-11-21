@@ -125,5 +125,3 @@ pyinstaller LoveTimer.spec --noconfirm --clean
 ```
 
 The output file will be located in the `dist/` folder.
-Готовый файл будет находиться в папке `dist/`.
-```
